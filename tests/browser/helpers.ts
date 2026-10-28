@@ -61,7 +61,7 @@ export async function startWorkspace(page: Page, name = "Ada Mensah") {
 
 export async function composeAndSend(page: Page, kind: "service" | "goods") {
   await page.goto("/app/new");
-  if (kind === "goods") await page.getByRole("radio", { name: "Physical goods" }).click();
+  if (kind === "goods") await page.getByRole("radio", { name: "Goods" }).click();
   await page.getByRole("button", { name: "Use an example" }).click();
   await page
     .getByRole("button", { name: /Compile the test|Draft a starter test/ })

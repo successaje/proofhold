@@ -192,7 +192,7 @@ export function Composer({ system }: { system: SystemInfo }) {
                       className={styles.segment}
                       onClick={() => set({ kind: k })}
                     >
-                      {k === "service" ? "Service or deliverable" : "Physical goods"}
+                      {k === "service" ? "Service" : "Goods"}
                     </button>
                   ))}
                 </div>

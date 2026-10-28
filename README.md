@@ -16,14 +16,14 @@ Freelancers and private sellers get paid late or not at all; buyers paying stran
 
 ## What Proofhold does
 
-| Step | What happens | PayPal object |
-|---|---|---|
-| Compose | Brief → acceptance test (Claude, structured output) → seller edits | — |
-| Approve | Buyer reads the same test and approves with PayPal | Order with `intent: AUTHORIZE`, `custom_id` = test hash → authorization |
-| Deliver | Files and tracking are checked: counts, types, dimensions, dpi, deadlines, sizes, carrier formats | — |
-| Judge | The examiner scores judgement lines with a confidence and reasons, or abstains | — |
-| Decide | Pure function over the test, the checks, the buyer's response and the clock | capture (full or partial), void, reauthorize once after the honor period |
-| Dispute | After capture, PayPal decides; Proofhold files the evidence bundle | Disputes v1 `provide-evidence`; sandbox `create`, `require-evidence`, `adjudicate` |
+| Step    | What happens                                                                                      | PayPal object                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Compose | Brief → acceptance test (Claude, structured output) → seller edits                                | —                                                                                  |
+| Approve | Buyer reads the same test and approves with PayPal                                                | Order with `intent: AUTHORIZE`, `custom_id` = test hash → authorization            |
+| Deliver | Files and tracking are checked: counts, types, dimensions, dpi, deadlines, sizes, carrier formats | —                                                                                  |
+| Judge   | The examiner scores judgement lines with a confidence and reasons, or abstains                    | —                                                                                  |
+| Decide  | Pure function over the test, the checks, the buyer's response and the clock                       | capture (full or partial), void, reauthorize once after the honor period           |
+| Dispute | After capture, PayPal decides; Proofhold files the evidence bundle                                | Disputes v1 `provide-evidence`; sandbox `create`, `require-evidence`, `adjudicate` |
 
 Three kinds of check, and the UI says which is which:
 
@@ -46,14 +46,14 @@ npm ci
 npm run local
 ```
 
-Open http://127.0.0.1:3200/app. Without any keys the app runs with simulated PayPal and the examiner off: briefs get a starter test and judgement lines fall to the buyer. To use the real integrations, copy `.env.example` to `.env.local` and set:
+Open http://127.0.0.1:3200/app. Do not run `npm run build` while `npm run local` is running; the dev server picks up the production manifests and starts answering 404 until restarted. Without any keys the app runs with simulated PayPal and the examiner off: briefs get a starter test and judgement lines fall to the buyer. To use the real integrations, copy `.env.example` to `.env.local` and set:
 
-| Variable | Purpose |
-|---|---|
-| `PAYPAL_MODE=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | A REST app on a sandbox Business account. Buyers approve with a sandbox Personal account. |
-| `PAYPAL_WEBHOOK_ID` | Optional. Register with `npx tsx scripts/register-webhook.ts https://your-host` on a public URL. Polling keeps holds in step without it. |
-| `ANTHROPIC_API_KEY` | Turns on the compiler and the examiner. `ANTHROPIC_MODEL` defaults to `claude-opus-5-5`. |
-| `DEMO_SILENCE_MINUTES` | Shortens buyer windows for demos. |
+| Variable                                                          | Purpose                                                                                                                                  |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `PAYPAL_MODE=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | A REST app on a sandbox Business account. Buyers approve with a sandbox Personal account.                                                |
+| `PAYPAL_WEBHOOK_ID`                                               | Optional. Register with `npx tsx scripts/register-webhook.ts https://your-host` on a public URL. Polling keeps holds in step without it. |
+| `ANTHROPIC_API_KEY`                                               | Turns on the compiler and the examiner. `ANTHROPIC_MODEL` defaults to `claude-opus-5-5`.                                                 |
+| `DEMO_SILENCE_MINUTES`                                            | Shortens buyer windows for demos.                                                                                                        |
 
 Useful scripts:
 
