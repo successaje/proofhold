@@ -43,6 +43,19 @@ test("Flow A: service deliverable passes the checks and the buyer releases", asy
   await page.reload();
   await expect(page.getByText("$420.00 released to you")).toBeVisible();
   await expect(page.getByText(/PayPal captured \$420\.00/)).toBeVisible();
+
+  // The list shows the outcome and how long it took.
+  await page.goto("/app");
+  await expect(page.getByText(/Released \$420\.00 · .* from submission/)).toBeVisible();
+  await expect(page.getByText(/typical time from submission to release/)).toBeVisible();
+
+  // The next proofhold starts from this one's test.
+  await page.goto(`/app/h/${id}`);
+  await page.getByRole("link", { name: "Start another from this test" }).click();
+  await expect(page).toHaveURL(new RegExp(`/app/new\\?from=${id}`));
+  await expect(page.getByLabel("Title")).toHaveValue("Logo concepts for Driftwood Café");
+  await expect(page.getByRole("heading", { name: "The acceptance test" })).toBeVisible();
+  await expect(page.getByText(/Reused from “Logo concepts/)).toBeVisible();
   await buyerContext.close();
 });
 

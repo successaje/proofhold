@@ -11,6 +11,7 @@ import { HoldCard } from "@/components/proofhold/hold-card";
 import {
   BundleButton,
   CancelButton,
+  ReuseButton,
   DisputeActions,
   EndHoldButton,
   OfferForm,
@@ -117,6 +118,7 @@ export default async function ProofholdPage({
             {s === "draft" || s === "proposed" ? <CancelButton ph={ph} /> : null}
             {held && s !== "checking" ? <EndHoldButton ph={ph} /> : null}
             {!["draft"].includes(s) ? <BundleButton ph={ph} /> : null}
+            {s !== "draft" ? <ReuseButton ph={ph} /> : null}
           </>
         }
       />

@@ -9,6 +9,12 @@ import { currentWorkspace } from "@/lib/session/workspace";
 import { db } from "@/lib/store/sql";
 import { listProofholds } from "@/lib/store/repos";
 import { statusMeta, type Proofhold } from "@/lib/domain/proofhold";
+import {
+  formatDuration,
+  isClosed,
+  medianTimeToDecision,
+  outcomeLine,
+} from "@/lib/domain/outcome";
 import { formatDate, formatMoney, durationLeft } from "@/lib/format";
 import styles from "./list.module.css";
 
@@ -43,7 +49,7 @@ function nextStep(ph: Proofhold): string {
     case "disputed":
       return "PayPal dispute open";
     default:
-      return statusMeta[ph.status].summary;
+      return outcomeLine(ph) ?? statusMeta[ph.status].summary;
   }
 }
 
@@ -93,13 +99,12 @@ export default async function ProofholdsPage() {
   const all = await listProofholds(await db(), ws.id);
   const needs = all.filter((p) => attention.includes(p.status));
   const open = all.filter((p) => active.includes(p.status));
-  const closed = all.filter(
-    (p) => !attention.includes(p.status) && !active.includes(p.status),
-  );
+  const closed = all.filter((p) => isClosed(p.status));
   const held = all
     .filter((p) => ["held", "checking", "awaiting_buyer", "in_review"].includes(p.status))
     .reduce((s, p) => s + p.amountCents - p.releasedCents, 0);
   const released = all.reduce((s, p) => s + p.releasedCents, 0);
+  const median = medianTimeToDecision(all);
 
   return (
     <>
@@ -107,7 +112,15 @@ export default async function ProofholdsPage() {
         title="Proofholds"
         lead={
           all.length > 0
-            ? `${formatMoney(held, "USD")} held by PayPal across ${open.length + needs.length} active · ${formatMoney(released, "USD")} released to you`
+            ? [
+                `${formatMoney(held, "USD")} held by PayPal across ${open.length + needs.length} active`,
+                `${formatMoney(released, "USD")} released to you`,
+                median !== null
+                  ? `typical time from submission to release ${formatDuration(median)}`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")
             : undefined
         }
         actions={
