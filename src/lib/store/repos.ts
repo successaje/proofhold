@@ -91,6 +91,17 @@ interface ProofholdRow {
   silence_window_ends_at: string | null;
   evidence_submitted_at: string | null;
   decided_at: string | null;
+  offer_cents: number | null;
+  offer_note: string | null;
+  reauthorized_at: string | null;
+  buyer_response: "confirmed" | "objected" | null;
+  buyer_responded_at: string | null;
+  decision_json: string | null;
+  paypal_dispute_id: string | null;
+  paypal_tracker_id: string | null;
+  last_reconciled_at: string | null;
+  payer_email: string | null;
+  released_cents: number;
   created_at: string;
   updated_at: string;
 }
@@ -119,6 +130,17 @@ function rowToProofhold(r: ProofholdRow): Proofhold {
     silenceWindowEndsAt: r.silence_window_ends_at,
     evidenceSubmittedAt: r.evidence_submitted_at,
     decidedAt: r.decided_at,
+    offerCents: r.offer_cents === null ? null : Number(r.offer_cents),
+    offerNote: r.offer_note,
+    reauthorizedAt: r.reauthorized_at,
+    buyerResponse: r.buyer_response,
+    buyerRespondedAt: r.buyer_responded_at,
+    decision: r.decision_json ? JSON.parse(r.decision_json) : null,
+    paypalDisputeId: r.paypal_dispute_id,
+    paypalTrackerId: r.paypal_tracker_id,
+    lastReconciledAt: r.last_reconciled_at,
+    payerEmail: r.payer_email,
+    releasedCents: Number(r.released_cents ?? 0),
     createdAt: r.created_at,
     updatedAt: r.updated_at,
   };
@@ -226,6 +248,7 @@ type ProofholdPatch = Partial<
   Pick<
     Proofhold,
     | "title"
+    | "kind"
     | "brief"
     | "amountCents"
     | "currency"
@@ -243,11 +266,23 @@ type ProofholdPatch = Partial<
     | "silenceWindowEndsAt"
     | "evidenceSubmittedAt"
     | "decidedAt"
+    | "offerCents"
+    | "offerNote"
+    | "reauthorizedAt"
+    | "buyerResponse"
+    | "buyerRespondedAt"
+    | "decision"
+    | "paypalDisputeId"
+    | "paypalTrackerId"
+    | "lastReconciledAt"
+    | "payerEmail"
+    | "releasedCents"
   >
 >;
 
 const columnFor: Record<keyof ProofholdPatch, string> = {
   title: "title",
+  kind: "kind",
   brief: "brief",
   amountCents: "amount_cents",
   currency: "currency",
@@ -265,6 +300,17 @@ const columnFor: Record<keyof ProofholdPatch, string> = {
   silenceWindowEndsAt: "silence_window_ends_at",
   evidenceSubmittedAt: "evidence_submitted_at",
   decidedAt: "decided_at",
+  offerCents: "offer_cents",
+  offerNote: "offer_note",
+  reauthorizedAt: "reauthorized_at",
+  buyerResponse: "buyer_response",
+  buyerRespondedAt: "buyer_responded_at",
+  decision: "decision_json",
+  paypalDisputeId: "paypal_dispute_id",
+  paypalTrackerId: "paypal_tracker_id",
+  lastReconciledAt: "last_reconciled_at",
+  payerEmail: "payer_email",
+  releasedCents: "released_cents",
 };
 
 export async function updateProofhold(
@@ -278,7 +324,9 @@ export async function updateProofhold(
     if (value === undefined) continue;
     sets.push(`${columnFor[key]} = ?`);
     params.push(
-      key === "test" ? JSON.stringify(value) : (value as string | number | null),
+      key === "test" || key === "decision"
+        ? JSON.stringify(value)
+        : (value as string | number | null),
     );
   }
   sets.push("updated_at = ?");

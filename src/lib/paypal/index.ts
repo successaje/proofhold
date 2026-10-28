@@ -17,4 +17,9 @@ export function paypal(): Promise<PayPalClient> {
   return instance;
 }
 
+/** Test hook: replace the shared client (used by lifecycle tests with the simulator). */
+export function __set(client: PayPalClient | undefined) {
+  instance = client ? Promise.resolve(client) : undefined;
+}
+
 export type { PayPalClient } from "./client";
