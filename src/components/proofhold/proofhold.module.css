@@ -136,6 +136,10 @@
     border-color var(--t-fast),
     background-color var(--t-fast);
 }
+.dropzone[aria-disabled="true"] {
+  cursor: default;
+  color: var(--muted);
+}
 .dropzone:hover,
 .dropzoneActive {
   border-color: var(--brand);

@@ -104,6 +104,8 @@ export async function approveAsBuyer(buyer: Page, buyerUrl: string) {
 
 export async function uploadFiles(page: Page, files: { name: string; buffer: Buffer }[]) {
   const input = page.locator('input[type="file"]');
+  // The input is disabled until the page has hydrated; choosing files earlier would be lost.
+  await expect(input).toBeEnabled();
   await input.setInputFiles(
     files.map((f) => ({ name: f.name, mimeType: "image/png", buffer: f.buffer })),
   );
