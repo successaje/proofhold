@@ -46,25 +46,25 @@ PayPal's authorization hold is the enabling primitive. An `AUTHORIZE` order keep
 
 The product says this on screen, not just in the README.
 
-- **Real (sandbox):** order creation with intent AUTHORIZE, buyer approval, authorization, reauthorization, capture, partial capture, void, shipment tracking, webhooks with signature verification, dispute creation, evidence filing, sandbox adjudication.
-- **Simulated:** carrier scans (we update the tracker ourselves and say so), the shortened silence window during demos, and the whole PayPal surface when the app runs without sandbox credentials (`PAYPAL_MODE=simulated`, clearly badged).
+- **Real (sandbox):** order creation with intent AUTHORIZE, buyer approval, authorization, reauthorization, capture, partial capture, void, order tracking attached after capture, webhooks with signature verification, dispute evidence filing, and the sandbox-only dispute creation and adjudication.
+- **Simulated:** the shortened buyer window during demos, PayPal's dispute decision (sandbox `adjudicate`), and the whole PayPal surface when the app runs without sandbox credentials (`PAYPAL_MODE=simulated`, clearly badged). Carrier delivery is not queried: the tracking number's format is checked on submission, and receipt is the buyer's confirmation or silence.
 - **Unproven:** whether PayPal policy permits a third party to run conditional release at scale in production, and how accurate the examiner is on real-world deliverables beyond the shipped evaluation set.
 
 ## Essential flows
 
-| Flow | What happens | Screen |
-|---|---|---|
-| First visit | Landing explains the mechanism with a live example of a compiled test. Primary action: "Create a proofhold". | `/` |
-| Onboarding | A workspace is created with a name and payout email. No password; a signed cookie identifies the browser, with a recovery link by email when mail is configured. | `/app/start` |
-| Primary action | Compose: brief, amount, kind of job, deadline. Compile. Edit the test. Create. | `/app/new` |
-| Confirmation | The proofhold page shows the test, its hash, and the buyer link to share. | `/app/h/[id]` |
-| Buyer approval | Buyer reads the same test, approves with PayPal, returns. Authorization id shown with "held by PayPal, not by Proofhold". | `/p/[token]` |
-| Delivery | Seller uploads files or adds tracking. Validators run immediately. Examiner runs on judgement lines. Staged progress is shown. | `/app/h/[id]` |
-| Buyer window | Buyer sees the evidence and verdicts, confirms, or objects with a reason. Silence releases after the agreed window. | `/p/[token]` |
-| Result | Capture (full or partial), void, or dispute. PayPal ids visible. Audit chain exportable. | both |
-| History | All proofholds with status, amount, outcome, and time to release. | `/app` |
-| Error recovery | Expired hold, declined capture, webhook silence, examiner unavailable, PayPal unreachable: each has a named state, an explanation, and a next step. | everywhere |
-| Returning user | The workspace cookie brings the seller back to their list. Active holds show time remaining. | `/app` |
+| Flow           | What happens                                                                                                                                                                                                                                                    | Screen        |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| First visit    | Landing explains the mechanism with a live example of a compiled test. Primary action: "Create a proofhold".                                                                                                                                                    | `/`           |
+| Onboarding     | A workspace is created with a name and payout email. No password; a signed cookie identifies the browser, with a recovery link by email when mail is configured.                                                                                                | `/app/start`  |
+| Primary action | Compose: brief, amount, kind of job, deadline. Compile. Edit the test. Create.                                                                                                                                                                                  | `/app/new`    |
+| Confirmation   | The proofhold page shows the test, its hash, and the buyer link to share.                                                                                                                                                                                       | `/app/h/[id]` |
+| Buyer approval | Buyer reads the same test, approves with PayPal, returns. Authorization id shown with "held by PayPal, not by Proofhold".                                                                                                                                       | `/p/[token]`  |
+| Delivery       | Seller uploads files or records a carrier tracking number. Validators run immediately. Examiner runs on judgement lines. Staged progress is shown. After capture, the tracker is attached to the PayPal order (PayPal only accepts tracking against a capture). | `/app/h/[id]` |
+| Buyer window   | Buyer sees the evidence and verdicts, confirms, or objects with a reason. Silence releases after the agreed window.                                                                                                                                             | `/p/[token]`  |
+| Result         | Capture (full or partial), void, or dispute. PayPal ids visible. Audit chain exportable.                                                                                                                                                                        | both          |
+| History        | All proofholds with status, amount, outcome, and time to release.                                                                                                                                                                                               | `/app`        |
+| Error recovery | Expired hold, declined capture, webhook silence, examiner unavailable, PayPal unreachable: each has a named state, an explanation, and a next step.                                                                                                             | everywhere    |
+| Returning user | The workspace cookie brings the seller back to their list. Active holds show time remaining.                                                                                                                                                                    | `/app`        |
 
 ## Decision policy (the part the model never owns)
 
@@ -72,7 +72,8 @@ The product says this on screen, not just in the README.
 - The examiner may return `pass`, `fail` or `abstain` with a confidence. Any `abstain`, or `pass` with confidence under the threshold, on a must-pass line blocks release and routes to the buyer.
 - Release happens when every must-pass line passes and either the buyer confirms or the silence window ends without objection.
 - Partial release follows the rules in the test, never a model's suggestion.
-- Objection within the window moves the proofhold to review; the seller may propose a partial release; the buyer accepts or declines; a decline voids the remainder and may open a dispute with the evidence bundle.
+- Objection within the window moves the proofhold to review; the seller may propose a partial release; the buyer accepts or declines; a decline voids the hold and the money never left the buyer.
+- Before capture, Proofhold decides. After capture, PayPal decides: a dispute is opened against the capture and Proofhold files the evidence bundle through the Disputes API.
 - Every state transition is appended to a hash chain so either party can export what happened.
 
 ## Non-goals for this release

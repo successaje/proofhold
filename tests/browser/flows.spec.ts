@@ -114,3 +114,38 @@ test("Flow C: a thin delivery is blocked, the buyer objects, declines the offer,
   await expect(page.getByText("Hold returned to the buyer")).toBeVisible();
   await buyerContext.close();
 });
+
+test("Flow D: after release, a PayPal dispute is opened, the evidence bundle is filed, and adjudication closes it", async ({
+  page,
+  browser,
+}) => {
+  await startWorkspace(page, "Ivy Chen");
+  const { id, buyerUrl } = await composeAndSend(page, "service");
+  const buyerContext = await browser.newContext();
+  const buyer = await buyerContext.newPage();
+  await approveAsBuyer(buyer, buyerUrl);
+
+  await page.goto(`/app/h/${id}`);
+  await uploadFiles(page, [
+    { name: "final.png", buffer: pngFixture(1200, 900, 300, 30) },
+  ]);
+  await page.getByRole("button", { name: "Submit for checks" }).click();
+  await expect(page.getByText("Buyer window").first()).toBeVisible({ timeout: 90_000 });
+
+  await buyer.reload();
+  await buyer.getByRole("button", { name: "Confirm and release" }).click();
+  await buyer.getByRole("button", { name: "Release now" }).click();
+  await expect(buyer.getByText("Released", { exact: true }).first()).toBeVisible();
+
+  await buyer.getByRole("button", { name: "Open a PayPal dispute" }).click();
+  await buyer.getByRole("button", { name: "Open dispute" }).click();
+  await expect(buyer.getByText("Disputed", { exact: true }).first()).toBeVisible();
+
+  await page.reload();
+  await page.getByRole("button", { name: "File evidence with PayPal" }).click();
+  await expect(page.getByText("Evidence bundle filed with PayPal")).toBeVisible();
+  await page.getByRole("button", { name: "Simulate: seller wins" }).click();
+  await expect(page.getByText("Released", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText(/Dispute resolved: seller favour/i)).toBeVisible();
+  await buyerContext.close();
+});

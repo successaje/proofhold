@@ -15,9 +15,9 @@ Milestones in order. Each entry names the branch or PR that delivered it.
 - [x] 2026-10-28 Goods flow: tracking and silence window (feat/app-shell)
 - [x] 2026-10-28 Failure flow: objection, partial release, void, dispute (feat/app-shell)
 - [x] 2026-10-28 Landing page (feat/app-shell)
-- [ ] Loading, empty and error states pass
-- [ ] Responsive pass
+- [x] 2026-10-28 Loading, empty and error states pass (feat/dispute-flow-and-polish)
+- [x] 2026-10-28 Responsive and dark-mode pass, checked at phone width (feat/app-shell, feat/dispute-flow-and-polish)
 - [x] 2026-10-28 Evaluation set and eval script (feat/app-shell; numbers pending an API key)
 - [x] 2026-10-28 Playwright flows A/B/C and GitHub Actions CI (feat/app-shell)
-- [ ] Documentation complete
-- [ ] Production deployment
+- [x] 2026-10-28 Documentation: README, product, architecture, demo script (feat/app-shell)
+- [ ] Production deployment: render.yaml ready; needs the GitHub repo, PayPal sandbox credentials and an Anthropic key
