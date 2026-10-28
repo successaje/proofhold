@@ -47,7 +47,7 @@ export const checkSchema = z.discriminatedUnion("kind", [
     max_bytes: z.number().int().positive().optional(),
     min_bytes: z.number().int().positive().optional(),
   }),
-  z.object({ kind: z.literal("tracking_delivered") }),
+  z.object({ kind: z.literal("tracking_shipped") }),
   z.object({ kind: z.literal("buyer_confirms"), prompt: z.string().min(1) }),
   z.object({ kind: z.literal("judgement"), criteria: z.string().min(1) }),
 ]);
@@ -121,7 +121,7 @@ export function checkMatchesEvidence(p: Pick<Predicate, "evidence" | "check">): 
     case "file":
       return fileChecks.has(p.check.kind);
     case "tracking":
-      return p.check.kind === "tracking_delivered";
+      return p.check.kind === "tracking_shipped";
     case "buyer_confirmation":
       return p.check.kind === "buyer_confirms";
     case "judgement":
@@ -184,8 +184,8 @@ export function describeCheck(check: Check): string {
       ]
         .filter(Boolean)
         .join(", ");
-    case "tracking_delivered":
-      return "PayPal tracking shows delivered";
+    case "tracking_shipped":
+      return "carrier tracking number recorded";
     case "buyer_confirms":
       return "buyer confirms";
     case "judgement":
