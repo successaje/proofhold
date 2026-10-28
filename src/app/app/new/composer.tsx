@@ -73,13 +73,16 @@ const examples: Record<Kind, Draft> = {
 export function Composer({
   system,
   initial = null,
+  prefill,
 }: {
   system: SystemInfo;
   initial?: ComposerInitial | null;
+  /** From the landing page's start form: kind and amount only. */
+  prefill?: Partial<Pick<Draft, "kind" | "amount">>;
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const [draft, setDraft] = useState<Draft>(initial?.draft ?? empty);
+  const [draft, setDraft] = useState<Draft>(initial?.draft ?? { ...empty, ...prefill });
   const [test, setTest] = useState<AcceptanceTest | null>(initial?.test ?? null);
   const [source, setSource] = useState<"ai" | "starter" | "reused" | null>(
     initial ? "reused" : null,

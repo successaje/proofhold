@@ -9,6 +9,7 @@ import { EvidenceList } from "@/components/proofhold/evidence-list";
 import { History } from "@/components/proofhold/history";
 import { HoldCard } from "@/components/proofhold/hold-card";
 import { NextStep } from "@/components/proofhold/next-step";
+import { Rail } from "@/components/proofhold/rail";
 import {
   BundleButton,
   CancelButton,
@@ -100,18 +101,14 @@ export default async function ProofholdPage({
         }
         title={ph.title}
         lead={
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "var(--s-3)",
-              flexWrap: "wrap",
-            }}
-          >
-            <StatusPill tone={ph.statusTone} pulse={s === "checking"}>
-              {ph.statusLabel}
-            </StatusPill>
-            <span>{ph.statusSummary}</span>
+          <span className={pageStyles.lead}>
+            <span className={pageStyles.leadLine}>
+              <StatusPill tone={ph.statusTone} pulse={s === "checking"}>
+                {ph.statusLabel}
+              </StatusPill>
+              <span>{ph.statusSummary}</span>
+            </span>
+            <Rail status={s} />
           </span>
         }
         actions={
@@ -169,6 +166,10 @@ export default async function ProofholdPage({
                 hash={ph.testHash}
                 threshold={threshold}
                 showChecks={!["proposed", "cancelled"].includes(s)}
+                agreement={{
+                  seller: { name: ws.name, at: ph.sellerAgreedAt },
+                  buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },
+                }}
               />
             </Panel>
           )}
@@ -312,7 +313,7 @@ export default async function ProofholdPage({
         </div>
 
         <aside className={pageStyles.aside}>
-          <HoldCard ph={ph} system={system} audience="seller" />
+          <HoldCard ph={ph} checks={checks} system={system} audience="seller" />
           <Panel title="Buyer">
             <KeyValues
               items={[

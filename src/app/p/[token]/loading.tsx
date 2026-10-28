@@ -11,6 +11,7 @@ export default function Loading() {
         gap: "var(--s-4)",
       }}
       aria-busy="true"
+      role="status"
       aria-label="Loading"
     >
       <Skeleton width="10rem" height="0.9rem" />

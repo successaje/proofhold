@@ -3,8 +3,19 @@ import type { CheckResult, Status } from "@/lib/domain/proofhold";
 import { latestCheckFor } from "@/lib/decision/decide";
 import { VerdictIcon } from "@/components/ui/status";
 import { CopyButton } from "@/components/ui/feedback";
+import { formatDate } from "@/lib/format";
 import styles from "./proofhold.module.css";
 
+export interface Agreement {
+  seller?: { name: string; at: string | null } | null;
+  buyer?: { name: string | null; at: string | null } | null;
+}
+
+/**
+ * The Sheet: the acceptance test as a ruled page. A numbered margin, one line
+ * per predicate with its check in monospace and its verdict, the release rules,
+ * and at the foot the agreement: who agreed, when, and the hash PayPal holds.
+ */
 export function TestView({
   test,
   checks,
@@ -12,6 +23,7 @@ export function TestView({
   hash,
   threshold = 0.8,
   showChecks = true,
+  agreement,
 }: {
   test: AcceptanceTest;
   checks: CheckResult[];
@@ -19,12 +31,13 @@ export function TestView({
   hash?: string;
   threshold?: number;
   showChecks?: boolean;
+  agreement?: Agreement;
 }) {
   const running = status === "checking";
   const latestRound = checks.reduce((m, c) => Math.max(m, c.round), 0);
   const current = checks.filter((c) => c.round === latestRound);
   return (
-    <div>
+    <div className={styles.sheet}>
       <p className={styles.summary}>{test.summary}</p>
       <ol className={styles.testList}>
         {test.predicates.map((p, i) => {
@@ -35,35 +48,27 @@ export function TestView({
             c.verdict === "pass" &&
             (c.confidence ?? 0) < threshold;
           return (
-            <li key={p.id}>
-              <div className={styles.testRow}>
-                {showChecks ? (
-                  <VerdictIcon
-                    verdict={verdict}
-                    running={running && (p.check.kind === "judgement" || !c)}
-                  />
-                ) : (
-                  <span
-                    style={{
-                      width: "1.35rem",
-                      textAlign: "center",
-                      color: "var(--muted)",
-                      fontSize: "var(--text-xs)",
-                      fontWeight: 600,
-                      lineHeight: "1.35rem",
-                    }}
-                  >
-                    {i + 1}
+            <li key={p.id} className={styles.line}>
+              <span className={styles.lineNo} aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className={styles.lineBody}>
+                <div className={styles.lineHead}>
+                  <span className={styles.testText}>
+                    {p.text}
+                    {!p.must_pass ? (
+                      <span className={styles.optional}> · optional</span>
+                    ) : null}
                   </span>
-                )}
-                <div className={styles.testText}>
-                  {p.text}
-                  {!p.must_pass ? (
-                    <span className={styles.optional}> · optional</span>
+                  {showChecks ? (
+                    <VerdictIcon
+                      verdict={verdict}
+                      running={running && (p.check.kind === "judgement" || !c)}
+                    />
                   ) : null}
                 </div>
                 <div className={styles.testMeta}>
-                  <span>{describeCheck(p.check)}</span>
+                  <code>{describeCheck(p.check)}</code>
                   {c ? (
                     <>
                       <span className={styles.sep} />
@@ -123,13 +128,40 @@ export function TestView({
               .join(" ")
           : "No partial release: every required line must pass, or the buyer must confirm."}
       </p>
+      {agreement ? (
+        <div className={styles.agreement}>
+          <div className={styles.signature}>
+            <span className={styles.signatureLabel}>Seller</span>
+            <span className={styles.signatureName}>{agreement.seller?.name ?? "—"}</span>
+            <span className={styles.signatureAt}>
+              {agreement.seller?.at
+                ? `agreed ${formatDate(agreement.seller.at)}`
+                : "not yet"}
+            </span>
+          </div>
+          <div className={styles.signature}>
+            <span className={styles.signatureLabel}>Buyer</span>
+            <span className={styles.signatureName}>
+              {agreement.buyer?.name ?? (agreement.buyer?.at ? "Buyer" : "—")}
+            </span>
+            <span className={styles.signatureAt}>
+              {agreement.buyer?.at
+                ? `approved ${formatDate(agreement.buyer.at)}`
+                : "awaiting approval"}
+            </span>
+          </div>
+        </div>
+      ) : null}
       {hash ? (
-        <div className={styles.hash} style={{ marginTop: "var(--s-3)" }}>
-          <span>
-            Test hash <code>{hash.slice(0, 16)}…</code>
+        <div className={styles.hash}>
+          <span className={styles.hashLabel}>Test hash</span>
+          <code className={styles.hashValue} title={hash}>
+            {hash}
+          </code>
+          <CopyButton value={hash} label="Copy" />
+          <span className={styles.hashNote}>
+            written into the PayPal order as custom_id
           </span>
-          <CopyButton value={hash} label="Copy full hash" />
-          <span>· written into the PayPal order as custom_id</span>
         </div>
       ) : null}
     </div>

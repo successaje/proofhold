@@ -1,20 +1,25 @@
 import { Panel } from "@/components/ui/panel";
-import { Badge, Mono, StatusPill } from "@/components/ui/status";
+import { Badge, Mono } from "@/components/ui/status";
 import { formatDate, formatMoney } from "@/lib/format";
+import type { CheckResult } from "@/lib/domain/proofhold";
 import type { ProofholdView, SystemInfo } from "@/lib/view";
 import { Countdown } from "./countdown";
+import { Seal, segmentsFor, stampFor } from "./seal";
 import styles from "./proofhold.module.css";
 
 export function HoldCard({
   ph,
+  checks = [],
   system,
   audience,
 }: {
   ph: ProofholdView;
+  checks?: CheckResult[];
   system: SystemInfo;
   audience: "seller" | "buyer";
 }) {
   const held = ["held", "checking", "awaiting_buyer", "in_review"].includes(ph.status);
+  const notYet = ph.status === "draft" || ph.status === "proposed";
   const remaining = ph.amountCents - ph.releasedCents;
   const lines: { k: string; v: React.ReactNode }[] = [];
   if (ph.paypalOrderId)
@@ -42,21 +47,34 @@ export function HoldCard({
   if (ph.paypalDisputeId)
     lines.push({ k: "Dispute", v: <Mono>{ph.paypalDisputeId}</Mono> });
 
+  const stamp = stampFor(ph.status);
   return (
     <Panel
       title="PayPal hold"
       tone={ph.statusTone === "neutral" ? undefined : ph.statusTone}
       actions={
-        <StatusPill tone={ph.statusTone} pulse={ph.status === "checking"}>
-          {ph.statusLabel}
-        </StatusPill>
+        <Badge>
+          {system.paypalMode === "sandbox" ? "PayPal sandbox" : "Simulated PayPal"}
+        </Badge>
       }
     >
-      <div className={styles.holdAmount}>
-        {formatMoney(held ? remaining : ph.amountCents, ph.currency)}
+      <div className={styles.holdSeal}>
+        <Seal
+          id={`seal-${ph.id}`}
+          amount={formatMoney(held ? remaining : ph.amountCents, ph.currency)}
+          currency={ph.currency}
+          segments={
+            notYet
+              ? ph.test.predicates.map(() => "pending" as const)
+              : segmentsFor(ph.test, checks)
+          }
+          stamp={stamp}
+          pending={notYet}
+          holder={notYet ? "Not held yet" : "Held by PayPal"}
+        />
       </div>
       <p className={styles.holdSub}>
-        {ph.status === "draft" || ph.status === "proposed"
+        {notYet
           ? "Not held yet. Approval creates a PayPal authorization for this amount."
           : held
             ? audience === "buyer"
@@ -82,11 +100,6 @@ export function HoldCard({
           ))}
         </dl>
       ) : null}
-      <div style={{ marginTop: "var(--s-4)" }}>
-        <Badge>
-          {system.paypalMode === "sandbox" ? "PayPal sandbox" : "Simulated PayPal"}
-        </Badge>
-      </div>
     </Panel>
   );
 }

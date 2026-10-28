@@ -30,10 +30,10 @@
 }
 .row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr auto;
   grid-template-areas:
-    "main status"
-    "next amount";
+    "seal main status"
+    "seal next amount";
   gap: var(--s-2) var(--s-4);
   align-items: center;
   padding: var(--s-4) var(--s-4);
@@ -44,10 +44,14 @@
 }
 @media (min-width: 56rem) {
   .row {
-    grid-template-columns: minmax(14rem, 1.4fr) 1.2fr auto auto 1.25rem;
-    grid-template-areas: "main next amount status arrow";
+    grid-template-columns: auto minmax(14rem, 1.4fr) 1.2fr auto auto 1.25rem;
+    grid-template-areas: "seal main next amount status arrow";
     padding: var(--s-4) var(--s-5);
   }
+}
+.row > svg:first-child {
+  grid-area: seal;
+  align-self: center;
 }
 .rowMain {
   grid-area: main;
@@ -82,7 +86,7 @@
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
-.row > :global(span):nth-child(4) {
+.row > :global(span):nth-child(5) {
   grid-area: status;
   justify-self: end;
 }

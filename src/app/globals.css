@@ -10,7 +10,7 @@
   --surface-2: #efece5;
   --ink: #17150f;
   --ink-2: #4b4740;
-  --muted: #76716a;
+  --muted: #6b665e;
   --line: #e1ddd4;
   --line-strong: #cbc5ba;
 
@@ -18,7 +18,7 @@
   --brand: #0d5c4e;
   --brand-ink: #ffffff;
   --brand-soft: #dcefe9;
-  --held: #9a6a12;
+  --held: #8b6010;
   --held-soft: #f6ebd3;
   --pass: #1d6f47;
   --pass-soft: #dcefe3;
@@ -27,6 +27,9 @@
   --info: #2f5f9e;
   --info-soft: #e1eaf7;
   --focus: #2f5f9e;
+  --wax: #0d5c4e;
+  --rule: #cbc5ba;
+  --paper-grain: rgb(23 21 15 / 0.035);
 
   /* Type */
   --font-display: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
@@ -99,11 +102,14 @@
     --held-soft: #3a2d12;
     --pass: #4fb57f;
     --pass-soft: #163324;
-    --fail: #e0634c;
+    --fail: #e4654e;
     --fail-soft: #3d1a14;
     --info: #7aa5e6;
     --info-soft: #182840;
     --focus: #7aa5e6;
+    --wax: #3ea58f;
+    --rule: #403c36;
+    --paper-grain: rgb(241 237 229 / 0.04);
     --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
     --shadow-2: 0 4px 16px rgb(0 0 0 / 0.45);
     --shadow-3: 0 12px 40px rgb(0 0 0 / 0.6);
@@ -142,9 +148,15 @@ body {
   font-size: var(--text-base);
   line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
+  font-optical-sizing: auto;
   font-feature-settings:
     "cv11" 1,
     "ss01" 1;
+}
+
+/* Tabular figures wherever money, time or counts sit in a column. */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }
 
 h1,

@@ -17,7 +17,7 @@ export function PageHeader({
       <div>
         {eyebrow ? <div className={styles.eyebrow}>{eyebrow}</div> : null}
         <h1 className={styles.pageTitle}>{title}</h1>
-        {lead ? <p className={styles.pageLead}>{lead}</p> : null}
+        {lead ? <div className={styles.pageLead}>{lead}</div> : null}
       </div>
       {actions ? <div className={styles.pageActions}>{actions}</div> : null}
     </div>

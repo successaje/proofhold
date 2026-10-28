@@ -1,0 +1,94 @@
+.rail {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.1rem 0;
+}
+.rail::-webkit-scrollbar {
+  display: none;
+}
+.step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex: none;
+  padding-right: var(--s-5);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.step + .step::before {
+  content: "";
+  position: absolute;
+  left: calc(-1 * var(--s-5) + 0.6rem);
+  width: calc(var(--s-5) - 0.8rem);
+  height: 1px;
+  background: var(--rule);
+}
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--rule);
+  background: transparent;
+  flex: none;
+}
+.step-done {
+  color: var(--ink-2);
+}
+.step-done .dot {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.step-done + .step::before {
+  background: var(--brand);
+}
+.step-current {
+  color: var(--ink);
+  font-weight: 600;
+}
+.step-current .dot {
+  background: var(--held);
+  border-color: var(--held);
+  box-shadow: 0 0 0 3px var(--held-soft);
+}
+.step-off {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.step-off .dot {
+  background: var(--muted);
+  border-color: var(--muted);
+}
+.step-todo .dot {
+  border-style: dashed;
+}
+.compact .step {
+  padding-right: var(--s-4);
+}
+.compact .label {
+  font-size: 0.7rem;
+}
+.dots {
+  overflow: visible;
+}
+.dots .step {
+  padding-right: var(--s-6);
+}
+.dots .step:last-child {
+  padding-right: 0;
+}
+.dots .step + .step::before {
+  left: calc(-1 * var(--s-6) + 0.55rem);
+  width: calc(var(--s-6) - 0.55rem);
+}
+.dots .dot {
+  width: 0.7rem;
+  height: 0.7rem;
+}
