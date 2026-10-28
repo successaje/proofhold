@@ -126,4 +126,20 @@ CREATE TABLE IF NOT EXISTS simulated_paypal (
 );
 `,
   },
+  {
+    name: "002_lifecycle",
+    sql: `
+ALTER TABLE proofholds ADD COLUMN offer_cents INTEGER;
+ALTER TABLE proofholds ADD COLUMN offer_note TEXT;
+ALTER TABLE proofholds ADD COLUMN reauthorized_at TEXT;
+ALTER TABLE proofholds ADD COLUMN buyer_response TEXT;
+ALTER TABLE proofholds ADD COLUMN buyer_responded_at TEXT;
+ALTER TABLE proofholds ADD COLUMN decision_json TEXT;
+ALTER TABLE proofholds ADD COLUMN paypal_dispute_id TEXT;
+ALTER TABLE proofholds ADD COLUMN paypal_tracker_id TEXT;
+ALTER TABLE proofholds ADD COLUMN last_reconciled_at TEXT;
+ALTER TABLE proofholds ADD COLUMN payer_email TEXT;
+ALTER TABLE proofholds ADD COLUMN released_cents INTEGER NOT NULL DEFAULT 0;
+`,
+  },
 ];

@@ -50,6 +50,20 @@ export interface Proofhold {
   silenceWindowEndsAt: string | null;
   evidenceSubmittedAt: string | null;
   decidedAt: string | null;
+  /** Seller's partial-release offer while in review, in cents. */
+  offerCents: number | null;
+  offerNote: string | null;
+  reauthorizedAt: string | null;
+  buyerResponse: "confirmed" | "objected" | null;
+  buyerRespondedAt: string | null;
+  /** Latest decision-engine output, for display. */
+  decision: Record<string, unknown> | null;
+  paypalDisputeId: string | null;
+  paypalTrackerId: string | null;
+  lastReconciledAt: string | null;
+  /** The PayPal account that approved the hold. */
+  payerEmail: string | null;
+  releasedCents: number;
   createdAt: string;
   updatedAt: string;
 }
