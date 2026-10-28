@@ -8,9 +8,22 @@ import { approveAsBuyer, composeAndSend, startWorkspace } from "./helpers";
  * docs/acceptance-matrix.md.
  */
 async function scan(page: import("@playwright/test").Page, name: string) {
-  const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
-    .analyze();
+  // A cold dev server may reload the page once after its first compile; let it
+  // settle, and retry if the context is replaced mid-scan.
+  await page.waitForLoadState("networkidle").catch(() => {});
+  let results: Awaited<ReturnType<AxeBuilder["analyze"]>> | undefined;
+  for (let attempt = 0; attempt < 3 && !results; attempt++) {
+    try {
+      results = await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
+        .analyze();
+    } catch (err) {
+      if (attempt === 2 || !/Execution context was destroyed/.test(String(err)))
+        throw err;
+      await page.waitForLoadState("networkidle").catch(() => {});
+    }
+  }
+  if (!results) throw new Error(`${name}: axe did not run`);
   const serious = results.violations.filter(
     (v) => v.impact === "serious" || v.impact === "critical",
   );
