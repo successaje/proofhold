@@ -128,6 +128,19 @@ export default async function BuyerPage({
 
           {s !== "proposed" ? (
             <>
+              {s === "voided" || s === "expired" || s === "cancelled" ? (
+                <Note tone="neutral">
+                  <strong>Nothing was charged.</strong>{" "}
+                  {s === "cancelled"
+                    ? `${sellerName} cancelled this before anything was held.`
+                    : s === "expired"
+                      ? "The authorization lapsed before a decision, so PayPal released the reservation."
+                      : "The hold was returned to you in full."}{" "}
+                  If PayPal still shows the reservation, it clears within a few days
+                  depending on your bank.
+                </Note>
+              ) : null}
+
               {s === "awaiting_buyer" || s === "in_review" ? (
                 <DecisionNote ph={ph} audience="buyer" />
               ) : null}

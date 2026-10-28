@@ -8,6 +8,7 @@ import { DraftEditor } from "@/components/proofhold/draft-editor";
 import { EvidenceList } from "@/components/proofhold/evidence-list";
 import { History } from "@/components/proofhold/history";
 import { HoldCard } from "@/components/proofhold/hold-card";
+import { NextStep } from "@/components/proofhold/next-step";
 import {
   BundleButton,
   CancelButton,
@@ -131,6 +132,8 @@ export default async function ProofholdPage({
               moment the buyer approves.
             </Note>
           ) : null}
+
+          <NextStep ph={ph} />
 
           {s === "proposed" ? (
             <Panel

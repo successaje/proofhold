@@ -20,6 +20,9 @@ test("Flow A: service deliverable passes the checks and the buyer releases", asy
   const buyer = await buyerContext.newPage();
   await approveAsBuyer(buyer, buyerUrl);
 
+  await page.goto("/app");
+  await expect(page.getByText(/hold valid \d+ d/)).toBeVisible();
+
   await page.goto(`/app/h/${id}`);
   await expect(page.getByText("Held", { exact: true }).first()).toBeVisible();
   await uploadFiles(page, [
@@ -123,8 +126,14 @@ test("Flow C: a thin delivery is blocked, the buyer objects, declines the offer,
   await buyer.getByRole("button", { name: "Decline and take the hold back" }).click();
   await expect(buyer.getByText("Voided", { exact: true }).first()).toBeVisible();
 
+  await expect(buyer.getByText("Nothing was charged.")).toBeVisible();
+
   await page.reload();
   await expect(page.getByText("Hold returned to the buyer")).toBeVisible();
+  await expect(page.getByText("The hold went back to the buyer.")).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "start another from this test", exact: true }),
+  ).toBeVisible();
   await buyerContext.close();
 });
 
