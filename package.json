@@ -1,0 +1,43 @@
+{
+  "name": "proofhold",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A PayPal payment that is held until the agreed proof arrives.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "next dev --hostname 127.0.0.1 --port 3200",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0",
+    "local": "node scripts/local.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "prettier --check src tests scripts eval docs *.ts *.md",
+    "format": "prettier --write src tests scripts eval docs *.ts *.md",
+    "test": "tsx --test tests/unit/*.test.ts",
+    "test:browser": "playwright test",
+    "eval": "tsx scripts/eval.ts",
+    "seed": "tsx scripts/seed.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
+    "lucide-react": "^0.552.0",
+    "next": "16.4.3",
+    "pg": "^8.23.1",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.23.1",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "prettier": "^3.9.10",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
