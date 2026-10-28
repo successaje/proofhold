@@ -1,0 +1,90 @@
+.header {
+  margin-bottom: var(--s-6);
+}
+.from {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  margin-bottom: var(--s-2);
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-2xl);
+  letter-spacing: -0.015em;
+  line-height: var(--leading-tight);
+}
+.amountLine {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  margin-top: var(--s-3);
+}
+.amount {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+}
+.stack {
+  display: grid;
+  gap: var(--s-5);
+  margin-top: var(--s-5);
+}
+.explain {
+  display: grid;
+  gap: var(--s-3);
+  margin: var(--s-5) 0;
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  line-height: var(--leading-snug);
+}
+.explain strong {
+  color: var(--ink);
+}
+.approve {
+  display: grid;
+  gap: var(--s-4);
+}
+.approving {
+  padding: var(--s-4) 0;
+}
+.fine {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  line-height: var(--leading-snug);
+}
+.decide {
+  display: grid;
+  gap: var(--s-2);
+}
+@media (min-width: 40rem) {
+  .decide {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.offer {
+  font-size: var(--text-lg);
+}
+.quote {
+  padding: var(--s-3) var(--s-4);
+  border-left: 3px solid var(--brand);
+  background: var(--paper);
+  border-radius: 0 var(--r-md) var(--r-md) 0;
+  color: var(--ink-2);
+}
+.disputeBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+}
+.disputeTitle {
+  font-weight: 600;
+  margin-bottom: var(--s-1);
+}

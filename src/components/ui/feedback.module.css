@@ -1,0 +1,235 @@
+/* Toasts */
+.toasts {
+  position: fixed;
+  z-index: 60;
+  left: var(--s-4);
+  right: var(--s-4);
+  bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  pointer-events: none;
+}
+@media (min-width: 40rem) {
+  .toasts {
+    left: auto;
+    width: 22rem;
+  }
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  box-shadow: var(--shadow-3);
+  animation: toastIn var(--t-slow) var(--ease-out);
+}
+.toast svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+}
+.toast-pass svg {
+  color: var(--pass);
+}
+.toast-fail svg {
+  color: var(--fail);
+}
+.toast-info svg {
+  color: var(--info);
+}
+.toastClose {
+  margin-left: auto;
+  color: inherit;
+  opacity: 0.6;
+}
+.toastClose:hover {
+  opacity: 1;
+}
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Dialog */
+.dialog {
+  width: min(32rem, calc(100vw - 2 * var(--s-4)));
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-3);
+}
+.dialog::backdrop {
+  background: rgb(23 21 15 / 0.45);
+  backdrop-filter: blur(2px);
+}
+.dialog[open] {
+  animation: dialogIn var(--t-base) var(--ease-out);
+}
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dialogHeader {
+  padding: var(--s-5) var(--s-5) 0;
+}
+.dialogTitle {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.dialogBody {
+  padding: var(--s-4) var(--s-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  font-size: var(--text-md);
+  color: var(--ink-2);
+}
+.dialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-5) var(--s-5);
+}
+
+/* Skeleton */
+.skeleton {
+  display: block;
+  border-radius: var(--r-sm);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    var(--line) 50%,
+    var(--surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty state */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-3);
+  padding: var(--s-8) var(--s-6);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.emptyBody {
+  max-width: 34rem;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+}
+
+/* Stages */
+.stages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.stage {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.stage-done {
+  color: var(--ink-2);
+}
+.stage-active {
+  color: var(--ink);
+  font-weight: 500;
+}
+.stageMark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  flex: none;
+}
+.stage-done .stageMark {
+  background: var(--pass-soft);
+  border-color: transparent;
+  color: var(--pass);
+}
+.stage-active .stageMark {
+  border-color: var(--held);
+}
+.stage-active .stageMark::after {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--held);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.stageMark svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Copy */
+.copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  border-radius: var(--r-sm);
+  padding: 0.1rem 0.3rem;
+}
+.copy:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.copy svg {
+  width: 0.85rem;
+  height: 0.85rem;
+}

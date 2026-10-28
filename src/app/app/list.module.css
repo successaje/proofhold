@@ -1,0 +1,100 @@
+.group + .group {
+  margin-top: var(--s-8);
+}
+.groupTitle {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2);
+  margin-bottom: var(--s-3);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.groupTitle span {
+  font-weight: 500;
+  color: var(--muted);
+  opacity: 0.7;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.list li + li {
+  border-top: 1px solid var(--line);
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "main status"
+    "next amount";
+  gap: var(--s-2) var(--s-4);
+  align-items: center;
+  padding: var(--s-4) var(--s-4);
+  transition: background-color var(--t-fast);
+}
+.row:hover {
+  background: var(--surface-2);
+}
+@media (min-width: 56rem) {
+  .row {
+    grid-template-columns: minmax(14rem, 1.4fr) 1.2fr auto auto 1.25rem;
+    grid-template-areas: "main next amount status arrow";
+    padding: var(--s-4) var(--s-5);
+  }
+}
+.rowMain {
+  grid-area: main;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.rowTitle {
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowSub {
+  font-size: var(--text-sm);
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowNext {
+  grid-area: next;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+}
+.rowAmount {
+  grid-area: amount;
+  justify-self: end;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.row > :global(span):nth-child(4) {
+  grid-area: status;
+  justify-self: end;
+}
+.rowArrow {
+  grid-area: arrow;
+  display: none;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--muted);
+}
+@media (min-width: 56rem) {
+  .rowArrow {
+    display: block;
+  }
+}

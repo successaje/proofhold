@@ -1,0 +1,58 @@
+.wrap {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--s-6) var(--gutter);
+  background: var(--surface-2);
+}
+.card {
+  width: 100%;
+  max-width: 26rem;
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-2);
+}
+.banner {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  background: var(--held-soft);
+  color: var(--held);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-xl);
+}
+.lead {
+  color: var(--ink-2);
+  font-size: var(--text-md);
+}
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--s-1) var(--s-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.facts dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+.form {
+  display: grid;
+  gap: var(--s-3);
+}
+.fine {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  line-height: var(--leading-snug);
+}
