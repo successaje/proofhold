@@ -1,0 +1,117 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border: 1px solid transparent;
+  border-radius: var(--r-md);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease-out),
+    border-color var(--t-fast) var(--ease-out),
+    color var(--t-fast) var(--ease-out),
+    transform var(--t-fast) var(--ease-out),
+    box-shadow var(--t-fast) var(--ease-out);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.button:disabled,
+.button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.md {
+  min-height: 2.5rem;
+  padding: 0 var(--s-4);
+  font-size: var(--text-md);
+}
+.sm {
+  min-height: 2rem;
+  padding: 0 var(--s-3);
+  font-size: var(--text-sm);
+  border-radius: var(--r-sm);
+}
+.lg {
+  min-height: 3rem;
+  padding: 0 var(--s-6);
+  font-size: var(--text-base);
+}
+
+.primary {
+  background: var(--brand);
+  color: var(--brand-ink);
+  border-color: var(--brand);
+  box-shadow: var(--shadow-1);
+}
+.primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--brand) 88%, var(--ink));
+}
+
+.secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+.secondary:hover:not(:disabled) {
+  background: var(--surface-2);
+  border-color: var(--muted);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--ink-2);
+}
+.ghost:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+.danger {
+  background: var(--surface);
+  color: var(--fail);
+  border-color: color-mix(in srgb, var(--fail) 40%, var(--line));
+}
+.danger:hover:not(:disabled) {
+  background: var(--fail-soft);
+}
+
+.loading {
+  color: transparent !important;
+}
+.spinner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--brand-ink);
+}
+.secondary .spinner,
+.ghost .spinner,
+.danger .spinner {
+  color: var(--ink-2);
+}
+.spinner svg {
+  width: 1.1em;
+  height: 1.1em;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.block {
+  width: 100%;
+}
+.icon svg {
+  width: 1.05em;
+  height: 1.05em;
+}

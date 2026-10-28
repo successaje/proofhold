@@ -1,0 +1,108 @@
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5) 0;
+}
+.title {
+  font-size: var(--text-md);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.subtitle {
+  margin-top: var(--s-1);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.body {
+  padding: var(--s-4) var(--s-5) var(--s-5);
+}
+.flush .body {
+  padding: 0;
+}
+.divided > * + * {
+  border-top: 1px solid var(--line);
+}
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  justify-content: flex-end;
+  padding: var(--s-3) var(--s-5);
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+  border-radius: 0 0 var(--r-lg) var(--r-lg);
+}
+.tone-held {
+  border-color: color-mix(in srgb, var(--held) 45%, var(--line));
+}
+.tone-pass {
+  border-color: color-mix(in srgb, var(--pass) 45%, var(--line));
+}
+.tone-fail {
+  border-color: color-mix(in srgb, var(--fail) 45%, var(--line));
+}
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.sectionTitle {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kv {
+  display: grid;
+  grid-template-columns: minmax(7rem, max-content) 1fr;
+  gap: var(--s-2) var(--s-4);
+  font-size: var(--text-sm);
+}
+.kv dt {
+  color: var(--muted);
+}
+.kv dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.note {
+  display: flex;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-4);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.note svg {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.1rem;
+}
+.note-info {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.note-held {
+  background: var(--held-soft);
+  color: var(--held);
+}
+.note-pass {
+  background: var(--pass-soft);
+  color: var(--pass);
+}
+.note-fail {
+  background: var(--fail-soft);
+  color: var(--fail);
+}

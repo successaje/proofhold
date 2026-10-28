@@ -1,0 +1,81 @@
+.layout {
+  display: grid;
+  gap: var(--s-5);
+  align-items: start;
+}
+@media (min-width: 64rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 19rem;
+  }
+}
+.main {
+  display: grid;
+  gap: var(--s-5);
+  min-width: 0;
+}
+.aside {
+  position: sticky;
+  top: 4.5rem;
+}
+.form {
+  display: grid;
+  gap: var(--s-4);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--s-2);
+}
+.actions > :first-child {
+  margin-right: auto;
+}
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0.2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.segment {
+  padding: 0.45rem 0.5rem;
+  border-radius: var(--r-sm);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--ink-2);
+  transition:
+    background-color var(--t-fast),
+    color var(--t-fast),
+    box-shadow var(--t-fast);
+}
+.segment[aria-checked="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-1);
+}
+.amount {
+  display: grid;
+  grid-template-columns: 1fr 5.5rem;
+  gap: var(--s-2);
+}
+.unclear {
+  margin-top: var(--s-1);
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+  padding-left: 1.2rem;
+  list-style: decimal;
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  line-height: var(--leading-snug);
+}
+.steps strong {
+  color: var(--ink);
+  font-weight: 600;
+}

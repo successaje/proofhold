@@ -1,0 +1,19 @@
+.layout {
+  display: grid;
+  gap: var(--s-5);
+  align-items: start;
+}
+@media (min-width: 64rem) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+  }
+}
+.main {
+  display: grid;
+  gap: var(--s-5);
+  min-width: 0;
+}
+.aside {
+  display: grid;
+  gap: var(--s-5);
+}

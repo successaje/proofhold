@@ -1,0 +1,109 @@
+.editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-5);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.predicates {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.predicate {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+}
+.predicateHead {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-3);
+}
+.index {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--ink-2);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.predicateBody {
+  display: grid;
+  gap: var(--s-4);
+  padding: 0 var(--s-3) var(--s-4) calc(var(--s-3) + 1.5rem + var(--s-2));
+  border-top: 1px dashed var(--line);
+  padding-top: var(--s-3);
+}
+.params {
+  display: grid;
+  gap: var(--s-3);
+}
+@media (min-width: 40rem) {
+  .params {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+  .params > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+}
+.paramNote {
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+}
+.chip {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-pill);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: var(--text-sm);
+  transition:
+    background-color var(--t-fast),
+    color var(--t-fast),
+    border-color var(--t-fast);
+}
+.chip:hover {
+  border-color: var(--muted);
+}
+.chipOn {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+.rules {
+  display: grid;
+  gap: var(--s-4);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line);
+}
+@media (min-width: 40rem) {
+  .rules {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+}
+.rule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3);
+}
+.fraction {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 7rem;
+  color: var(--muted);
+}
