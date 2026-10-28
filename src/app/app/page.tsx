@@ -35,7 +35,9 @@ function nextStep(ph: Proofhold): string {
     case "proposed":
       return "Waiting for the buyer to approve";
     case "held":
-      return "Deliver and submit evidence";
+      return ph.authorizationExpiresAt
+        ? `Deliver and submit evidence · hold valid ${durationLeft(ph.authorizationExpiresAt)}`
+        : "Deliver and submit evidence";
     case "checking":
       return "Checks running";
     case "awaiting_buyer":

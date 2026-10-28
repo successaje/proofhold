@@ -22,4 +22,5 @@ Milestones in order. Each entry names the branch or PR that delivered it.
 - [x] 2026-10-28 Documentation: README, product, architecture, demo script (feat/app-shell)
 - [x] 2026-10-28 Release rules shown on the test, buyer record download, sign-out, Devpost draft (PR #1, feat/record-rules-and-session)
 - [x] 2026-10-28 Outcome and time-to-release on the list; start the next proofhold from a past test (PR #2, feat/reuse-and-outcomes)
+- [x] 2026-10-28 Hold time remaining on active rows; next-step notes for expired, voided and cancelled on both sides (PR #4, feat/next-steps-and-hold-timing)
 - [ ] Production deployment: render.yaml ready; needs the GitHub repo, PayPal sandbox credentials and an Anthropic key
