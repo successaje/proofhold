@@ -64,6 +64,8 @@ export default async function BuyerPage({
   const threshold = config().EXAMINER_CONFIDENCE_THRESHOLD;
   const sellerNote = [...messages].reverse().find((m) => m.author === "seller");
   const sellerName = seller?.name ?? "The seller";
+  const blocked =
+    (ph.decision as { outcome?: { kind?: string } } | null)?.outcome?.kind === "blocked";
 
   return (
     <ToastProvider>
@@ -73,7 +75,7 @@ export default async function BuyerPage({
           every={s === "checking" ? 2500 : 8000}
         />
         <header className={styles.header}>
-          <p className={styles.from}>{sellerName} sent you a proofhold</p>
+          <p className={styles.from}>{sellerName} sent you a payment hold to approve</p>
           <h1 className={styles.title}>{ph.title}</h1>
           <p className={styles.amountLine}>
             <span className={styles.amount}>{ph.amount}</span>
@@ -111,6 +113,8 @@ export default async function BuyerPage({
                 status={s}
                 hash={ph.testHash}
                 showChecks={false}
+                demoMinutes={system.demoSilenceMinutes}
+                examinerOff={!system.aiAvailable}
                 agreement={{
                   seller: { name: sellerName, at: ph.sellerAgreedAt },
                   buyer: { name: ph.buyerName, at: null },
@@ -170,8 +174,10 @@ export default async function BuyerPage({
                   title={s === "held" ? "Waiting for delivery" : "Your decision"}
                   subtitle={
                     s === "held"
-                      ? `${sellerName} has not submitted evidence yet. The hold stays reserved.`
-                      : "Confirm to release now, or object with a reason. Doing nothing lets the test decide when the window closes."
+                      ? `${sellerName} has not submitted evidence yet. The hold stays reserved until they do.`
+                      : blocked
+                        ? "Confirm to release, or object with a reason. There is no deadline: nothing moves until you do one or the other."
+                        : "Confirm to release now, or object with a reason. If you do nothing, the hold releases when the window closes."
                   }
                 >
                   <BuyerResponse token={token} ph={ph} />
@@ -193,6 +199,8 @@ export default async function BuyerPage({
                   hash={ph.testHash}
                   threshold={threshold}
                   showChecks={s !== "cancelled"}
+                  demoMinutes={system.demoSilenceMinutes}
+                  examinerOff={!system.aiAvailable}
                   agreement={{
                     seller: { name: sellerName, at: ph.sellerAgreedAt },
                     buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },

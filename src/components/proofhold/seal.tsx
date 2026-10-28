@@ -103,7 +103,10 @@ export function Seal({
   ]
     .filter(Boolean)
     .join(", ");
-  const ringText = `${holder.toUpperCase()} · `.repeat(4);
+  const unit = `${holder.toUpperCase()} · `;
+  // Fit whole repeats to the ring (r = 60, circumference ≈ 377) so the words never overlap.
+  const repeats = Math.max(1, Math.floor(377 / (unit.length * 6.9)));
+  const ringText = unit.repeat(repeats);
   const stampText = stamp ? stamp.toUpperCase() : null;
   return (
     <svg
@@ -137,8 +140,13 @@ export function Seal({
           );
         })
       )}
-      <text className={styles.ringText} dy="3">
-        <textPath href={`#${id}-ring`} startOffset="0">
+      <text className={styles.ringText} dy="3" textLength="375" lengthAdjust="spacing">
+        <textPath
+          href={`#${id}-ring`}
+          startOffset="0"
+          textLength="375"
+          lengthAdjust="spacing"
+        >
           {ringText}
         </textPath>
       </text>

@@ -78,6 +78,9 @@
   color: var(--muted);
   font-weight: 400;
 }
+.examinerOff {
+  color: var(--held);
+}
 .reasons {
   display: flex;
   flex-direction: column;

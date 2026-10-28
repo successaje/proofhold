@@ -1,8 +1,9 @@
 "use client";
 
+import { useId } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input, Select } from "@/components/ui/field";
+import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
 import type { AcceptanceTest, Check, Predicate } from "@/lib/domain/test";
 import styles from "./test-editor.module.css";
 
@@ -67,20 +68,24 @@ function CheckParams({
   onChange: (c: Check) => void;
 }) {
   const num = (v: string) => (v === "" ? undefined : Number(v));
+  const base = useId();
+  const id = (k: string) => `${base}-${k}`;
   switch (check.kind) {
     case "count":
       return (
         <div className={styles.params}>
-          <Field label="At least" htmlFor={undefined}>
+          <Field label="At least" htmlFor={id("min")}>
             <Input
+              id={id("min")}
               type="number"
               min={1}
               value={check.min}
               onChange={(e) => onChange({ ...check, min: Number(e.target.value) || 1 })}
             />
           </Field>
-          <Field label="At most" optional>
+          <Field label="At most" optional htmlFor={id("max")}>
             <Input
+              id={id("max")}
               type="number"
               min={1}
               value={check.max ?? ""}
@@ -147,32 +152,36 @@ function CheckParams({
     case "dimensions":
       return (
         <div className={styles.params}>
-          <Field label="Min width (px)" optional>
+          <Field label="Min width (px)" optional htmlFor={id("minw")}>
             <Input
+              id={id("minw")}
               type="number"
               min={1}
               value={check.min_width ?? ""}
               onChange={(e) => onChange({ ...check, min_width: num(e.target.value) })}
             />
           </Field>
-          <Field label="Min height (px)" optional>
+          <Field label="Min height (px)" optional htmlFor={id("minh")}>
             <Input
+              id={id("minh")}
               type="number"
               min={1}
               value={check.min_height ?? ""}
               onChange={(e) => onChange({ ...check, min_height: num(e.target.value) })}
             />
           </Field>
-          <Field label="Exact width" optional>
+          <Field label="Exact width" optional htmlFor={id("exw")}>
             <Input
+              id={id("exw")}
               type="number"
               min={1}
               value={check.exact_width ?? ""}
               onChange={(e) => onChange({ ...check, exact_width: num(e.target.value) })}
             />
           </Field>
-          <Field label="Exact height" optional>
+          <Field label="Exact height" optional htmlFor={id("exh")}>
             <Input
+              id={id("exh")}
               type="number"
               min={1}
               value={check.exact_height ?? ""}
@@ -184,8 +193,9 @@ function CheckParams({
     case "dpi":
       return (
         <div className={styles.params}>
-          <Field label="Minimum dpi">
+          <Field label="Minimum dpi" htmlFor={id("dpi")}>
             <Input
+              id={id("dpi")}
               type="number"
               min={1}
               value={check.min}
@@ -197,8 +207,9 @@ function CheckParams({
     case "deadline":
       return (
         <div className={styles.params}>
-          <Field label="Before (UTC)">
+          <Field label="Before (UTC)" htmlFor={id("before")}>
             <Input
+              id={id("before")}
               type="datetime-local"
               value={check.before.slice(0, 16)}
               onChange={(e) => {
@@ -216,8 +227,10 @@ function CheckParams({
           <Field
             label="Regular expression"
             hint="Case-insensitive, matched against each file name."
+            htmlFor={id("pattern")}
           >
             <Input
+              id={id("pattern")}
               value={check.pattern}
               onChange={(e) => onChange({ ...check, pattern: e.target.value })}
             />
@@ -227,8 +240,9 @@ function CheckParams({
     case "size":
       return (
         <div className={styles.params}>
-          <Field label="Max size (MB)" optional>
+          <Field label="Max size (MB)" optional htmlFor={id("maxb")}>
             <Input
+              id={id("maxb")}
               type="number"
               min={0.1}
               step={0.1}
@@ -243,8 +257,9 @@ function CheckParams({
               }
             />
           </Field>
-          <Field label="Min size (KB)" optional>
+          <Field label="Min size (KB)" optional htmlFor={id("minb")}>
             <Input
+              id={id("minb")}
               type="number"
               min={1}
               value={check.min_bytes ? Math.round(check.min_bytes / 1024) : ""}
@@ -263,8 +278,9 @@ function CheckParams({
     case "buyer_confirms":
       return (
         <div className={styles.params}>
-          <Field label="Question the buyer answers">
+          <Field label="Question the buyer answers" htmlFor={id("prompt")}>
             <Input
+              id={id("prompt")}
               value={check.prompt}
               onChange={(e) => onChange({ ...check, prompt: e.target.value })}
             />
@@ -277,8 +293,11 @@ function CheckParams({
           <Field
             label="Criteria the examiner applies"
             hint="Write it so a careful reviewer could apply it the same way twice."
+            htmlFor={id("criteria")}
           >
-            <Input
+            <Textarea
+              id={id("criteria")}
+              rows={2}
               value={check.criteria}
               onChange={(e) => onChange({ ...check, criteria: e.target.value })}
             />
@@ -298,11 +317,15 @@ export function TestEditor({
   test,
   onChange,
   disabled,
+  examinerOff = false,
 }: {
   test: AcceptanceTest;
   onChange: (t: AcceptanceTest) => void;
   disabled?: boolean;
+  /** No examiner in this deployment: judgement lines fall to the buyer, and the editor says so. */
+  examinerOff?: boolean;
 }) {
+  const base = useId();
   const update = (patch: Partial<AcceptanceTest>) => onChange({ ...test, ...patch });
   const updatePredicate = (i: number, patch: Partial<Predicate>) =>
     update({
@@ -332,10 +355,20 @@ export function TestEditor({
 
   return (
     <fieldset className={styles.editor} disabled={disabled}>
-      <Field label="Summary" htmlFor="summary" hint="One line the buyer sees first.">
+      <Field
+        label="Summary"
+        htmlFor="summary"
+        hint="One line the buyer sees first."
+        error={
+          test.summary.trim().length < 3
+            ? "Add a one-line summary of at least three characters."
+            : undefined
+        }
+      >
         <Input
           id="summary"
           value={test.summary}
+          aria-invalid={test.summary.trim().length < 3 || undefined}
           onChange={(e) => update({ summary: e.target.value })}
           maxLength={300}
         />
@@ -362,8 +395,17 @@ export function TestEditor({
               />
             </div>
             <div className={styles.predicateBody}>
-              <Field label="Checked by">
+              <Field
+                label="Checked by"
+                htmlFor={`${base}-kind-${i}`}
+                hint={
+                  examinerOff && p.check.kind === "judgement"
+                    ? "The examiner is off for this deployment: this line will be decided by the buyer."
+                    : undefined
+                }
+              >
                 <Select
+                  id={`${base}-kind-${i}`}
                   value={p.check.kind}
                   onChange={(e) => {
                     const kind = e.target.value as Check["kind"];

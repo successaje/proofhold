@@ -25,6 +25,12 @@
   font-size: var(--text-sm);
   color: var(--ink-2);
 }
+.navLinks a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0 0.25rem;
+}
 .navLinks a:hover {
   color: var(--ink);
 }

@@ -81,7 +81,7 @@ export async function approveAsBuyer(buyer: Page, buyerUrl: string) {
   await buyer.goto(buyerUrl);
   await buyer.getByLabel("Your name").fill("Bea Okafor");
   await buyer
-    .getByLabel("Email for updates")
+    .getByLabel("Email on the record")
     .fill(process.env.PAYPAL_BUYER_EMAIL ?? "bea@personal.example.com");
   await buyer.getByRole("button", { name: /Approve .* with PayPal/ }).click();
   await buyer.waitForURL(/\/sim\/paypal\/checkout|paypal\.com/, { timeout: 30_000 });

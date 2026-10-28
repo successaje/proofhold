@@ -92,6 +92,8 @@
   margin-bottom: var(--s-1);
 }
 .recordLink {
+  display: inline-block;
+  padding: 0.35rem 0;
   color: var(--brand);
   text-decoration: underline;
   text-underline-offset: 2px;

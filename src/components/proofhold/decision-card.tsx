@@ -23,10 +23,14 @@ export function DecisionNote({
     if (o.kind === "blocked")
       return (
         <Note tone="held">
-          <strong>Release is blocked.</strong> {o.reason}{" "}
+          <strong>Blocked.</strong>{" "}
+          {(o.reason ?? "").replace(
+            /^Release is blocked until the buyer confirms:\s*/i,
+            "",
+          )}{" "}
           {audience === "buyer"
-            ? "You can still confirm to release, or object."
-            : "The buyer can still confirm, or you can add evidence and resubmit."}
+            ? "There is no deadline: nothing moves until you confirm or object."
+            : "There is no deadline: nothing moves until the buyer confirms or objects, or you add evidence and resubmit."}
         </Note>
       );
     if (o.kind === "wait" && o.releasesOnSilence)

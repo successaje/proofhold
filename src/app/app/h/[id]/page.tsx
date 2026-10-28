@@ -123,7 +123,7 @@ export default async function ProofholdPage({
 
       <div className={pageStyles.layout}>
         <div className={pageStyles.main}>
-          {sent ? (
+          {sent && s === "proposed" ? (
             <Note tone="pass">
               <strong>Sent.</strong> Share the link below. You will see the hold here the
               moment the buyer approves.
@@ -166,6 +166,8 @@ export default async function ProofholdPage({
                 hash={ph.testHash}
                 threshold={threshold}
                 showChecks={!["proposed", "cancelled"].includes(s)}
+                demoMinutes={system.demoSilenceMinutes}
+                examinerOff={!system.aiAvailable}
                 agreement={{
                   seller: { name: ws.name, at: ph.sellerAgreedAt },
                   buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },
@@ -346,7 +348,12 @@ function ShareLinkInline({ url }: { url: string }) {
       href={url}
       target="_blank"
       rel="noreferrer"
-      style={{ color: "var(--brand)", overflowWrap: "anywhere" }}
+      style={{
+        display: "inline-block",
+        padding: "0.35rem 0",
+        color: "var(--brand)",
+        overflowWrap: "anywhere",
+      }}
     >
       Open buyer page
     </a>

@@ -33,11 +33,13 @@ export function HoldCard({
       k: "Honor period",
       v:
         Date.parse(ph.honorPeriodEndsAt) > Date.now() ? (
-          <>ends {formatDate(ph.honorPeriodEndsAt)}</>
+          <span title="PayPal guarantees the funds for three days after approval. After that a capture can still succeed, but the funds are checked again.">
+            funds guaranteed until {formatDate(ph.honorPeriodEndsAt)}
+          </span>
         ) : ph.reauthorizedAt ? (
-          "ended · reauthorized once"
+          "ended · reauthorized once, funds guaranteed again"
         ) : (
-          "ended · funds checked at capture"
+          "ended · funds are checked again at capture"
         ),
     });
   if (ph.releasedCents > 0)
@@ -48,6 +50,8 @@ export function HoldCard({
     lines.push({ k: "Dispute", v: <Mono>{ph.paypalDisputeId}</Mono> });
 
   const stamp = stampFor(ph.status);
+  const outcome = (ph.decision as { outcome?: { kind?: string } } | null)?.outcome?.kind;
+  const blocked = outcome === "blocked";
   return (
     <Panel
       title="PayPal hold"
@@ -82,12 +86,17 @@ export function HoldCard({
               : "Held by PayPal, not by Proofhold. Captured only through a recorded decision."
             : ph.statusSummary}
       </p>
-      {ph.status === "awaiting_buyer" && ph.silenceWindowEndsAt ? (
+      {ph.status === "awaiting_buyer" && ph.silenceWindowEndsAt && !blocked ? (
         <p className={styles.holdSub}>
-          Buyer window closes <Countdown to={ph.silenceWindowEndsAt} />
+          Releases <Countdown to={ph.silenceWindowEndsAt} /> unless the buyer objects
           {system.demoSilenceMinutes ? (
-            <> (shortened to {system.demoSilenceMinutes} min for the demo)</>
+            <> (window shortened to {system.demoSilenceMinutes} min for the demo)</>
           ) : null}
+        </p>
+      ) : null}
+      {ph.status === "awaiting_buyer" && blocked ? (
+        <p className={styles.holdSub}>
+          No deadline: nothing moves until the buyer confirms or objects.
         </p>
       ) : null}
       {lines.length > 0 ? (

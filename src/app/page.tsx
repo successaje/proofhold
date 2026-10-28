@@ -20,7 +20,7 @@ const REPO = "https://github.com/successaje/proofhold";
 const states = [
   {
     status: "proposed" as const,
-    title: "Proposed",
+    title: "Sent",
     body: "You paste the brief. Proofhold compiles it into a test: how many files, what size, by when, a tracking number, and the few judgement calls a human would make. You send one link.",
   },
   {

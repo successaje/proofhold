@@ -92,3 +92,21 @@
   width: 0.7rem;
   height: 0.7rem;
 }
+.short {
+  display: none;
+}
+@media (max-width: 30rem) {
+  .long {
+    display: none;
+  }
+  .short {
+    display: inline;
+  }
+  .step {
+    padding-right: var(--s-4);
+  }
+  .step + .step::before {
+    left: calc(-1 * var(--s-4) + 0.5rem);
+    width: calc(var(--s-4) - 0.7rem);
+  }
+}

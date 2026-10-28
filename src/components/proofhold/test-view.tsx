@@ -24,6 +24,8 @@ export function TestView({
   threshold = 0.8,
   showChecks = true,
   agreement,
+  demoMinutes = null,
+  examinerOff = false,
 }: {
   test: AcceptanceTest;
   checks: CheckResult[];
@@ -32,6 +34,10 @@ export function TestView({
   threshold?: number;
   showChecks?: boolean;
   agreement?: Agreement;
+  /** The buyer window actually in force when the demo shortens it. */
+  demoMinutes?: number | null;
+  /** When the examiner is off, judgement lines are decided by the buyer; say so. */
+  examinerOff?: boolean;
 }) {
   const running = status === "checking";
   const latestRound = checks.reduce((m, c) => Math.max(m, c.round), 0);
@@ -69,6 +75,14 @@ export function TestView({
                 </div>
                 <div className={styles.testMeta}>
                   <code>{describeCheck(p.check)}</code>
+                  {examinerOff && p.check.kind === "judgement" && !c ? (
+                    <>
+                      <span className={styles.sep} />
+                      <span className={styles.examinerOff}>
+                        examiner off here: the buyer decides this line
+                      </span>
+                    </>
+                  ) : null}
                   {c ? (
                     <>
                       <span className={styles.sep} />
@@ -116,7 +130,8 @@ export function TestView({
         })}
       </ol>
       <p className={styles.rules}>
-        Buyer window: {test.rules.silence_window_hours} h after the checks finish.{" "}
+        Buyer window: {test.rules.silence_window_hours} h after the checks finish
+        {demoMinutes ? ` (${demoMinutes} min in this demo)` : ""}.{" "}
         {test.rules.partial_release.length > 0
           ? test.rules.partial_release
               .map((r) => {

@@ -119,6 +119,7 @@
 }
 .mini .arc-pending,
 .mini .pending.arc {
-  stroke-dasharray: 10 18;
-  stroke-width: 14;
+  stroke-dasharray: none;
+  stroke-width: 12;
+  opacity: 0.6;
 }
