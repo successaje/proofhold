@@ -10,14 +10,14 @@ Everything visual is derived from these rules. Code assets live in `public/brand
 
 A ring with a gap, and a tick whose tail leaves the ring through that gap. The ring is the hold; the tick leaving it is the release. One stroke weight, round caps, no fill.
 
-| Asset                           | Use                                               |
-| ------------------------------- | ------------------------------------------------- |
-| `public/brand/mark.svg`         | Mark in brand teal on any light surface           |
-| `public/brand/mark-inverse.svg` | Mark in paper on a teal rounded square (app icon) |
-| `public/brand/wordmark.svg`     | Wordmark only                                     |
-| `public/brand/lockup.svg`       | Mark and wordmark, horizontal                     |
-| `src/app/icon.svg`              | Favicon (same as mark-inverse)                    |
-| `src/app/opengraph-image.tsx`   | Social preview, 1200×630, rendered at build       |
+| Asset                           | Use                                                                                                                                                                             |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `public/brand/mark.svg`         | Mark in brand teal on any light surface                                                                                                                                         |
+| `public/brand/mark-inverse.svg` | Mark in paper on a teal rounded square (app icon)                                                                                                                               |
+| `public/brand/wordmark.svg`     | Wordmark only                                                                                                                                                                   |
+| `public/brand/lockup.svg`       | Mark and wordmark, horizontal                                                                                                                                                   |
+| `src/app/icon.svg`              | Favicon (same as mark-inverse)                                                                                                                                                  |
+| `src/app/opengraph-image.tsx`   | Social preview, 1200×630, from Next's image response; its renderer has no web fonts or SVG text, so it uses the system serif with HTML over the ring. Same geometry as the app. |
 
 Clear space around the mark: half its height. Minimum size: 16 px. Do not rotate, outline, add a gradient, or put the tick inside a filled circle.
 
