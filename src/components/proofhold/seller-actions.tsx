@@ -2,7 +2,15 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Ban, Download, FileCheck2, Gavel, RotateCcw, Send } from "lucide-react";
+import {
+  Ban,
+  CopyPlus,
+  Download,
+  FileCheck2,
+  Gavel,
+  RotateCcw,
+  Send,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Field, PrefixedInput, Textarea } from "@/components/ui/field";
@@ -218,6 +226,20 @@ export function BundleButton({ ph }: { ph: ProofholdView }) {
       icon={<Download />}
     >
       Evidence bundle
+    </Button>
+  );
+}
+
+/** Start the next proofhold from this one's brief, amount and test. */
+export function ReuseButton({ ph }: { ph: ProofholdView }) {
+  return (
+    <Button
+      href={`/app/new?from=${encodeURIComponent(ph.id)}`}
+      variant="secondary"
+      size="sm"
+      icon={<CopyPlus />}
+    >
+      Start another from this test
     </Button>
   );
 }

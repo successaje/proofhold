@@ -31,6 +31,22 @@ interface Draft {
   buyerEmail: string;
 }
 
+export interface ComposerInitial {
+  from: { id: string; title: string };
+  draft: Draft;
+  test: AcceptanceTest;
+}
+
+const empty: Draft = {
+  title: "",
+  kind: "service",
+  brief: "",
+  amount: "",
+  currency: "USD",
+  deadline: "",
+  buyerEmail: "",
+};
+
 const examples: Record<Kind, Draft> = {
   service: {
     title: "Logo concepts for Driftwood Café",
@@ -54,20 +70,20 @@ const examples: Record<Kind, Draft> = {
   },
 };
 
-export function Composer({ system }: { system: SystemInfo }) {
+export function Composer({
+  system,
+  initial = null,
+}: {
+  system: SystemInfo;
+  initial?: ComposerInitial | null;
+}) {
   const router = useRouter();
   const { toast } = useToast();
-  const [draft, setDraft] = useState<Draft>({
-    title: "",
-    kind: "service",
-    brief: "",
-    amount: "",
-    currency: "USD",
-    deadline: "",
-    buyerEmail: "",
-  });
-  const [test, setTest] = useState<AcceptanceTest | null>(null);
-  const [source, setSource] = useState<"ai" | "starter" | null>(null);
+  const [draft, setDraft] = useState<Draft>(initial?.draft ?? empty);
+  const [test, setTest] = useState<AcceptanceTest | null>(initial?.test ?? null);
+  const [source, setSource] = useState<"ai" | "starter" | "reused" | null>(
+    initial ? "reused" : null,
+  );
   const [compiling, setCompiling] = useState(false);
   const [saving, setSaving] = useState<"draft" | "send" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -321,7 +337,9 @@ export function Composer({ system }: { system: SystemInfo }) {
             subtitle={
               source === "ai"
                 ? `Compiled by ${system.model}. Edit anything; the buyer approves the final text.`
-                : "Starter test. Edit it to match the brief before sending."
+                : source === "reused"
+                  ? `Copied from “${initial?.from.title}”. Edit anything; the buyer approves the final text.`
+                  : "Starter test. Edit it to match the brief before sending."
             }
           >
             <div className={styles.form}>
