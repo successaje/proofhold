@@ -112,7 +112,9 @@ test("state machine allows the happy path and blocks regressions", () => {
   assertTransition("awaiting_buyer", "released");
   assert.equal(canTransition("released", "held"), false);
   assert.throws(() => assertTransition("released", "voided"), InvalidTransition);
-  assert.equal(canTransition("voided", "disputed"), true);
+  assert.equal(canTransition("voided", "disputed"), false);
+  assert.equal(canTransition("released", "disputed"), true);
+  assert.equal(canTransition("disputed", "refunded"), true);
 });
 
 test("every status is either terminal or has a way forward", () => {

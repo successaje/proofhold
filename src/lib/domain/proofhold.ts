@@ -18,6 +18,7 @@ export const statuses = [
   "partially_released",
   "voided",
   "disputed",
+  "refunded",
   "expired",
   "cancelled",
 ] as const;
@@ -67,10 +68,11 @@ const transitions: Record<Status, readonly Status[]> = {
     "checking",
     "expired",
   ],
-  released: [],
+  released: ["disputed"],
   partially_released: ["disputed"],
-  voided: ["disputed"],
-  disputed: ["released", "partially_released", "voided"],
+  voided: [],
+  disputed: ["released", "partially_released", "refunded"],
+  refunded: [],
   expired: [],
   cancelled: [],
 };
@@ -149,6 +151,11 @@ export const statusMeta: Record<
     label: "Voided",
     tone: "fail",
     summary: "The hold was released back to the buyer.",
+  },
+  refunded: {
+    label: "Refunded",
+    tone: "fail",
+    summary: "PayPal resolved the dispute for the buyer and refunded the capture.",
   },
   disputed: {
     label: "Disputed",
