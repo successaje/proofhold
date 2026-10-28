@@ -18,6 +18,8 @@ Milestones in order. Each entry names the branch or PR that delivered it.
 - [x] 2026-10-28 Loading, empty and error states pass (feat/dispute-flow-and-polish)
 - [x] 2026-10-28 Responsive and dark-mode pass, checked at phone width (feat/app-shell, feat/dispute-flow-and-polish)
 - [x] 2026-10-28 Evaluation set and eval script (feat/app-shell; numbers pending an API key)
-- [x] 2026-10-28 Playwright flows A/B/C and GitHub Actions CI (feat/app-shell)
+- [x] 2026-10-28 Playwright flows A/B/C and GitHub Actions CI (feat/app-shell); flow D (feat/dispute-flow-and-polish)
 - [x] 2026-10-28 Documentation: README, product, architecture, demo script (feat/app-shell)
+- [x] 2026-10-28 Release rules shown on the test, buyer record download, sign-out, Devpost draft (PR #1, feat/record-rules-and-session)
+- [x] 2026-10-28 Outcome and time-to-release on the list; start the next proofhold from a past test (PR #2, feat/reuse-and-outcomes)
 - [ ] Production deployment: render.yaml ready; needs the GitHub repo, PayPal sandbox credentials and an Anthropic key
