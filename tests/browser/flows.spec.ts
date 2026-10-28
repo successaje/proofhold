@@ -96,7 +96,9 @@ test("Flow C: a thin delivery is blocked, the buyer objects, declines the offer,
   await expect(buyer.getByText("In review", { exact: true }).first()).toBeVisible();
 
   await page.reload();
-  await expect(page.locator("blockquote", { hasText: "Only one small sketch" })).toBeVisible();
+  await expect(
+    page.locator("blockquote", { hasText: "Only one small sketch" }),
+  ).toBeVisible();
   await page.getByLabel("Propose a partial release").fill("100");
   await page.getByLabel("Why this amount").fill("For the one concept delivered.");
   await page.getByRole("button", { name: "Send offer" }).click();

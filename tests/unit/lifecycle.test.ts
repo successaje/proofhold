@@ -185,6 +185,8 @@ test("flow B: goods with tracking, buyer confirms, tracker attached after captur
   assert.equal(checks.find((c) => c.predicateId === "p1")?.source, "tracking");
   ph = await confirm(sql, ph);
   assert.equal(ph.status, "released");
+  assert.ok(ph.paypalTrackerId, "tracker attached to the PayPal order after capture");
+  assert.equal((await sim.getOrder(ph.paypalOrderId!)).captureIds.length, 1);
 });
 
 test("dispute after release: evidence filed, adjudicated for the seller", async () => {

@@ -4,7 +4,7 @@
 import { paypal } from "../paypal";
 import { PayPalError } from "../paypal/client";
 import type { Decision as DecisionRecord, Proofhold } from "../domain/proofhold";
-import { recordDecision } from "../store/repos";
+import { appendAudit, listEvidence, recordDecision } from "../store/repos";
 import type { Sql } from "../store/sql";
 import { ProofholdError, requireStatus, transition } from "./lifecycle";
 
@@ -69,6 +69,7 @@ export async function release(
   const releasedCents = ph.releasedCents + amount;
   const full = releasedCents >= ph.amountCents;
   const status = full ? "released" : "partially_released";
+  const trackerId = await attachTracker(sql, ph, capture.captureId);
   let updated = await transition(
     sql,
     ph,
@@ -78,6 +79,7 @@ export async function release(
       decidedAt: new Date().toISOString(),
       offerCents: null,
       offerNote: null,
+      ...(trackerId ? { paypalTrackerId: trackerId } : {}),
     },
     {
       type: "released",
@@ -177,4 +179,42 @@ export async function expire(
     { decidedAt: new Date().toISOString() },
     { type: "expired", data: { reason } },
   );
+}
+
+/**
+ * PayPal only accepts tracking against a capture, so the tracker recorded as
+ * evidence is attached once money has moved. The buyer then sees it in PayPal
+ * and the seller keeps seller protection. Failure here never blocks a release.
+ */
+async function attachTracker(
+  sql: Sql,
+  ph: Proofhold,
+  captureId: string,
+): Promise<string | null> {
+  if (!ph.paypalOrderId || ph.paypalTrackerId) return null;
+  const tracking = (await listEvidence(sql, ph.id))
+    .filter((e) => e.kind === "tracking")
+    .pop();
+  if (!tracking) return null;
+  const pp = await paypal();
+  try {
+    const tracker = await pp.addTracking(ph.paypalOrderId, {
+      captureId,
+      trackingNumber: String(tracking.metadata.number),
+      carrier: String(tracking.metadata.carrier),
+      notifyPayer: true,
+    });
+    await appendAudit(sql, ph.id, "tracker_attached", {
+      trackerId: tracker.trackerId,
+      carrier: tracker.carrier,
+      number: tracker.trackingNumber,
+      captureId,
+    });
+    return tracker.trackerId;
+  } catch (error) {
+    await appendAudit(sql, ph.id, "tracker_attach_failed", {
+      message: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
 }

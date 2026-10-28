@@ -104,6 +104,17 @@ function describe(
         detail: String(d.reason ?? ""),
         tone: "fail",
       };
+    case "tracker_attached":
+      return {
+        title: `Tracking attached to the PayPal order: ${d.carrier} ${d.number}`,
+        tone: "info",
+      };
+    case "tracker_attach_failed":
+      return {
+        title: "Could not attach tracking to the PayPal order",
+        detail: String(d.message ?? ""),
+        tone: "fail",
+      };
     case "reauthorized":
       return {
         title: "Reauthorized after the honor period",
