@@ -110,6 +110,19 @@ export function TestView({
           );
         })}
       </ol>
+      <p className={styles.rules}>
+        Buyer window: {test.rules.silence_window_hours} h after the checks finish.{" "}
+        {test.rules.partial_release.length > 0
+          ? test.rules.partial_release
+              .map((r) => {
+                const idx = r.when_passed
+                  .map((id) => test.predicates.findIndex((p) => p.id === id) + 1)
+                  .filter((n) => n > 0);
+                return `If only ${idx.length === 1 ? "line" : "lines"} ${idx.join(", ")} pass and the buyer stays silent, ${Math.round(r.fraction * 100)}% releases and the rest is returned.`;
+              })
+              .join(" ")
+          : "No partial release: every required line must pass, or the buyer must confirm."}
+      </p>
       {hash ? (
         <div className={styles.hash} style={{ marginTop: "var(--s-3)" }}>
           <span>

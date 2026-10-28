@@ -88,3 +88,8 @@
   font-weight: 600;
   margin-bottom: var(--s-1);
 }
+.recordLink {
+  color: var(--brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
