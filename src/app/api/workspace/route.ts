@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { handle, json, readJson, HttpError } from "@/lib/http";
-import { currentWorkspace, startWorkspace } from "@/lib/session/workspace";
+import {
+  currentWorkspace,
+  endWorkspaceSession,
+  startWorkspace,
+} from "@/lib/session/workspace";
 import { db } from "@/lib/store/sql";
 import { updateWorkspace } from "@/lib/store/repos";
 
@@ -26,4 +30,9 @@ export const PATCH = handle(async (request: Request) => {
   const input = schema.parse(await readJson(request));
   await updateWorkspace(await db(), ws.id, input);
   return json({ workspace: { ...ws, ...input } });
+});
+
+export const DELETE = handle(async () => {
+  await endWorkspaceSession();
+  return json({ ok: true });
 });

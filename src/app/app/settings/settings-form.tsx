@@ -16,6 +16,19 @@ export function SettingsForm({
   const [name, setName] = useState(workspace.name);
   const [email, setEmail] = useState(workspace.email);
   const [pending, setPending] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  async function signOut() {
+    setLeaving(true);
+    try {
+      await fetch("/api/workspace", { method: "DELETE" });
+      router.push("/app/start");
+      router.refresh();
+    } catch {
+      toast("Could not sign out", "fail");
+      setLeaving(false);
+    }
+  }
 
   async function save(e: FormEvent) {
     e.preventDefault();
@@ -78,9 +91,14 @@ export function SettingsForm({
         >
           {workspace.id}
         </span>
-        <Button type="submit" loading={pending}>
-          Save
-        </Button>
+        <div style={{ display: "flex", gap: "var(--s-2)" }}>
+          <Button type="button" variant="ghost" onClick={signOut} loading={leaving}>
+            Sign out of this browser
+          </Button>
+          <Button type="submit" loading={pending}>
+            Save
+          </Button>
+        </div>
       </div>
     </form>
   );

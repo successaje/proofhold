@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useRef, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent } from "react";
 import { Send, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FormRow, Input, Select, Textarea } from "@/components/ui/field";
@@ -37,6 +37,9 @@ export function DeliverPanel({
   const { toast } = useToast();
   const fileInput = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  // The input is disabled until React has mounted so a file chosen before hydration
+  // is never silently dropped.
+  const [ready, setReady] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [note, setNote] = useState("");
@@ -44,6 +47,8 @@ export function DeliverPanel({
   const [tracking, setTracking] = useState("");
   const [savingTracking, setSavingTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => setReady(true), []);
 
   const wantsTracking = ph.test.predicates.some(
     (p) => p.check.kind === "tracking_shipped",
@@ -158,6 +163,7 @@ export function DeliverPanel({
                 if (e.key === "Enter" || e.key === " ") fileInput.current?.click();
               }}
               aria-busy={uploading}
+              aria-disabled={!ready}
             >
               <Upload aria-hidden="true" />
               {uploading ? (
@@ -176,6 +182,7 @@ export function DeliverPanel({
                 type="file"
                 multiple
                 hidden
+                disabled={!ready}
                 onChange={(e) => e.target.files && upload(e.target.files)}
               />
             </div>

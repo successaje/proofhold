@@ -205,6 +205,16 @@ export default async function BuyerPage({
           ) : null}
 
           <HoldCard ph={ph} system={system} audience="buyer" />
+          {s !== "proposed" ? (
+            <p className={styles.fine}>
+              <a href={`/api/p/${token}/bundle`} className={styles.recordLink}>
+                Download the full record
+              </a>{" "}
+              · the agreed test and its hash, every check with its reasons, file
+              fingerprints and the hash-chained history. The seller can download the same
+              file.
+            </p>
+          ) : null}
         </div>
       </BuyerShell>
     </ToastProvider>
