@@ -81,7 +81,7 @@ A separate reviewer drove the full journey at 375, 768 and 1280 px in both schem
 | 17  | Off-palette focus ring                                                  | Focus ring is the brand colour                                                                                                                                                                                                                  |
 | 18  | Any file type accepted silently                                         | See 4                                                                                                                                                                                                                                           |
 
-Found during the re-run: clicking Continue on the start form before hydration triggered a native submit, which put the fields in the URL and navigated nowhere. Primary controls on the start, compose and approval forms are now disabled until React mounts (`src/lib/use-hydrated.ts`).
+Found during the re-run in CI: a second `next dev` started on the first job's compile cache reloads pages in a loop, so the flows and the axe scan now run in one Playwright invocation. Also found: clicking Continue on the start form before hydration triggered a native submit, which put the fields in the URL and navigated nowhere. Primary controls on the start, compose and approval forms are now disabled until React mounts (`src/lib/use-hydrated.ts`).
 
 ## Known gaps
 

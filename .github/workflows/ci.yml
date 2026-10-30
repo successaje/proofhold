@@ -36,10 +36,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
-        env:
-          CI: "true"
-      - run: npm run test:a11y
+      # One Playwright run for flows and the axe scan, so both share one dev
+      # server: a second `next dev` on the first one's compile cache reloads
+      # pages in a loop.
+      - run: npx playwright test
         env:
           CI: "true"
       - uses: actions/upload-artifact@v4
