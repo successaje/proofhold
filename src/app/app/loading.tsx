@@ -5,6 +5,7 @@ export default function Loading() {
     <div
       style={{ display: "flex", flexDirection: "column", gap: "var(--s-4)" }}
       aria-busy="true"
+      role="status"
       aria-label="Loading"
     >
       <Skeleton width="14rem" height="2rem" />

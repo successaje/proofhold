@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Github } from "lucide-react";
-import { Brand } from "@/components/shell/brand";
+import { Brand, Mark } from "@/components/shell/brand";
 import { Button } from "@/components/ui/button";
 import { LandingExample } from "@/components/landing/example";
+import { StartHere } from "@/components/landing/start-here";
+import { Rail } from "@/components/proofhold/rail";
+import { Seal } from "@/components/proofhold/seal";
 import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
@@ -13,6 +16,34 @@ export const metadata: Metadata = {
 };
 
 const REPO = "https://github.com/successaje/proofhold";
+
+const states = [
+  {
+    status: "proposed" as const,
+    title: "Sent",
+    body: "You paste the brief. Proofhold compiles it into a test: how many files, what size, by when, a tracking number, and the few judgement calls a human would make. You send one link.",
+  },
+  {
+    status: "held" as const,
+    title: "Held",
+    body: "The buyer reads the same test and approves a PayPal authorization for the amount. The test's hash is written into the PayPal order. PayPal reserves the money; Proofhold never touches it.",
+  },
+  {
+    status: "checking" as const,
+    title: "Checking",
+    body: "You deliver here. Deterministic checks decide what they can from the bytes. An examiner judges only what a machine cannot measure, shows its reasons, and may abstain.",
+  },
+  {
+    status: "awaiting_buyer" as const,
+    title: "Buyer window",
+    body: "The buyer sees every verdict with its reasons. They can confirm, object with a reason, or do nothing. Silence past the agreed window counts as acceptance.",
+  },
+  {
+    status: "released" as const,
+    title: "Released, or returned",
+    body: "Pass, and PayPal captures. A partial pass releases the agreed share and returns the rest. An objection goes to review; a decline returns the hold. Every step is hash-chained.",
+  },
+];
 
 export default function Landing() {
   return (
@@ -24,11 +55,9 @@ export default function Landing() {
             <a href="#how">How it works</a>
             <a href="#different">Why not escrow</a>
             <a href="#paypal">Built on PayPal</a>
-            <a href={REPO} target="_blank" rel="noreferrer">
-              GitHub
-            </a>
+            <a href="#honest">What is real</a>
           </nav>
-          <Button href="/app" size="sm">
+          <Button href="/app" size="sm" variant="secondary">
             Open the app
           </Button>
         </div>
@@ -41,20 +70,14 @@ export default function Landing() {
             A PayPal payment that is held until the agreed proof arrives.
           </h1>
           <p className={styles.lead}>
-            Paste the brief. Proofhold turns it into a test a machine can check. Your
-            buyer approves a PayPal hold against that exact test. Deliver here, and the
-            money releases when the evidence passes. Nobody holds the money except PayPal.
+            Write what “done” means. Your buyer approves a PayPal hold against exactly
+            that. Deliver, the checks run, and the money releases. Nobody holds the money
+            except PayPal.
           </p>
-          <div className={styles.ctas}>
-            <Button href="/app" size="lg" icon={<ArrowRight />}>
-              Create a proofhold
-            </Button>
-            <Button href="#how" size="lg" variant="secondary">
-              See how it works
-            </Button>
-          </div>
+          <StartHere />
           <p className={styles.fine}>
-            Open source, MIT. Runs against the PayPal sandbox today.
+            Nothing is created until you write the brief. Open source, MIT. Runs against
+            the PayPal sandbox today.
           </p>
         </div>
         <div className={styles.heroExample}>
@@ -64,53 +87,86 @@ export default function Landing() {
 
       <section id="how" className={styles.section}>
         <div className={styles.sectionHead}>
-          <h2 className={styles.h2}>Four moves. One link.</h2>
+          <h2 className={styles.h2}>Five states. The same five words in the app.</h2>
           <p className={styles.sectionLead}>
             Invoices ask for money. Escrow takes custody of it. Proofhold does neither: it
             binds a payment PayPal already holds to a test both sides agreed to.
           </p>
         </div>
-        <ol className={styles.steps}>
-          <li>
-            <span className={styles.stepNo}>1</span>
-            <h3>Write the brief</h3>
-            <p>
-              Three sentences are enough. Proofhold compiles them into checks: how many
-              files, what size, by when, a tracking number, and the few judgement calls a
-              human would make.
-            </p>
-          </li>
-          <li>
-            <span className={styles.stepNo}>2</span>
-            <h3>The buyer approves with PayPal</h3>
-            <p>
-              They read the same test, then approve an authorization for the amount. The
-              test's hash is written into the PayPal order. PayPal reserves the money;
-              Proofhold never touches it.
-            </p>
-          </li>
-          <li>
-            <span className={styles.stepNo}>3</span>
-            <h3>Deliver, and the checks run</h3>
-            <p>
-              Deterministic checks decide what they can. An examiner judges what a machine
-              cannot measure, with its reasons shown, and it may abstain. The buyer gets a
-              window to object.
-            </p>
-          </li>
-          <li>
-            <span className={styles.stepNo}>4</span>
-            <h3>Money follows the test</h3>
-            <p>
-              Pass, and PayPal captures. Partial pass releases the agreed share and
-              returns the rest. Objections go to review. Nothing moves without a recorded
-              decision, and the whole history is hash-chained.
-            </p>
-          </li>
+        <ol className={styles.states}>
+          {states.map((s, i) => (
+            <li key={s.status} className={styles.state}>
+              <div className={styles.stateRail}>
+                <Rail status={s.status} variant="dots" />
+              </div>
+              <h3>
+                <span className={styles.stateNo}>{i + 1}</span>
+                {s.title}
+              </h3>
+              <p>{s.body}</p>
+            </li>
+          ))}
         </ol>
       </section>
 
-      <section id="different" className={styles.sectionAlt}>
+      <section className={styles.sectionAlt}>
+        <div className={styles.seals}>
+          <div className={styles.sealsCopy}>
+            <h2 className={styles.h2}>The seal tells you where the money is.</h2>
+            <p className={styles.sectionLead}>
+              One arc per line of the test. Arcs turn green, red or amber as the checks
+              come in. When money moves, the seal is stamped, and that stamp is backed by
+              a PayPal capture id you can look up.
+            </p>
+          </div>
+          <ul className={styles.sealRow} aria-label="Seal states">
+            <li>
+              <Seal
+                id="s-held"
+                amount="$310.00"
+                currency="USD"
+                segments={["pending", "pending", "pending"]}
+                size={132}
+              />
+              <span>Held, nothing checked yet</span>
+            </li>
+            <li>
+              <Seal
+                id="s-blocked"
+                amount="$310.00"
+                currency="USD"
+                segments={["pass", "fail", "abstain"]}
+                size={132}
+              />
+              <span>One line failed, one abstained: blocked</span>
+            </li>
+            <li>
+              <Seal
+                id="s-captured"
+                amount="$310.00"
+                currency="USD"
+                segments={["pass", "pass", "pass"]}
+                stamp="captured"
+                size={132}
+              />
+              <span>Every line passed: captured</span>
+            </li>
+            <li>
+              <Seal
+                id="s-returned"
+                amount="$310.00"
+                currency="USD"
+                segments={["pass", "fail", "pass"]}
+                stamp="returned"
+                size={132}
+              />
+              <span>Buyer declined the offer: returned</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="different" className={styles.section}>
         <div className={styles.sectionHead}>
           <h2 className={styles.h2}>
             Why not an invoice, an escrow service, or a marketplace?
@@ -172,12 +228,12 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className={styles.section}>
+      <section className={styles.sectionAlt}>
         <div className={styles.split}>
           <div>
             <h2 className={styles.h2}>Honest about the machine</h2>
             <p className={styles.sectionLead}>
-              Three kinds of check, and each one says which it is.
+              Three kinds of check, and each line says which it is.
             </p>
           </div>
           <dl className={styles.defs}>
@@ -209,7 +265,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section id="paypal" className={styles.sectionAlt}>
+      <section id="paypal" className={styles.section}>
         <div className={styles.split}>
           <div>
             <h2 className={styles.h2}>Built on PayPal, not next to it</h2>
@@ -253,7 +309,46 @@ export default function Landing() {
         </div>
       </section>
 
+      <section id="honest" className={styles.sectionAlt}>
+        <div className={styles.split}>
+          <div>
+            <h2 className={styles.h2}>What is real, simulated and unproven</h2>
+            <p className={styles.sectionLead}>
+              The app says this on screen, on every page, not only here.
+            </p>
+          </div>
+          <dl className={styles.defs}>
+            <div>
+              <dt>Real, in the PayPal sandbox</dt>
+              <dd>
+                Order creation with intent AUTHORIZE, buyer approval, authorization,
+                reauthorization, capture, partial capture, void, order tracking after
+                capture, verified webhooks, dispute evidence filing, and the sandbox-only
+                dispute creation and adjudication.
+              </dd>
+            </div>
+            <div>
+              <dt>Simulated</dt>
+              <dd>
+                The shortened buyer window in demos; PayPal's dispute decision; and the
+                whole PayPal surface when the app runs without sandbox credentials, which
+                every page then says in its header.
+              </dd>
+            </div>
+            <div>
+              <dt>Unproven</dt>
+              <dd>
+                Whether PayPal policy permits third-party conditional release at scale in
+                production, and how accurate the examiner is on real-world deliverables
+                beyond the shipped evaluation set.
+              </dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+
       <section className={styles.cta}>
+        <Mark size={40} className={styles.ctaMark} />
         <h2 className={styles.h2}>Send one link instead of an invoice.</h2>
         <div className={styles.ctas}>
           <Button href="/app" size="lg" icon={<ArrowRight />}>

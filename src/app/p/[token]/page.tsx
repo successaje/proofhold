@@ -4,6 +4,7 @@ import { AutoRefresh } from "@/components/proofhold/auto-refresh";
 import { DecisionNote } from "@/components/proofhold/decision-card";
 import { EvidenceList } from "@/components/proofhold/evidence-list";
 import { HoldCard } from "@/components/proofhold/hold-card";
+import { Rail } from "@/components/proofhold/rail";
 import { TestView } from "@/components/proofhold/test-view";
 import { BuyerShell } from "@/components/shell/buyer-shell";
 import { ToastProvider } from "@/components/ui/toast";
@@ -63,6 +64,8 @@ export default async function BuyerPage({
   const threshold = config().EXAMINER_CONFIDENCE_THRESHOLD;
   const sellerNote = [...messages].reverse().find((m) => m.author === "seller");
   const sellerName = seller?.name ?? "The seller";
+  const blocked =
+    (ph.decision as { outcome?: { kind?: string } } | null)?.outcome?.kind === "blocked";
 
   return (
     <ToastProvider>
@@ -72,7 +75,7 @@ export default async function BuyerPage({
           every={s === "checking" ? 2500 : 8000}
         />
         <header className={styles.header}>
-          <p className={styles.from}>{sellerName} sent you a proofhold</p>
+          <p className={styles.from}>{sellerName} sent you a payment hold to approve</p>
           <h1 className={styles.title}>{ph.title}</h1>
           <p className={styles.amountLine}>
             <span className={styles.amount}>{ph.amount}</span>
@@ -80,6 +83,9 @@ export default async function BuyerPage({
               {ph.statusLabel}
             </StatusPill>
           </p>
+          <div className={styles.rail}>
+            <Rail status={s} />
+          </div>
         </header>
 
         {flags.error ? <Note tone="fail">{decodeURIComponent(flags.error)}</Note> : null}
@@ -101,7 +107,19 @@ export default async function BuyerPage({
               title="What you are agreeing to"
               subtitle="Read it as a contract. PayPal will hold the money until this test is met."
             >
-              <TestView test={ph.test} checks={[]} status={s} showChecks={false} />
+              <TestView
+                test={ph.test}
+                checks={[]}
+                status={s}
+                hash={ph.testHash}
+                showChecks={false}
+                demoMinutes={system.demoSilenceMinutes}
+                examinerOff={!system.aiAvailable}
+                agreement={{
+                  seller: { name: sellerName, at: ph.sellerAgreedAt },
+                  buyer: { name: ph.buyerName, at: null },
+                }}
+              />
               <div className={styles.explain}>
                 <p>
                   <strong>How the hold works.</strong> Approving creates a PayPal
@@ -156,8 +174,10 @@ export default async function BuyerPage({
                   title={s === "held" ? "Waiting for delivery" : "Your decision"}
                   subtitle={
                     s === "held"
-                      ? `${sellerName} has not submitted evidence yet. The hold stays reserved.`
-                      : "Confirm to release now, or object with a reason. Doing nothing lets the test decide when the window closes."
+                      ? `${sellerName} has not submitted evidence yet. The hold stays reserved until they do.`
+                      : blocked
+                        ? "Confirm to release, or object with a reason. There is no deadline: nothing moves until you do one or the other."
+                        : "Confirm to release now, or object with a reason. If you do nothing, the hold releases when the window closes."
                   }
                 >
                   <BuyerResponse token={token} ph={ph} />
@@ -179,6 +199,12 @@ export default async function BuyerPage({
                   hash={ph.testHash}
                   threshold={threshold}
                   showChecks={s !== "cancelled"}
+                  demoMinutes={system.demoSilenceMinutes}
+                  examinerOff={!system.aiAvailable}
+                  agreement={{
+                    seller: { name: sellerName, at: ph.sellerAgreedAt },
+                    buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },
+                  }}
                 />
               </Panel>
 
@@ -217,7 +243,7 @@ export default async function BuyerPage({
             </>
           ) : null}
 
-          <HoldCard ph={ph} system={system} audience="buyer" />
+          <HoldCard ph={ph} checks={checks} system={system} audience="buyer" />
           {s !== "proposed" ? (
             <p className={styles.fine}>
               <a href={`/api/p/${token}/bundle`} className={styles.recordLink}>

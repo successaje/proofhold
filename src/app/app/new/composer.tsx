@@ -16,6 +16,7 @@ import { Note, Panel } from "@/components/ui/panel";
 import { Stages } from "@/components/ui/feedback";
 import { useToast } from "@/components/ui/toast";
 import { TestEditor } from "@/components/proofhold/test-editor";
+import { useHydrated } from "@/lib/use-hydrated";
 import type { AcceptanceTest } from "@/lib/domain/test";
 import type { Kind } from "@/lib/domain/proofhold";
 import type { SystemInfo } from "@/lib/view";
@@ -73,13 +74,16 @@ const examples: Record<Kind, Draft> = {
 export function Composer({
   system,
   initial = null,
+  prefill,
 }: {
   system: SystemInfo;
   initial?: ComposerInitial | null;
+  /** From the landing page's start form: kind and amount only. */
+  prefill?: Partial<Pick<Draft, "kind" | "amount">>;
 }) {
   const router = useRouter();
   const { toast } = useToast();
-  const [draft, setDraft] = useState<Draft>(initial?.draft ?? empty);
+  const [draft, setDraft] = useState<Draft>(initial?.draft ?? { ...empty, ...prefill });
   const [test, setTest] = useState<AcceptanceTest | null>(initial?.test ?? null);
   const [source, setSource] = useState<"ai" | "starter" | "reused" | null>(
     initial ? "reused" : null,
@@ -87,6 +91,7 @@ export function Composer({
   const [compiling, setCompiling] = useState(false);
   const [saving, setSaving] = useState<"draft" | "send" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const hydrated = useHydrated();
 
   const amountCents = Math.round(Number(draft.amount) * 100);
   const briefReady =
@@ -168,7 +173,8 @@ export function Composer({
   }
 
   const testInvalid = test
-    ? test.predicates.some(
+    ? test.summary.trim().length < 3 ||
+      test.predicates.some(
         (p) =>
           p.text.trim().length < 3 ||
           (p.check.kind === "judgement" && !p.check.criteria.trim()),
@@ -293,13 +299,14 @@ export function Composer({
                 size="sm"
                 onClick={() => setDraft(examples[draft.kind])}
                 icon={<Wand2 />}
+                disabled={!hydrated}
               >
                 Use an example
               </Button>
               <Button
                 onClick={compile}
                 loading={compiling}
-                disabled={!briefReady}
+                disabled={!briefReady || !hydrated}
                 icon={<Sparkles />}
               >
                 {test
@@ -311,8 +318,8 @@ export function Composer({
             </div>
             {!system.aiAvailable ? (
               <Note tone="info">
-                The AI compiler is off (no ANTHROPIC_API_KEY). You will get a starter test
-                to edit by hand.
+                The AI compiler is off for this deployment. You will get a starter test
+                read from the plain facts in your brief, to edit by hand.
               </Note>
             ) : null}
           </div>
@@ -353,7 +360,11 @@ export function Composer({
                   </ul>
                 </Note>
               ) : null}
-              <TestEditor test={test} onChange={setTest} />
+              <TestEditor
+                test={test}
+                onChange={setTest}
+                examinerOff={!system.aiAvailable}
+              />
               {error ? <Note tone="fail">{error}</Note> : null}
               <div className={styles.actions}>
                 <Button

@@ -24,6 +24,9 @@
   font-size: var(--text-xl);
   font-variant-numeric: tabular-nums;
 }
+.rail {
+  margin-top: var(--s-4);
+}
 .stack {
   display: grid;
   gap: var(--s-5);
@@ -89,6 +92,8 @@
   margin-bottom: var(--s-1);
 }
 .recordLink {
+  display: inline-block;
+  padding: 0.35rem 0;
   color: var(--brand);
   text-decoration: underline;
   text-underline-offset: 2px;

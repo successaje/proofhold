@@ -29,6 +29,12 @@ import { release } from "./release";
 export const MAX_FILE_BYTES = 8 * 1024 * 1024;
 export const MAX_FILES = 12;
 
+/** What counts as evidence. Executables never do; unknown binaries are refused rather than guessed. */
+const ALLOWED_MIME =
+  /^(image\/(png|jpeg|webp|gif|svg\+xml|tiff|heic)|application\/(pdf|zip|json|x-zip-compressed|vnd\.openxmlformats-officedocument\.[a-z.]+|msword|vnd\.ms-excel)|text\/(plain|markdown|csv|html)|video\/(mp4|quicktime|webm)|audio\/(mpeg|wav|mp4|ogg))$/;
+const BLOCKED_EXTENSIONS =
+  /\.(exe|dll|bat|cmd|sh|msi|scr|com|ps1|jar|js|mjs|vbs|app|dmg|pkg)$/i;
+
 export async function addFile(
   sql: Sql,
   ph: Proofhold,
@@ -45,7 +51,15 @@ export async function addFile(
   const existing = await listEvidence(sql, ph.id);
   if (existing.filter((e) => e.kind === "file").length >= MAX_FILES)
     throw new ProofholdError(`At most ${MAX_FILES} files per proofhold.`);
+  if (BLOCKED_EXTENSIONS.test(file.name))
+    throw new ProofholdError(
+      "Programs and scripts cannot be evidence. Upload images, PDF, text, ZIP, audio or video.",
+    );
   const mime = sniffMime(file.bytes, file.name) ?? file.declaredMime ?? null;
+  if (!mime || !ALLOWED_MIME.test(mime))
+    throw new ProofholdError(
+      `${file.name} is not a type Proofhold accepts. Upload images, PDF, text, ZIP, audio or video.`,
+    );
   const meta = imageMeta(file.bytes, mime);
   const sha256 = createHash("sha256").update(file.bytes).digest("hex");
   const item = await addEvidence(sql, {
@@ -211,9 +225,9 @@ export async function submit(
         round,
         source: "examiner",
         verdict: "abstain",
-        confidence: 0,
+        confidence: null,
         reasons: [
-          "Examiner unavailable: no ANTHROPIC_API_KEY configured. The buyer decides this line.",
+          "The examiner is off for this deployment, so the buyer decides this line.",
         ],
         detail: { unavailable: true },
       });
