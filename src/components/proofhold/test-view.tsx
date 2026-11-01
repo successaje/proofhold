@@ -91,7 +91,7 @@ export function TestView({
                           ? "checked automatically"
                           : c.source === "examiner"
                             ? c.detail.model === "simulated-examiner"
-                              ? "simulated examiner"
+                              ? "simulated examiner · not a judgement"
                               : "examiner"
                             : "buyer"}
                         {c.confidence !== null && c.source === "examiner" ? (

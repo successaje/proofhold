@@ -49,5 +49,8 @@
   color: var(--muted);
 }
 .foot a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
   color: var(--ink-2);
 }

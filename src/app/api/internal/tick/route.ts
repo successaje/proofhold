@@ -8,17 +8,10 @@ async function run(request: Request) {
   const provided =
     request.headers.get("x-tick-secret") ??
     new URL(request.url).searchParams.get("secret");
-  if (secret && provided !== secret)
-    return Response.json({ error: "Forbidden" }, { status: 403 });
-  if (
-    !secret &&
-    config().NODE_ENV === "production" &&
-    config().PROOFHOLD_SCHEDULER === "external"
-  )
-    return Response.json(
-      { error: "Set TICK_SECRET to expose this endpoint." },
-      { status: 403 },
-    );
+  // Without a secret the endpoint does not exist: the inline scheduler needs no
+  // caller, and an external one must identify itself.
+  if (!secret) return new Response(null, { status: 404 });
+  if (provided !== secret) return Response.json({ error: "Forbidden" }, { status: 403 });
   const report = await tick(await db());
   return Response.json(report);
 }

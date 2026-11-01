@@ -13,7 +13,10 @@ export function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <main className={styles.page}>
+    <main className={styles.page} id="main" tabIndex={-1}>
+      <a href="#main" className="skipLink">
+        Skip to content
+      </a>
       <Brand />
       <h1 className={styles.title}>{title}</h1>
       <p className={styles.updated}>Last updated {updated}</p>

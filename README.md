@@ -103,7 +103,7 @@ Every proofhold has a printable record at `/app/h/[id]/record` (seller) and `/p/
 
 ## The examiner, in three modes
 
-`EXAMINER_MODE` picks who judges the lines a machine cannot measure. `auto` uses the model when `ANTHROPIC_API_KEY` is set and is otherwise off. `simulated` runs a deterministic stand-in (`src/lib/examiner/simulated.ts`) that reads file names, readable text and image metadata, passes only on clear signals, fails only on placeholder content, and abstains otherwise; every verdict it writes is labelled "simulated examiner" and the header badge says so. `off` sends judgement lines to the buyer. The simulation exists so the whole judgement path can be demonstrated without a key; it is not a judgement and is never shown as one.
+`EXAMINER_MODE` picks who judges the lines a machine cannot measure. `auto` uses the model when `ANTHROPIC_API_KEY` is set and is otherwise off. `simulated` runs a deterministic stand-in (`src/lib/examiner/simulated.ts`) that reads file names, readable text and image metadata, reports what it saw, and then abstains on every line, so a simulation can never release money; every verdict it writes is labelled "simulated examiner · not a judgement" and the header badge says so. `off` sends judgement lines to the buyer. The simulation exists so the whole judgement path, manifest and reasons included, can be seen without a key.
 
 ## Examiner evaluation
 

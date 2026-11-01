@@ -75,6 +75,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+@media (max-width: 56rem) {
+  .rowTitle {
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+}
 .rowSub {
   font-size: var(--text-sm);
   color: var(--muted);

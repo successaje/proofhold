@@ -88,7 +88,7 @@ export function ApproveForm({
           hint={
             system.mailMode === "resend"
               ? "You are emailed when the delivery is ready, before the window closes, and when money moves."
-              : "Updates are composed for this address at every step. In this deployment mail is simulated, so they stay in the seller's outbox."
+              : "Updates are composed for this address at every step. In this deployment mail is simulated, so nothing is actually sent."
           }
         >
           <Input
@@ -115,7 +115,15 @@ export function ApproveForm({
   );
 }
 
-export function BuyerResponse({ token, ph }: { token: string; ph: ProofholdView }) {
+export function BuyerResponse({
+  token,
+  ph,
+  system,
+}: {
+  token: string;
+  ph: ProofholdView;
+  system: SystemInfo;
+}) {
   const router = useRouter();
   const { toast } = useToast();
   const [busy, setBusy] = useState<"confirm" | "object" | null>(null);
@@ -132,7 +140,7 @@ export function BuyerResponse({ token, ph }: { token: string; ph: ProofholdView 
       });
       toast(
         kind === "confirm"
-          ? "Confirmed. PayPal is capturing the payment."
+          ? "Confirmed. PayPal captured the payment."
           : "Objection recorded. The seller has been told.",
         kind === "confirm" ? "pass" : "info",
       );
@@ -140,6 +148,8 @@ export function BuyerResponse({ token, ph }: { token: string; ph: ProofholdView 
       router.refresh();
     } catch (err) {
       toast(err instanceof Error ? err.message : "That did not work.", "fail");
+      setOpen(null);
+      router.refresh();
     } finally {
       setBusy(null);
     }
@@ -192,6 +202,12 @@ export function BuyerResponse({ token, ph }: { token: string; ph: ProofholdView 
           PayPal captures the authorization immediately. This is the end of the hold; if
           something is wrong later, PayPal's own dispute process applies.
         </p>
+        {system.paypalMode === "simulated" ? (
+          <Note tone="info">
+            Simulated PayPal in this deployment: the capture is recorded with the same
+            rules, but no money moves.
+          </Note>
+        ) : null}
         <Field label="Message to the seller" htmlFor="confirm-msg" optional>
           <Textarea
             id="confirm-msg"

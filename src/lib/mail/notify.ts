@@ -25,6 +25,7 @@ const audiences: Record<MailEvent, ("seller" | "buyer")[]> = {
   dispute_resolved: ["seller", "buyer"],
   reminder_window: ["buyer"],
   reminder_expiry: ["seller"],
+  reopened: ["buyer"],
 };
 
 export async function notify(

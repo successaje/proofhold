@@ -25,7 +25,7 @@ async function timed(fn: () => Promise<void>) {
 }
 
 const browser = await chromium.launch();
-const context = await browser.newContext();
+const context = await browser.newContext({ extraHTTPHeaders: { Origin: base } });
 const page = await context.newPage();
 
 const head = await fetch(base + "/api/health");

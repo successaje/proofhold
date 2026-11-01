@@ -130,9 +130,11 @@ export default async function ProofholdsPage({
   const needs = shown.filter((p) => attention.includes(p.status));
   const open = shown.filter((p) => active.includes(p.status));
   const closed = shown.filter((p) => isClosed(p.status));
-  const held = all
-    .filter((p) => ["held", "checking", "awaiting_buyer", "in_review"].includes(p.status))
-    .reduce((s, p) => s + p.amountCents - p.releasedCents, 0);
+  const heldItems = all.filter((p) =>
+    ["held", "checking", "awaiting_buyer", "in_review", "disputed"].includes(p.status),
+  );
+  const held = heldItems.reduce((s, p) => s + p.amountCents - p.releasedCents, 0);
+  const awaiting = all.filter((p) => p.status === "proposed").length;
   const released = all.reduce((s, p) => s + p.releasedCents, 0);
   const median = medianTimeToDecision(all);
 
@@ -143,7 +145,10 @@ export default async function ProofholdsPage({
         lead={
           all.length > 0
             ? [
-                `${formatMoney(held, "USD")} held by PayPal across ${open.length + needs.length} active`,
+                heldItems.length > 0
+                  ? `${formatMoney(held, "USD")} held by PayPal across ${heldItems.length} hold${heldItems.length === 1 ? "" : "s"}`
+                  : "Nothing held by PayPal right now",
+                awaiting > 0 ? `${awaiting} awaiting the buyer's approval` : null,
                 `${formatMoney(released, "USD")} released to you`,
                 median !== null
                   ? `typical time from submission to release ${formatDuration(median)}`

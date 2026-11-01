@@ -82,7 +82,12 @@ export default async function BuyerPage({
     <ToastProvider>
       <BuyerShell system={system}>
         <AutoRefresh
-          active={s === "checking" || s === "held" || s === "in_review"}
+          active={
+            s === "checking" ||
+            s === "held" ||
+            s === "in_review" ||
+            s === "awaiting_buyer"
+          }
           every={s === "checking" ? 2500 : 8000}
         />
         <header className={styles.header}>
@@ -205,7 +210,7 @@ export default async function BuyerPage({
                         : "Confirm to release now, or object with a reason. If you do nothing, the hold releases when the window closes."
                   }
                 >
-                  <BuyerResponse token={token} ph={ph} />
+                  <BuyerResponse token={token} ph={ph} system={system} />
                   <BuyerFaq ph={ph} sellerName={sellerName} stage="during" />
                 </Panel>
               ) : null}

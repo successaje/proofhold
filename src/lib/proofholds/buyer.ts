@@ -6,14 +6,35 @@ import { addMessage, latestRound, recordCheck, updateProofhold } from "../store/
 import type { Sql } from "../store/sql";
 import { notify } from "../mail/notify";
 import { evaluate } from "./evidence";
-import { note, ProofholdError, requireStatus } from "./lifecycle";
+import { note, ProofholdError, requireStatus, transition } from "./lifecycle";
 import { release, voidHold } from "./release";
+
+/** A decision that arrives after the hold has closed gets a reason, not a generic refusal. */
+function tooLate(ph: Proofhold, what: string): void {
+  const closed: Record<string, string> = {
+    released: "PayPal already captured the full amount",
+    partially_released: "PayPal already captured the agreed share and returned the rest",
+    voided: "the hold was already returned",
+    expired: "the authorization already expired",
+    refunded: "PayPal already refunded the capture",
+    disputed: "a PayPal dispute is open on this capture",
+    cancelled: "the seller cancelled before anything was held",
+  };
+  const why = closed[ph.status];
+  if (why)
+    throw new ProofholdError(
+      `${what} is no longer possible: ${why}${ph.decidedAt ? ` on ${new Date(ph.decidedAt).toUTCString()}` : ""}. Reload the page to see the outcome.`,
+      409,
+      "closed",
+    );
+}
 
 export async function confirm(
   sql: Sql,
   ph: Proofhold,
   message?: string | null,
 ): Promise<Proofhold> {
+  tooLate(ph, "Confirming");
   requireStatus(ph, ["awaiting_buyer", "in_review", "held"], "Confirming");
   const now = new Date().toISOString();
   const round = await latestRound(sql, ph.id);
@@ -56,6 +77,7 @@ export async function object(
   ph: Proofhold,
   reason: string,
 ): Promise<Proofhold> {
+  tooLate(ph, "Objecting");
   requireStatus(ph, ["awaiting_buyer"], "Objecting");
   const text = reason.trim();
   if (text.length < 5)
@@ -160,14 +182,33 @@ export async function endHold(
   return voidHold(sql, ph, { actor: by, reason });
 }
 
+/**
+ * The seller withdraws the submission to change it. The verdicts and the
+ * buyer window are cancelled; the hold goes back to "held" and the next
+ * submission is a new round with fresh checks.
+ */
 export async function reopenForResubmission(sql: Sql, ph: Proofhold): Promise<Proofhold> {
   requireStatus(ph, ["in_review", "awaiting_buyer"], "Reopening");
-  const updated = await updateProofhold(sql, ph.id, {
-    buyerResponse: null,
-    buyerRespondedAt: null,
-    offerCents: null,
-    offerNote: null,
-    silenceWindowEndsAt: null,
-  });
-  return note(sql, updated, "reopened", {});
+  const reopened = await transition(
+    sql,
+    ph,
+    "held",
+    {
+      buyerResponse: null,
+      buyerRespondedAt: null,
+      offerCents: null,
+      offerNote: null,
+      silenceWindowEndsAt: null,
+      decision: null,
+    },
+    {
+      type: "reopened",
+      data: {
+        reason:
+          "Seller withdrew the submission to change it; the buyer window is cancelled.",
+      },
+    },
+  );
+  await notify(sql, reopened, "reopened");
+  return reopened;
 }

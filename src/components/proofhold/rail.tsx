@@ -58,11 +58,14 @@ export function Rail({
   status,
   compact = false,
   variant = "labels",
+  still = false,
 }: {
   status: Status;
   compact?: boolean;
   /** "dots" draws the five steps without text; each dot keeps its name for assistive tech. */
   variant?: "labels" | "dots";
+  /** Illustrations: nothing is actually running, so nothing breathes. */
+  still?: boolean;
 }) {
   const steps = rail(status);
   const current = steps.find((s) => s.state === "current" || s.state === "off");
@@ -83,7 +86,7 @@ export function Rail({
           className={[
             styles.step,
             styles[`step-${s.state}`],
-            s.state === "current" && status === "checking" && styles.running,
+            !still && s.state === "current" && status === "checking" && styles.running,
           ]
             .filter(Boolean)
             .join(" ")}

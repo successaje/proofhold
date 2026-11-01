@@ -59,6 +59,9 @@ export function AppShell({
             <div className={styles.badges}>
               <ModeBadges system={system} />
             </div>
+            <div className={styles.badgeCompact}>
+              <ModeBadges system={system} compact />
+            </div>
             <Link
               href="/app/settings"
               className={styles.workspace}

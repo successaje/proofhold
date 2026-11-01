@@ -8,10 +8,11 @@
 export const ORIGIN_EXEMPT = ["/api/paypal/webhook", "/api/internal/tick"];
 
 /**
- * A cross-site request forgery arrives from a browser, with cookies, and with
- * either a `Sec-Fetch-Site: cross-site` header or an `Origin` that is not ours.
- * Requests without either header come from non-browser clients, which cannot
- * carry the victim's cookies, so they pass.
+ * A mutation is accepted only when the request names our origin: either
+ * `Sec-Fetch-Site` says same-origin or same-site, or `Origin` is ours. A request
+ * with neither header is refused too, so a non-browser client has to send
+ * `Origin: <APP_URL>` on purpose; that costs a script one header and leaves no
+ * gap for a browser that strips the headers.
  */
 export function isSameOrigin(
   headers: { get(name: string): string | null },
@@ -20,12 +21,14 @@ export function isSameOrigin(
   const site = headers.get("sec-fetch-site");
   if (site === "cross-site") return false;
   const origin = headers.get("origin");
-  if (!origin || origin === "null") return site !== null ? site !== "cross-site" : true;
-  try {
-    return new URL(origin).origin === new URL(appUrl).origin;
-  } catch {
-    return false;
+  if (origin && origin !== "null") {
+    try {
+      return new URL(origin).origin === new URL(appUrl).origin;
+    } catch {
+      return false;
+    }
   }
+  return site === "same-origin" || site === "same-site" || site === "none";
 }
 
 export interface RateRule {

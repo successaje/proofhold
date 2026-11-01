@@ -2,7 +2,30 @@ import { Bot, FlaskConical, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/status";
 import type { SystemInfo } from "@/lib/view";
 
-export function ModeBadges({ system }: { system: SystemInfo }) {
+export function ModeBadges({
+  system,
+  compact = false,
+}: {
+  system: SystemInfo;
+  compact?: boolean;
+}) {
+  if (compact) {
+    const parts = [
+      system.paypalMode === "sandbox" ? "PayPal sandbox" : "Simulated PayPal",
+      system.examinerMode === "anthropic"
+        ? "examiner on"
+        : system.examinerMode === "simulated"
+          ? "examiner simulated"
+          : "examiner off",
+    ];
+    return (
+      <Badge icon={<FlaskConical />} title={parts.join(" · ")}>
+        {system.paypalMode === "sandbox" && system.examinerMode === "anthropic"
+          ? "Sandbox"
+          : "Simulated"}
+      </Badge>
+    );
+  }
   return (
     <>
       {system.paypalMode === "sandbox" ? (

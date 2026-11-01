@@ -47,7 +47,7 @@ export function Record({
   );
   const generated = new Date().toISOString();
   return (
-    <main className={styles.page}>
+    <main className={styles.page} id="main" tabIndex={-1}>
       <div className={[styles.toolbar, "noPrint"].join(" ")}>
         <a href={backHref} className={styles.back}>
           ← Back
@@ -88,35 +88,37 @@ export function Record({
       {captures.length > 0 ? (
         <section className={[styles.section, styles.receipt].join(" ")}>
           <h2>Receipt</h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>When</th>
-                <th>What</th>
-                <th>Amount</th>
-                <th>PayPal capture</th>
-              </tr>
-            </thead>
-            <tbody>
-              {captures.map((d) => (
-                <tr key={d.id}>
-                  <td>{formatDate(d.createdAt)}</td>
-                  <td>
-                    {d.outcome.replace("_", " ")} by {d.actor}
-                    {typeof d.rationale.reason === "string"
-                      ? ` · ${d.rationale.reason}`
-                      : ""}
-                  </td>
-                  <td className={styles.num}>
-                    {formatMoney(d.amountCents, ph.currency)}
-                  </td>
-                  <td>
-                    <code>{d.paypalCaptureId}</code>
-                  </td>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>What</th>
+                  <th>Amount</th>
+                  <th>PayPal capture</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {captures.map((d) => (
+                  <tr key={d.id}>
+                    <td>{formatDate(d.createdAt)}</td>
+                    <td>
+                      {d.outcome.replace("_", " ")} by {d.actor}
+                      {typeof d.rationale.reason === "string"
+                        ? ` · ${d.rationale.reason}`
+                        : ""}
+                    </td>
+                    <td className={styles.num}>
+                      {formatMoney(d.amountCents, ph.currency)}
+                    </td>
+                    <td>
+                      <code>{d.paypalCaptureId}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <p className={styles.fine}>
             Captured {formatMoney(ph.releasedCents, ph.currency)} of{" "}
             {formatMoney(ph.amountCents, ph.currency)}
@@ -149,67 +151,71 @@ export function Record({
       {decisions.length > 0 ? (
         <section className={styles.section}>
           <h2>Decisions</h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>When</th>
-                <th>Outcome</th>
-                <th>By</th>
-                <th>Amount</th>
-                <th>PayPal id</th>
-              </tr>
-            </thead>
-            <tbody>
-              {decisions.map((d) => (
-                <tr key={d.id}>
-                  <td>{formatDate(d.createdAt)}</td>
-                  <td>
-                    {d.outcome.replace("_", " ")}
-                    {typeof d.rationale.reason === "string" ? (
-                      <span className={styles.reason}> {d.rationale.reason}</span>
-                    ) : null}
-                  </td>
-                  <td>{d.actor}</td>
-                  <td className={styles.num}>
-                    {formatMoney(d.amountCents, ph.currency)}
-                  </td>
-                  <td>
-                    <code>{d.paypalCaptureId ?? d.paypalDisputeId ?? "—"}</code>
-                  </td>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>When</th>
+                  <th>Outcome</th>
+                  <th>By</th>
+                  <th>Amount</th>
+                  <th>PayPal id</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {decisions.map((d) => (
+                  <tr key={d.id}>
+                    <td>{formatDate(d.createdAt)}</td>
+                    <td>
+                      {d.outcome.replace("_", " ")}
+                      {typeof d.rationale.reason === "string" ? (
+                        <span className={styles.reason}> {d.rationale.reason}</span>
+                      ) : null}
+                    </td>
+                    <td>{d.actor}</td>
+                    <td className={styles.num}>
+                      {formatMoney(d.amountCents, ph.currency)}
+                    </td>
+                    <td>
+                      <code>{d.paypalCaptureId ?? d.paypalDisputeId ?? "—"}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
 
       {evidence.length > 0 ? (
         <section className={styles.section}>
           <h2>Evidence</h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Item</th>
-                <th>Type</th>
-                <th>Fingerprint</th>
-                <th>Added</th>
-              </tr>
-            </thead>
-            <tbody>
-              {evidence.map((e) => (
-                <tr key={e.id}>
-                  <td>{e.name}</td>
-                  <td>
-                    {e.kind === "tracking" ? "tracking number" : (e.mime ?? "file")}
-                  </td>
-                  <td>
-                    <code>{e.sha256 ? `sha256 ${e.sha256}` : "—"}</code>
-                  </td>
-                  <td>{formatDate(e.createdAt)}</td>
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Type</th>
+                  <th>Fingerprint</th>
+                  <th>Added</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {evidence.map((e) => (
+                  <tr key={e.id}>
+                    <td>{e.name}</td>
+                    <td>
+                      {e.kind === "tracking" ? "tracking number" : (e.mime ?? "file")}
+                    </td>
+                    <td>
+                      <code>{e.sha256 ? `sha256 ${e.sha256}` : "—"}</code>
+                    </td>
+                    <td>{formatDate(e.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       ) : null}
 

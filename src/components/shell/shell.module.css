@@ -2,6 +2,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.55rem;
+  min-height: 2.5rem;
   color: var(--ink);
 }
 .mark {
@@ -79,9 +80,15 @@
   display: none;
   gap: var(--s-2);
 }
+.badgeCompact {
+  display: flex;
+}
 @media (min-width: 64rem) {
   .badges {
     display: flex;
+  }
+  .badgeCompact {
+    display: none;
   }
 }
 .workspace {

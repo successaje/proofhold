@@ -38,7 +38,7 @@ test("Flow A: service deliverable passes the checks and the buyer releases", asy
   await expect(page.getByText("Buyer window").first()).toBeVisible({ timeout: 90_000 });
 
   await buyer.reload();
-  await expect(buyer.getByText("3 matching files")).toBeVisible();
+  await expect(buyer.getByText("3 matching files").first()).toBeVisible();
   await buyer.getByRole("button", { name: "Confirm and release" }).click();
   await buyer.getByRole("button", { name: "Release now" }).click();
   await expect(buyer.getByText("Released", { exact: true }).first()).toBeVisible();

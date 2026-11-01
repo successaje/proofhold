@@ -229,8 +229,26 @@ export default async function ProofholdPage({
             </Panel>
           ) : null}
 
-          {s === "held" || s === "awaiting_buyer" ? (
+          {s === "held" ? (
             <DeliverPanel ph={ph} evidence={evidence} examinerOn={system.examinerOn} />
+          ) : null}
+
+          {s === "awaiting_buyer" ? (
+            <Panel
+              title="Evidence is frozen"
+              subtitle="The buyer is deciding on exactly these files. Nothing can be added or removed while the window is open."
+            >
+              <div className={styles.stack}>
+                <EvidenceList items={evidence} />
+                <div className={styles.actionsRow}>
+                  <span className="lead">
+                    To change anything, withdraw the delivery: the verdicts are cancelled,
+                    the buyer is told, and the next submission runs the checks again.
+                  </span>
+                  <ReopenButton ph={ph} />
+                </div>
+              </div>
+            </Panel>
           ) : null}
 
           {s === "disputed" ? (
@@ -293,7 +311,7 @@ export default async function ProofholdPage({
             </Panel>
           ) : null}
 
-          {evidence.length > 0 && !(s === "held" || s === "awaiting_buyer") ? (
+          {evidence.length > 0 && s !== "held" && s !== "awaiting_buyer" ? (
             <Panel
               title="Evidence"
               subtitle={

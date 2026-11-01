@@ -17,8 +17,19 @@ export function StartForm() {
   const [pending, setPending] = useState(false);
   const hydrated = useHydrated();
 
+  const [touched, setTouched] = useState(false);
+  const nameError = name.trim().length < 1 ? "Add your name." : null;
+  const emailError = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+    ? "Add an email address, like you@example.com."
+    : null;
+
   async function submit(e: FormEvent) {
     e.preventDefault();
+    setTouched(true);
+    if (nameError || emailError) {
+      document.getElementById(nameError ? "name" : "email")?.focus();
+      return;
+    }
     setError(null);
     setPending(true);
     try {
@@ -38,32 +49,32 @@ export function StartForm() {
   }
 
   return (
-    <div className={styles.wrap}>
+    <main className={styles.wrap} id="main" tabIndex={-1}>
       <div className={styles.card}>
         <Brand size={28} />
         <h1 className={styles.title}>Set up your workspace</h1>
         <p className={styles.lead}>
-          Your name appears on the links you send. In this build, captured payments land
-          in the PayPal business account this deployment is configured with, not in the
-          account you type here: enter that sandbox business email. A payout check that
-          matches the two is production work, listed in Settings.
+          Your name appears on the links you send. Your email is where your own
+          notifications go. In this build, payouts go to the deployment's PayPal business
+          account; Settings explains.
         </p>
-        <form onSubmit={submit} className={styles.form}>
-          <Field label="Your name" htmlFor="name">
+        <form onSubmit={submit} className={styles.form} noValidate>
+          <Field label="Your name" htmlFor="name" error={touched ? nameError : null}>
             <Input
               id="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
-              required
+              aria-invalid={touched && nameError ? true : undefined}
               maxLength={80}
               autoFocus
             />
           </Field>
           <Field
-            label="PayPal email"
+            label="Contact email"
             htmlFor="email"
-            hint="Sandbox business account email while testing."
+            hint="Notifications about your proofholds go here."
+            error={touched ? emailError : null}
           >
             <Input
               id="email"
@@ -71,7 +82,7 @@ export function StartForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
-              required
+              aria-invalid={touched && emailError ? true : undefined}
               maxLength={200}
             />
           </Field>
@@ -85,6 +96,6 @@ export function StartForm() {
           Settings.
         </p>
       </div>
-    </div>
+    </main>
   );
 }

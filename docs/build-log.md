@@ -29,4 +29,5 @@ Milestones in order. Each entry names the branch or PR that delivered it.
 - [x] 2026-11-01 Mail adapter (Resend, simulated outbox), notifications at every state change, reminders, printable record and receipt, integration checklist (PR #7, feat/mail-and-record)
 - [x] 2026-11-01 Ledger search, buckets, sort and CSV export; workspace export and deletion; simulated examiner behind EXAMINER_MODE (PR #8, feat/ledger-examiner-workspace)
 - [x] 2026-11-01 Motion and detail pass: seal arcs draw in, rail breathes only while checking, buyer standing and what-happens-if list, skip links; production-build measurements; second critique (PR #9, feat/motion-and-detail)
+- [x] 2026-11-01 Second critique: evidence frozen once submitted, withdraw-and-resubmit transition, live buyer page, abstain-only simulated examiner, tick hidden without a secret, anonymous mutations refused, deadlines read from briefs, and twelve smaller fixes (PR #9)
 - [ ] Production deployment: render.yaml ready; needs the GitHub repo, PayPal sandbox credentials and an Anthropic key

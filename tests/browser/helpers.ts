@@ -54,7 +54,7 @@ export function pngFixture(width: number, height: number, dpi: number, hue = 0):
 export async function startWorkspace(page: Page, name = "Ada Mensah") {
   await page.goto("/app/start");
   await page.getByLabel("Your name").fill(name);
-  await page.getByLabel("PayPal email").fill("seller-sandbox@example.com");
+  await page.getByLabel("Contact email").fill("seller-sandbox@example.com");
   await page.getByRole("button", { name: "Continue" }).click();
   await expect(page).toHaveURL(/\/app\/new/);
 }

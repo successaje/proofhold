@@ -104,6 +104,9 @@
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+.dialogTitle:focus-visible {
+  outline-offset: 4px;
+}
 .dialogBody {
   padding: var(--s-4) var(--s-5);
   display: flex;

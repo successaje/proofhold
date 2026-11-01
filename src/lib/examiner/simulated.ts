@@ -1,10 +1,11 @@
 /**
- * The simulated examiner. Deterministic, labelled on every page it touches,
- * and never presented as a real judgement: it exists so the judgement path can
- * be run end to end without a model key. It reads only what a careful script
- * could: file names, readable text, image metadata, and the words in the
- * criteria. It passes only on clear signals, fails only on obvious placeholders,
- * and abstains otherwise, exactly as the real examiner is told to.
+ * The simulated examiner. Deterministic and labelled on every page it touches.
+ * It exists so the judgement path (manifest, reasons, what would resolve it)
+ * can be seen end to end without a model key. It reads only what a careful
+ * script could: file names, readable text, image metadata, and the words in
+ * the criteria. It reports what it saw and then ABSTAINS on every line, so a
+ * simulation can never release money: the buyer decides, exactly as when the
+ * examiner is off.
  */
 import type { ExaminerInput, ExaminerResult, ExaminerVerdict } from "./examine";
 import { judgementPredicates } from "./examine";
@@ -62,6 +63,8 @@ export function examineSimulated(input: ExaminerInput): ExaminerResult {
     }
   }
   const corpus = [...names, ...texts].join("\n").toLowerCase();
+  const NOT_A_JUDGEMENT =
+    "Not a judgement: the examiner is simulated in this deployment, so the buyer decides this line.";
   const verdicts: ExaminerVerdict[] = predicates.map((p) => {
     const criteria = (p.check as { criteria: string }).criteria;
     const terms = words(`${p.text} ${criteria}`);
@@ -73,90 +76,45 @@ export function examineSimulated(input: ExaminerInput): ExaminerResult {
     const tiny =
       images.length > 0 &&
       images.every((i) => (i.width ?? 0) < 64 || (i.height ?? 0) < 64);
-    const why = (s: string) => `Simulated examiner: ${s}`;
+    const saw = (s: string) => `Simulated examiner saw: ${s}.`;
+    const observations: string[] = [];
     if (readable === 0)
-      return {
-        predicate_id: p.id,
-        verdict: "abstain",
-        confidence: 0.3,
-        reasons: [
-          why(
-            input.files.length
-              ? "none of the files is an image or text it can read"
-              : "no files were submitted",
+      observations.push(
+        saw(input.files.length ? "no file it can read (images or text)" : "no files"),
+      );
+    else {
+      if (images.length)
+        observations.push(
+          saw(
+            `${images.length} readable image${images.length === 1 ? "" : "s"} (${images
+              .map((i) => `${i.name} ${i.width ?? "?"}×${i.height ?? "?"}`)
+              .join(", ")})${visual ? ", for a visual criterion" : ""}`,
           ),
-        ],
-        what_would_resolve: "A readable image or text file, or the buyer's confirmation.",
-      };
-    if (placeholder)
-      return {
-        predicate_id: p.id,
-        verdict: "fail",
-        confidence: 0.8,
-        reasons: [
-          why("the evidence contains placeholder text or a placeholder file name"),
-        ],
-        what_would_resolve: "A delivery without placeholder content.",
-      };
-    if (tiny)
-      return {
-        predicate_id: p.id,
-        verdict: "abstain",
-        confidence: 0.45,
-        reasons: [
-          why(
-            `every image is smaller than 64 px on a side (${images.map((i) => `${i.name} ${i.width ?? "?"}×${i.height ?? "?"}`).join(", ")})`,
-          ),
-        ],
-        what_would_resolve: "Images at a size a reviewer could judge.",
-      };
-    if (visual && images.length > 0)
-      return {
-        predicate_id: p.id,
-        verdict: "pass",
-        confidence: 0.84,
-        reasons: [
-          why(
-            `${images.length} readable image${images.length === 1 ? "" : "s"} submitted for a visual criterion (${images.map((i) => i.name).join(", ")})`,
-          ),
-          ...(hits.length
-            ? [why(`file names or text mention: ${hits.slice(0, 5).join(", ")}`)]
-            : []),
-        ],
-        what_would_resolve:
-          "Nothing further; the buyer may still object within the window.",
-      };
-    if (hits.length >= 2)
-      return {
-        predicate_id: p.id,
-        verdict: "pass",
-        confidence: 0.82,
-        reasons: [
-          why(
-            `the evidence mentions ${hits.length} of the criterion's terms: ${hits.slice(0, 6).join(", ")}`,
-          ),
-        ],
-        what_would_resolve:
-          "Nothing further; the buyer may still object within the window.",
-      };
+        );
+      if (texts.length)
+        observations.push(
+          saw(`${texts.length} readable text file${texts.length === 1 ? "" : "s"}`),
+        );
+      if (hits.length)
+        observations.push(
+          saw(`the criterion's terms in the evidence: ${hits.slice(0, 6).join(", ")}`),
+        );
+      if (placeholder)
+        observations.push(saw("placeholder text or a placeholder file name"));
+      if (tiny) observations.push(saw("only images under 64 px on a side"));
+    }
     return {
       predicate_id: p.id,
       verdict: "abstain",
-      confidence: hits.length === 1 ? 0.55 : 0.4,
-      reasons: [
-        why(
-          hits.length === 1
-            ? `only one of the criterion's terms (${hits[0]}) appears in the evidence`
-            : "nothing in the file names or readable text matches the criterion",
-        ),
-      ],
+      confidence: 0,
+      reasons: [...observations, NOT_A_JUDGEMENT],
       what_would_resolve:
-        "The buyer's confirmation, or evidence that names what the criterion asks for.",
+        "The buyer's confirmation, or the real examiner with an API key configured.",
     };
   });
   return {
     verdicts,
-    evidenceSummary: `Simulated examiner read ${images.length} image${images.length === 1 ? "" : "s"} and ${texts.length} text file${texts.length === 1 ? "" : "s"} of ${input.files.length} submitted.`,
+    evidenceSummary: `Simulated examiner read ${images.length} image${images.length === 1 ? "" : "s"} and ${texts.length} text file${texts.length === 1 ? "" : "s"} of ${input.files.length} submitted, and abstained on every judgement line.`,
     inputManifest: manifest,
     usage: { inputTokens: 0, outputTokens: 0 },
     model: SIMULATED_MODEL,

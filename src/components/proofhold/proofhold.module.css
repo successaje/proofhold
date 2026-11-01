@@ -286,6 +286,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   color: var(--ink);
+  padding: 0.25rem 0;
 }
 .fileMeta {
   font-size: var(--text-xs);

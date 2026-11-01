@@ -14,7 +14,7 @@ const h = (o: Record<string, string>) => ({
 });
 const app = "https://proofhold.example";
 
-test("cross-site mutations are refused, same-site and non-browser calls pass", () => {
+test("cross-site and anonymous mutations are refused; same-site calls pass", () => {
   assert.equal(
     isSameOrigin(
       h({ "sec-fetch-site": "cross-site", origin: "https://evil.example" }),
@@ -30,8 +30,8 @@ test("cross-site mutations are refused, same-site and non-browser calls pass", (
   assert.equal(isSameOrigin(h({ origin: app }), app), true);
   assert.equal(
     isSameOrigin(h({}), app),
-    true,
-    "curl-style calls carry no cookie and pass",
+    false,
+    "a request that names no origin is refused",
   );
   assert.equal(
     isSameOrigin(h({ "sec-fetch-site": "none" }), app),

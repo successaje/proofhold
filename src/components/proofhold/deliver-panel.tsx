@@ -121,6 +121,7 @@ export function DeliverPanel({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit.");
+    } finally {
       setSubmitting(false);
     }
   }

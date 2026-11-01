@@ -19,7 +19,8 @@ export type MailEvent =
   | "disputed"
   | "dispute_resolved"
   | "reminder_window"
-  | "reminder_expiry";
+  | "reminder_expiry"
+  | "reopened";
 
 export interface TemplateInput {
   ph: Proofhold;
@@ -210,6 +211,16 @@ export function template(
           `PayPal resolved the dispute: ${String(i.extra?.outcome ?? "see the record")}.`,
         ],
         cta: { label: "See the record", url: buyerUrl },
+      },
+    },
+    reopened: {
+      buyer: {
+        subject: `${sellerName} withdrew the delivery for ${ph.title}`,
+        lines: [
+          `${sellerName} took the delivery back to change it. The window to object is cancelled and nothing has been captured.`,
+          "You will be written to again when the new delivery is ready and the checks have run.",
+        ],
+        cta: { label: "See the hold", url: buyerUrl },
       },
     },
     reminder_window: {

@@ -41,11 +41,7 @@ export async function addFile(
   ph: Proofhold,
   file: { name: string; bytes: Uint8Array; declaredMime?: string | null },
 ) {
-  requireStatus(
-    ph,
-    ["held", "awaiting_buyer", "in_review", "checking"],
-    "Uploading evidence",
-  );
+  requireStatus(ph, ["held"], "Uploading evidence");
   if (file.bytes.byteLength === 0) throw new ProofholdError("That file is empty.");
   if (file.bytes.byteLength > MAX_FILE_BYTES)
     throw new ProofholdError("Files are limited to 8 MB each.");
@@ -83,7 +79,7 @@ export async function addFile(
 }
 
 export async function removeFile(sql: Sql, ph: Proofhold, evidenceId: string) {
-  requireStatus(ph, ["held", "awaiting_buyer", "in_review"], "Removing evidence");
+  requireStatus(ph, ["held"], "Removing evidence");
   const items = await listEvidence(sql, ph.id);
   const item = items.find((e) => e.id === evidenceId);
   if (!item) throw new ProofholdError("Evidence not found", 404);
@@ -96,11 +92,7 @@ export async function addTracking(
   ph: Proofhold,
   input: { carrier: string; number: string },
 ) {
-  requireStatus(
-    ph,
-    ["held", "awaiting_buyer", "in_review", "checking"],
-    "Adding tracking",
-  );
+  requireStatus(ph, ["held"], "Adding tracking");
   const carrier = input.carrier.toUpperCase();
   if (!carrierOptions.includes(carrier)) throw new ProofholdError("Unknown carrier.");
   const number = input.number.trim();
@@ -159,7 +151,7 @@ export async function submit(
   ph: Proofhold,
   sellerNote?: string | null,
 ): Promise<{ proofhold: Proofhold; round: number; needsExaminer: boolean }> {
-  requireStatus(ph, ["held", "awaiting_buyer", "in_review"], "Submitting evidence");
+  requireStatus(ph, ["held"], "Submitting evidence");
   const items = await listEvidence(sql, ph.id);
   if (items.length === 0)
     throw new ProofholdError("Add at least one file or a tracking number first.");
@@ -291,7 +283,7 @@ export async function runExaminer(sql: Sql, ph: Proofhold): Promise<Proofhold> {
       round,
       source: "examiner",
       verdict: v.verdict,
-      confidence: v.confidence,
+      confidence: result.model === "simulated-examiner" ? null : v.confidence,
       reasons: v.reasons,
       detail: { whatWouldResolve: v.what_would_resolve, model: result.model },
     });

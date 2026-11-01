@@ -233,16 +233,75 @@
 }
 
 .tableWrap {
-  overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
   background: var(--paper);
 }
+@media (min-width: 40rem) {
+  .tableWrap {
+    overflow-x: auto;
+  }
+}
 .table {
   width: 100%;
-  min-width: 46rem;
   border-collapse: collapse;
   font-size: var(--text-md);
+}
+@media (min-width: 40rem) {
+  .table {
+    min-width: 46rem;
+  }
+}
+/* On phones each row becomes a card: the question, then the four answers labelled. */
+@media (max-width: 40rem) {
+  .table thead {
+    display: none;
+  }
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+    width: auto;
+  }
+  .table tr {
+    padding: var(--s-3) var(--s-4);
+    border-bottom: 1px solid var(--line);
+  }
+  .table tr:last-child {
+    border-bottom: 0;
+  }
+  .table tbody th {
+    padding: 0 0 var(--s-2);
+    border: 0;
+    width: auto;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: 500;
+  }
+  .table td {
+    display: grid;
+    grid-template-columns: 7rem 1fr;
+    gap: var(--s-3);
+    padding: 0.35rem 0;
+    border: 0;
+    font-size: var(--text-sm);
+  }
+  .table td::before {
+    content: attr(data-label);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0.2rem;
+  }
+  .table td.tableUs {
+    margin: var(--s-2) calc(-1 * var(--s-3)) 0;
+    padding: var(--s-2) var(--s-3);
+    border-radius: var(--r-sm);
+  }
 }
 .table th,
 .table td {
@@ -339,6 +398,9 @@
   gap: var(--s-4);
 }
 .footerInner nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
   text-decoration: none;
 }
 @media (min-width: 48rem) {

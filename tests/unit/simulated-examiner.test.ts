@@ -37,10 +37,10 @@ test("no readable files: abstain, labelled as simulated", () => {
   );
   const v = r.verdicts.find((x) => x.predicate_id === "pj")!;
   assert.equal(v.verdict, "abstain");
-  assert.match(v.reasons[0]!, /^Simulated examiner:/);
+  assert.match(v.reasons[0]!, /^Simulated examiner saw:/);
 });
 
-test("readable images for a visual criterion pass with a stated confidence", () => {
+test("readable images are reported, and the line still abstains", () => {
   const r = examineSimulated(
     input([
       { name: "coastal-logo-a.png", mime: "image/png", bytes: makePng(800, 600, 300) },
@@ -48,17 +48,19 @@ test("readable images for a visual criterion pass with a stated confidence", () 
     ]),
   );
   const v = r.verdicts.find((x) => x.predicate_id === "pj")!;
-  assert.equal(v.verdict, "pass");
-  assert.ok(v.confidence >= 0.8);
+  assert.equal(v.verdict, "abstain");
   assert.match(v.reasons.join(" "), /2 readable images/);
+  assert.match(v.reasons.at(-1)!, /Not a judgement/);
 });
 
-test("placeholder content fails; tiny images abstain", () => {
+test("placeholder content and tiny images are named, and still abstain", () => {
   const txt = new TextEncoder().encode("Lorem ipsum dolor sit amet");
   const r = examineSimulated(
     input([{ name: "notes.txt", mime: "text/plain", bytes: txt }]),
   );
-  assert.equal(r.verdicts[0]!.verdict, "fail");
+  const pv = r.verdicts.find((x) => x.predicate_id === "pj")!;
+  assert.equal(pv.verdict, "abstain");
+  assert.match(pv.reasons.join(" "), /placeholder/);
   const tiny = examineSimulated(
     input([{ name: "logo.png", mime: "image/png", bytes: makePng(16, 16, 72) }]),
   );
