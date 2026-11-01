@@ -40,7 +40,10 @@ export function Record({
   system: SystemInfo;
   backHref: string;
 }) {
-  const captures = decisions.filter((d) => d.paypalCaptureId);
+  // Receipt rows are the captures themselves, not later decisions that reference one.
+  const captures = decisions.filter(
+    (d) => d.paypalCaptureId && (d.outcome === "capture" || d.outcome === "release"),
+  );
   const generated = new Date().toISOString();
   return (
     <main className={styles.page}>
