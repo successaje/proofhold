@@ -80,9 +80,11 @@ export default async function SettingsPage() {
           />
         </Panel>
         <Note tone="info">
-          Production would add a real sign-in (Login with PayPal or email links) and a
-          payout check that the workspace email matches the PayPal account that receives
-          captures. Both are out of scope for this release and documented as such.
+          Where the money goes today: every capture lands in the PayPal business account
+          this deployment runs with, whatever email is saved above. Production would add a
+          real sign-in (Login with PayPal or email links) and a payout check that the
+          workspace email matches the account that receives captures. Both are out of
+          scope for this release and documented as such.
         </Note>
       </div>
     </Narrow>

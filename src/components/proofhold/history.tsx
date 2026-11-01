@@ -145,6 +145,12 @@ function describe(
           .toLowerCase()}`,
         tone: String(d.outcome).includes("SELLER") ? "pass" : "fail",
       };
+    case "window_closed":
+      return {
+        title: "Buyer window closed; release still blocked",
+        detail: String(d.reason ?? ""),
+        tone: "held",
+      };
     case "cancelled":
       return { title: `Cancelled by the ${d.by}` };
     case "status":

@@ -1,5 +1,6 @@
 import { TestView } from "@/components/proofhold/test-view";
-import { Badge, StatusPill } from "@/components/ui/status";
+import { Seal } from "@/components/proofhold/seal";
+import { StatusPill } from "@/components/ui/status";
 import type { AcceptanceTest } from "@/lib/domain/test";
 import type { CheckResult } from "@/lib/domain/proofhold";
 import styles from "./example.module.css";
@@ -112,30 +113,44 @@ const checks: CheckResult[] = [
   },
 ];
 
+const hash = "1dd2ee35615fa7ed9c0b4e2a7f3d8c61b2a9e0f4c3d5a6b7c8d9e0f1a2b3c4d5";
+
 export function LandingExample() {
   return (
-    <div className={styles.frame} aria-label="Example proofhold">
+    <figure className={styles.frame} aria-label="Example proofhold, after delivery">
       <div className={styles.frameHead}>
         <div>
           <span className={styles.frameTitle}>Logo concepts for Driftwood Café</span>
           <span className={styles.frameSub}>
-            Example · what the buyer sees after delivery
+            <StatusPill tone="held">Buyer window</StatusPill> Example · what both sides
+            see after delivery
           </span>
         </div>
-        <StatusPill tone="held">Buyer window</StatusPill>
       </div>
       <div className={styles.frameBody}>
-        <TestView test={test} checks={checks} status="awaiting_buyer" />
+        <TestView
+          test={test}
+          checks={checks}
+          status="awaiting_buyer"
+          hash={hash}
+          agreement={{
+            seller: { name: "Ada Mensah", at: "2026-11-02T09:12:00.000Z" },
+            buyer: { name: "Bea Okafor", at: "2026-11-02T14:40:00.000Z" },
+          }}
+        />
       </div>
-      <div className={styles.frameFoot}>
-        <div>
-          <span className={styles.amount}>$420.00</span>
-          <span className={styles.amountSub}>
-            held by PayPal · authorization 3C679366HH908993F
-          </span>
-        </div>
-        <Badge>releases in 72 h unless the buyer objects</Badge>
+      <div className={styles.sealSlot}>
+        <Seal
+          id="landing-seal"
+          amount="$420.00"
+          currency="USD"
+          segments={["pass", "pass", "pass", "pass"]}
+          size={150}
+        />
       </div>
-    </div>
+      <figcaption className={styles.frameFoot}>
+        Releases in 72 h unless the buyer objects · authorization 3C679366HH908993F
+      </figcaption>
+    </figure>
   );
 }

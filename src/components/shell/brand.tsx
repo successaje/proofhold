@@ -1,23 +1,40 @@
 import Link from "next/link";
 import styles from "./shell.module.css";
 
-export function Mark({ size = 24 }: { size?: number }) {
+/**
+ * The mark: a ring (the hold) and a tick whose tail leaves the ring through a
+ * gap (the release that ends it). Strokes take currentColor so it works on
+ * paper, on the brand colour and in dark mode.
+ */
+export function Mark({ size = 24, className }: { size?: number; className?: string }) {
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 64 64"
       aria-hidden="true"
-      className={styles.mark}
+      className={[styles.mark, className].filter(Boolean).join(" ")}
     >
-      <rect width="64" height="64" rx="14" fill="var(--brand)" />
-      <path d="M20 34h10v10H20zM34 20h10v10H34z" fill="var(--brand-ink)" opacity=".5" />
-      <path d="M20 20h10v10H20zM34 34h10v10H34z" fill="var(--brand-ink)" />
+      <path
+        d="M52.8 20A24 24 0 1 1 44 11.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M21 33l8 8 26-28"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 
-export function Brand({ href = "/", size = 24 }: { href?: string; size?: number }) {
+export function Brand({ href = "/", size = 22 }: { href?: string; size?: number }) {
   return (
     <Link href={href} className={styles.brand} aria-label="Proofhold home">
       <Mark size={size} />

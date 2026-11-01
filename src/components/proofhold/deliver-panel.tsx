@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useRef, useState, type DragEvent } from "react";
 import { Send, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, FormRow, Input, Select, Textarea } from "@/components/ui/field";
 import { Note, Panel, Section } from "@/components/ui/panel";
 import { useToast } from "@/components/ui/toast";
 import { api } from "@/lib/client";
+import { useHydrated } from "@/lib/use-hydrated";
 import type { EvidenceItem } from "@/lib/domain/proofhold";
 import type { ProofholdView } from "@/lib/view";
 import { EvidenceList } from "./evidence-list";
@@ -39,7 +40,7 @@ export function DeliverPanel({
   const [dragging, setDragging] = useState(false);
   // The input is disabled until React has mounted so a file chosen before hydration
   // is never silently dropped.
-  const [ready, setReady] = useState(false);
+  const ready = useHydrated();
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [note, setNote] = useState("");
@@ -47,8 +48,6 @@ export function DeliverPanel({
   const [tracking, setTracking] = useState("");
   const [savingTracking, setSavingTracking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => setReady(true), []);
 
   const wantsTracking = ph.test.predicates.some(
     (p) => p.check.kind === "tracking_shipped",
@@ -132,7 +131,12 @@ export function DeliverPanel({
     if (e.dataTransfer.files.length) void upload(e.dataTransfer.files);
   }
 
-  const canSubmit = evidence.length > 0 && !uploading && !submitting;
+  const since = ph.evidenceSubmittedAt ? Date.parse(ph.evidenceSubmittedAt) : 0;
+  const fresh =
+    !resubmitting ||
+    note.trim().length > 0 ||
+    evidence.some((e) => Date.parse(e.createdAt) > since);
+  const canSubmit = evidence.length > 0 && fresh && !uploading && !submitting;
 
   return (
     <Panel
@@ -170,7 +174,8 @@ export function DeliverPanel({
                 <span>Uploading…</span>
               ) : (
                 <span>
-                  <strong>Drop files here</strong> or click to choose · up to 8 MB each
+                  <strong>Drop files here</strong> or click to choose · images, PDF, text,
+                  ZIP, audio or video · up to 8 MB each
                 </span>
               )}
               <span style={{ color: "var(--muted)", fontSize: "var(--text-xs)" }}>
@@ -248,6 +253,7 @@ export function DeliverPanel({
 
         <Section title="Note to the buyer">
           <Textarea
+            aria-label="Note to the buyer"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             rows={2}
@@ -262,7 +268,9 @@ export function DeliverPanel({
           <span className="lead">
             {evidence.length === 0
               ? "Add a file or tracking number to submit."
-              : `${evidence.length} item${evidence.length === 1 ? "" : "s"} ready.`}
+              : !fresh
+                ? "Nothing new since the last submission. Add a file, a tracking number or a note to resubmit."
+                : `${evidence.length} item${evidence.length === 1 ? "" : "s"} ready.`}
           </span>
           <Button
             onClick={submit}

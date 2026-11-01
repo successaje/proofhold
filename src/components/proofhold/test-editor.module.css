@@ -64,7 +64,9 @@
   gap: var(--s-1);
 }
 .chip {
-  padding: 0.25rem 0.6rem;
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0.25rem 0.7rem;
   border: 1px solid var(--line-strong);
   border-radius: var(--r-pill);
   background: var(--surface);

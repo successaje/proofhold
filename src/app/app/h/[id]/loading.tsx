@@ -5,6 +5,7 @@ export default function Loading() {
     <div
       style={{ display: "grid", gap: "var(--s-4)" }}
       aria-busy="true"
+      role="status"
       aria-label="Loading"
     >
       <Skeleton width="8rem" height="0.9rem" />

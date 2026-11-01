@@ -10,6 +10,7 @@ import { Note } from "@/components/ui/panel";
 import { Stages } from "@/components/ui/feedback";
 import { useToast } from "@/components/ui/toast";
 import { api } from "@/lib/client";
+import { useHydrated } from "@/lib/use-hydrated";
 import type { Decision } from "@/lib/domain/proofhold";
 import { formatMoney } from "@/lib/format";
 import type { ProofholdView, SystemInfo } from "@/lib/view";
@@ -28,6 +29,7 @@ export function ApproveForm({
   const [email, setEmail] = useState(ph.buyerEmail ?? "");
   const [stage, setStage] = useState<0 | 1 | 2>(0);
   const [error, setError] = useState<string | null>(null);
+  const hydrated = useHydrated();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -80,7 +82,11 @@ export function ApproveForm({
             autoComplete="name"
           />
         </Field>
-        <Field label="Email for updates" htmlFor="b-email">
+        <Field
+          label="Email on the record"
+          htmlFor="b-email"
+          hint="Kept with the agreement and used if a dispute is filed. Nothing is sent to it yet."
+        >
           <Input
             id="b-email"
             type="email"
@@ -93,7 +99,7 @@ export function ApproveForm({
         </Field>
       </FormRow>
       {error ? <Note tone="fail">{error}</Note> : null}
-      <Button type="submit" size="lg" block icon={<CheckCircle2 />}>
+      <Button type="submit" size="lg" block icon={<CheckCircle2 />} disabled={!hydrated}>
         Approve {ph.amount} with PayPal
       </Button>
       <p className={styles.fine}>
@@ -138,8 +144,13 @@ export function BuyerResponse({ token, ph }: { token: string; ph: ProofholdView 
   return (
     <>
       <div className={styles.decide}>
-        <Button size="lg" onClick={() => setOpen("confirm")} icon={<CheckCircle2 />}>
-          {held ? "Release without waiting" : "Confirm and release"}
+        <Button
+          size={held ? "md" : "lg"}
+          variant={held ? "secondary" : "primary"}
+          onClick={() => setOpen("confirm")}
+          icon={<CheckCircle2 />}
+        >
+          {held ? "Release without waiting for delivery" : "Confirm and release"}
         </Button>
         {!held ? (
           <Button
@@ -167,6 +178,12 @@ export function BuyerResponse({ token, ph }: { token: string; ph: ProofholdView 
           </>
         }
       >
+        {held ? (
+          <p>
+            <strong>Nothing has been delivered yet.</strong> You would be paying before
+            any evidence exists. Most buyers wait for delivery and the checks.
+          </p>
+        ) : null}
         <p>
           PayPal captures the authorization immediately. This is the end of the hold; if
           something is wrong later, PayPal's own dispute process applies.

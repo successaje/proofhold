@@ -42,10 +42,14 @@ async function initialFrom(id: string): Promise<ComposerInitial | null> {
 export default async function NewProofholdPage({
   searchParams,
 }: {
-  searchParams: Promise<{ from?: string }>;
+  searchParams: Promise<{ from?: string; kind?: string; amount?: string }>;
 }) {
-  const { from } = await searchParams;
+  const { from, kind, amount } = await searchParams;
   const initial = from ? await initialFrom(from) : null;
+  const prefill: { kind?: "service" | "goods"; amount?: string } = {
+    ...(kind === "goods" || kind === "service" ? { kind } : {}),
+    ...(amount && /^\d{1,7}(\.\d{1,2})?$/.test(amount) ? { amount } : {}),
+  };
   return (
     <>
       <PageHeader
@@ -56,7 +60,7 @@ export default async function NewProofholdPage({
             : "Describe the job. Get a test. Send one link."
         }
       />
-      <Composer system={systemInfo()} initial={initial} />
+      <Composer system={systemInfo()} initial={initial} prefill={prefill} />
     </>
   );
 }

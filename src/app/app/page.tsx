@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/feedback";
 import { StatusPill } from "@/components/ui/status";
 import { PageHeader } from "@/components/shell/page-header";
+import { MiniSeal, stampFor } from "@/components/proofhold/seal";
 import { currentWorkspace } from "@/lib/session/workspace";
 import { db } from "@/lib/store/sql";
 import { listProofholds } from "@/lib/store/repos";
@@ -60,6 +61,13 @@ function Row({ ph }: { ph: Proofhold }) {
   return (
     <li>
       <Link href={`/app/h/${ph.id}`} className={styles.row}>
+        <MiniSeal
+          title={meta.label}
+          segments={ph.test.predicates.map(() => "pending" as const)}
+          stamp={stampFor(ph.status)}
+          pending={ph.status === "draft" || ph.status === "proposed"}
+          size={30}
+        />
         <div className={styles.rowMain}>
           <span className={styles.rowTitle}>{ph.title}</span>
           <span className={styles.rowSub}>

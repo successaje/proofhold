@@ -17,9 +17,11 @@
     "lint": "prettier --check src tests scripts eval docs *.ts *.md",
     "format": "prettier --write src tests scripts eval docs *.ts *.md",
     "test": "tsx --test tests/unit/*.test.ts",
-    "test:browser": "playwright test",
+    "test:browser": "playwright test tests/browser/flows.spec.ts",
     "eval": "tsx scripts/eval.ts",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "tsx scripts/seed.ts",
+    "test:a11y": "playwright test tests/browser/a11y.spec.ts",
+    "measure": "tsx scripts/measure.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
@@ -31,6 +33,7 @@
     "zod": "^4.1.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@playwright/test": "^1.56.0",
     "@types/node": "^24.0.0",
     "@types/pg": "^8.23.1",

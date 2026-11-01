@@ -1,0 +1,125 @@
+.seal {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.face {
+  fill: var(--surface);
+}
+.edge {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.arc {
+  fill: none;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke: var(--line-strong);
+  transition: stroke var(--t-slow) var(--ease-out);
+}
+.arc-pending,
+.pending.arc {
+  stroke: var(--line-strong);
+  stroke-dasharray: 2 7;
+  stroke-width: 6;
+}
+.arc-pass {
+  stroke: var(--pass);
+}
+.arc-fail {
+  stroke: var(--fail);
+}
+.arc-abstain {
+  stroke: var(--held);
+}
+.pending .arc {
+  opacity: 0.55;
+}
+.ringText {
+  font-family: var(--font-mono);
+  font-size: 8.5px;
+  letter-spacing: 2.2px;
+  fill: var(--muted);
+}
+.amount {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.6px;
+  fill: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.currency {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  fill: var(--muted);
+}
+.stamp {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: stampIn var(--t-slow) var(--ease-out) both;
+  mix-blend-mode: multiply;
+}
+@media (prefers-color-scheme: dark) {
+  .stamp {
+    mix-blend-mode: screen;
+  }
+}
+.stamp rect {
+  fill: var(--surface);
+  fill-opacity: 0.85;
+  stroke-width: 3;
+}
+.stamp text {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+.stamp-wax rect {
+  stroke: var(--wax);
+}
+.stamp-wax text {
+  fill: var(--wax);
+}
+.stamp-fail rect {
+  stroke: var(--fail);
+}
+.stamp-fail text {
+  fill: var(--fail);
+}
+.stamp-muted rect {
+  stroke: var(--muted);
+}
+.stamp-muted text {
+  fill: var(--muted);
+}
+@keyframes stampIn {
+  from {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.mini {
+  display: block;
+  flex: none;
+}
+.mini .arc {
+  stroke-width: 22;
+}
+.mini .arc-pending,
+.mini .pending.arc {
+  stroke-dasharray: none;
+  stroke-width: 12;
+  opacity: 0.6;
+}

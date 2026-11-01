@@ -15,6 +15,7 @@ import { evaluate, runExaminer } from "../proofholds/evidence";
 import { note } from "../proofholds/lifecycle";
 import { reconcile } from "../proofholds/reconcile";
 import { expire } from "../proofholds/release";
+import { appendAudit, listAudit } from "../store/repos";
 import { syncDispute } from "../proofholds/disputes";
 
 export interface TickReport {
@@ -102,6 +103,18 @@ export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
         if (after.status !== ph.status) {
           report.windowsClosed.push(ph.id);
           moved = true;
+        } else {
+          // Blocked: the window closing changes nothing, so say so once.
+          const entries = await listAudit(sql, ph.id);
+          const since = ph.evidenceSubmittedAt ? Date.parse(ph.evidenceSubmittedAt) : 0;
+          const named = entries.some(
+            (e) => e.type === "window_closed" && Date.parse(e.createdAt) >= since,
+          );
+          if (!named)
+            await appendAudit(sql, ph.id, "window_closed", {
+              reason:
+                "The buyer window closed with release still blocked. Nothing moves until the buyer confirms or objects, or the seller resubmits.",
+            });
         }
       });
       if (moved) continue;

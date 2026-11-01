@@ -89,7 +89,7 @@ export function SettingsForm({
             fontFamily: "var(--font-mono)",
           }}
         >
-          {workspace.id}
+          Workspace id {workspace.id}
         </span>
         <div style={{ display: "flex", gap: "var(--s-2)" }}>
           <Button type="button" variant="ghost" onClick={signOut} loading={leaving}>

@@ -6,6 +6,7 @@ import { Brand } from "@/components/shell/brand";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/field";
 import { Note } from "@/components/ui/panel";
+import { useHydrated } from "@/lib/use-hydrated";
 import styles from "./start.module.css";
 
 export function StartForm() {
@@ -14,6 +15,7 @@ export function StartForm() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const hydrated = useHydrated();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -41,9 +43,10 @@ export function StartForm() {
         <Brand size={28} />
         <h1 className={styles.title}>Set up your workspace</h1>
         <p className={styles.lead}>
-          Your name appears on the links you send. Your PayPal email is where captured
-          payments land: it must match the business account whose credentials this app
-          runs with.
+          Your name appears on the links you send. In this build, captured payments land
+          in the PayPal business account this deployment is configured with, not in the
+          account you type here: enter that sandbox business email. A payout check that
+          matches the two is production work, listed in Settings.
         </p>
         <form onSubmit={submit} className={styles.form}>
           <Field label="Your name" htmlFor="name">
@@ -73,7 +76,7 @@ export function StartForm() {
             />
           </Field>
           {error ? <Note tone="fail">{error}</Note> : null}
-          <Button type="submit" size="lg" loading={pending} block>
+          <Button type="submit" size="lg" loading={pending} disabled={!hydrated} block>
             Continue
           </Button>
         </form>

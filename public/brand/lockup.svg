@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 64" width="400" height="64" role="img" aria-label="Proofhold">
+  <title>Proofhold</title>
+  <path d="M52.8 20A24 24 0 1 1 44 11.2" fill="none" stroke="#0d5c4e" stroke-width="6" stroke-linecap="round"/>
+  <path d="M21 33l8 8 26-28" fill="none" stroke="#0d5c4e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="80" y="46" font-family="Fraunces, 'Iowan Old Style', Georgia, serif" font-size="44" font-weight="500" letter-spacing="-1" fill="#17150f">Proofhold</text>
+</svg>

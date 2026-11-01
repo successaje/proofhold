@@ -7,7 +7,10 @@ A seller pastes a brief. Proofhold compiles it into an acceptance test: a short 
 Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/). MIT licensed.
 
 - Product model: [docs/product.md](docs/product.md)
+- Design direction and feature inventory: [docs/design.md](docs/design.md)
+- Brand kit: [docs/brand.md](docs/brand.md), assets in [public/brand](public/brand)
 - Architecture: [docs/architecture.md](docs/architecture.md)
+- Acceptance matrix, measurements and known gaps: [docs/acceptance-matrix.md](docs/acceptance-matrix.md)
 - Build log: [docs/build-log.md](docs/build-log.md)
 
 ## The problem
@@ -66,12 +69,24 @@ npm run eval                          # examiner over the labelled cases (needs 
 ## Testing
 
 ```bash
-npm test             # unit: schema and hashing, state machine, validators, decision engine, simulator, full lifecycle
-npm run test:browser # Playwright flows A (service), B (goods), C (objection → offer → void) against a local app
+npm test             # unit: schema and hashing, state machine, validators, decision engine, simulator, lifecycle, outcomes
+npm run test:browser # Playwright flows A (service), B (goods), C (objection → offer → void), D (dispute) against a local app
+npm run test:a11y    # axe (WCAG 2.x A/AA) on eleven routes in light and dark schemes
+npm run measure      # page-load and API timings against a running server; see docs/acceptance-matrix.md
 npm run typecheck && npm run lint
 ```
 
-The browser flows are the demo: run them with `PLAYWRIGHT_VIDEO=1` to record.
+The browser flows are the demo: run them with `PLAYWRIGHT_VIDEO=1` to record. Results, modes and evidence for every journey are in [docs/acceptance-matrix.md](docs/acceptance-matrix.md).
+
+## Design
+
+The interface is built on one idea: the acceptance test is a document and the PayPal hold is a seal on it.
+
+- **The Seal** (`src/components/proofhold/seal.tsx`): one ring arc per line of the test, coloured by verdict; stamped CAPTURED, PART CAPTURED, RETURNED, DISPUTED or REFUNDED when money moves.
+- **The Sheet** (`src/components/proofhold/test-view.tsx`): the test as a ruled page with a numbered margin, who agreed and when, and the hash that was written into the PayPal order.
+- **The Rail** (`src/components/proofhold/rail.tsx`): Proposed, Held, Checking, Buyer window, Released or Returned, on every page and on the landing.
+
+Tokens live in `src/app/globals.css`; the rules, colour contrast table and asset licences are in [docs/brand.md](docs/brand.md); the research and the three directions considered are in [docs/design.md](docs/design.md).
 
 ## Examiner evaluation
 
@@ -87,7 +102,8 @@ _Not yet run against a model in this repository; the numbers will be added when 
 
 ```
 src/app/            routes: / (landing), /app/* (seller), /p/[token] (buyer), /sim/paypal (simulator), /api/*
-src/components/     ui (design system), shell, proofhold (test view, delivery, hold card, history), landing
+src/components/     ui (design system), shell (brand, nav), proofhold (seal, sheet, rail, delivery, hold card, history), landing
+public/brand/       mark, wordmark and lockup SVGs; src/app/icon.svg and opengraph-image.tsx derive from them
 src/lib/domain/     acceptance test schema and hashing; proofhold state machine
 src/lib/compiler/   brief → test (Claude) and starter templates
 src/lib/validators/ image header parsing and deterministic checks
@@ -98,11 +114,11 @@ src/lib/paypal/     REST client (sandbox) and simulator behind one interface
 src/lib/scheduler/  tick: examine, close windows, reauthorize, expire, reconcile
 src/lib/store/      SQLite/Postgres adapters, migrations, repositories
 src/lib/audit/      hash chain
-scripts/            local start, seed, sandbox smoke test, webhook registration, eval
+scripts/            local start, seed, sandbox smoke test, webhook registration, eval, measure
 eval/               labelled examiner cases
 tests/unit          node:test suites
-tests/browser       Playwright flows
-docs/               product model, architecture, build log
+tests/browser       Playwright flows and the axe accessibility scan
+docs/               product model, design, brand, architecture, acceptance matrix, build log
 ```
 
 ## License
