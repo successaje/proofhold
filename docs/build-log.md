@@ -26,4 +26,5 @@ Milestones in order. Each entry names the branch or PR that delivered it.
 - [x] 2026-10-28 Identity and signature UI: brand kit, the Seal, the Sheet, the Rail, landing with a start form, axe scan in CI, measurements, acceptance matrix (PR #5, feat/identity-and-signature-ui)
 - [x] 2026-10-28 Critique pass: eighteen ranked findings fixed (blocked window named, examiner-off copy, demo window on the sheet, starter test read from the brief, file allowlist, payout copy, labelled editor, phone rail, seal text fit, targets, hydration gates on forms); see docs/acceptance-matrix.md (PR #5)
 - [x] 2026-11-01 Production hardening: security headers, same-origin checks, rate limits, body limits, structured redacted logs with request ids, health checks, terms and privacy, web manifest, backup/restore/reset scripts (PR #6, feat/production-hardening)
+- [x] 2026-11-01 Mail adapter (Resend, simulated outbox), notifications at every state change, reminders, printable record and receipt, integration checklist (PR #7, feat/mail-and-record)
 - [ ] Production deployment: render.yaml ready; needs the GitHub repo, PayPal sandbox credentials and an Anthropic key

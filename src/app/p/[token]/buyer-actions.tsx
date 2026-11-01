@@ -85,7 +85,11 @@ export function ApproveForm({
         <Field
           label="Email on the record"
           htmlFor="b-email"
-          hint="Kept with the agreement and used if a dispute is filed. Nothing is sent to it yet."
+          hint={
+            system.mailMode === "resend"
+              ? "You are emailed when the delivery is ready, before the window closes, and when money moves."
+              : "Updates are composed for this address at every step. In this deployment mail is simulated, so they stay in the seller's outbox."
+          }
         >
           <Input
             id="b-email"

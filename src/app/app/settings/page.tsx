@@ -6,6 +6,9 @@ import { currentWorkspace } from "@/lib/session/workspace";
 import { systemInfo } from "@/lib/view";
 import { config } from "@/lib/config";
 import { SettingsForm } from "./settings-form";
+import { Outbox } from "./outbox";
+import { db } from "@/lib/store/sql";
+import { listMail } from "@/lib/store/repos";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -13,6 +16,7 @@ export default async function SettingsPage() {
   const ws = (await currentWorkspace())!;
   const system = systemInfo();
   const c = config();
+  const mail = await listMail(await db(), { workspaceId: ws.id }, 50);
   return (
     <Narrow>
       <PageHeader
@@ -58,6 +62,13 @@ export default async function SettingsPage() {
                 ),
               },
               {
+                k: "Mail",
+                v:
+                  system.mailMode === "resend"
+                    ? "Resend. Buyers and you are emailed at every state change; the outbox below shows each result."
+                    : "Simulated. Notifications are composed and kept in the outbox below; nothing is sent. Set MAIL_PROVIDER=resend and RESEND_API_KEY to send.",
+              },
+              {
                 k: "Scheduler",
                 v:
                   c.PROOFHOLD_SCHEDULER === "inline"
@@ -79,6 +90,7 @@ export default async function SettingsPage() {
             ]}
           />
         </Panel>
+        <Outbox mail={mail} mode={system.mailMode} />
         <Note tone="info">
           Where the money goes today: every capture lands in the PayPal business account
           this deployment runs with, whatever email is saved above. Production would add a

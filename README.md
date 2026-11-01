@@ -91,6 +91,12 @@ The interface is built on one idea: the acceptance test is a document and the Pa
 
 Tokens live in `src/app/globals.css`; the rules, colour contrast table and asset licences are in [docs/brand.md](docs/brand.md); the research and the three directions considered are in [docs/design.md](docs/design.md).
 
+## Notifications and the record
+
+Both sides are written to at every state change: the invitation with the link, the hold, the delivery and the window, an objection, an offer, the release with a receipt, a void, an expiry, a dispute and its resolution, plus two reminders (before the buyer window closes, before a hold lapses). Mail goes through a provider adapter; without `RESEND_API_KEY` it is simulated, which means every message is composed and kept in Settings → Outbox and nothing is sent. The buyer's email field says so.
+
+Every proofhold has a printable record at `/app/h/[id]/record` (seller) and `/p/[token]/record` (buyer): the receipt after a capture, the agreement with both signatures and the hash, every decision with its PayPal id, evidence fingerprints, messages and the hash-chained history. "Print or save as PDF" uses the print stylesheet.
+
 ## Examiner evaluation
 
 `eval/cases.ts` holds 30 labelled cases across copy, data, code and image deliverables, including cases where the only honest answer is to abstain. `npm run eval` prints agreement, pass/fail/abstain counts and, the number that matters, false releases (label fail or abstain, examiner pass above the threshold). Results are written to `eval/results.json` and pasted here as they come out.
