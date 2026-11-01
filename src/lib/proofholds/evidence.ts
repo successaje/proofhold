@@ -9,7 +9,7 @@ import { config } from "../config";
 import { decide, type Decision } from "../decision/decide";
 import type { Proofhold } from "../domain/proofhold";
 import { examine, judgementPredicates } from "../examiner/examine";
-import { aiAvailable } from "../ai/client";
+import { examinerOn } from "../ai/client";
 import {
   addEvidence,
   appendAudit,
@@ -217,7 +217,7 @@ export async function submit(
   }
   const needsExaminer = judgementPredicates(current.test).length > 0;
   if (!needsExaminer) current = await evaluate(sql, current);
-  else if (!aiAvailable()) {
+  else if (!examinerOn()) {
     for (const p of judgementPredicates(current.test)) {
       await recordCheck(sql, {
         proofholdId: ph.id,
@@ -234,7 +234,7 @@ export async function submit(
     }
     current = await evaluate(sql, current);
   }
-  return { proofhold: current, round, needsExaminer: needsExaminer && aiAvailable() };
+  return { proofhold: current, round, needsExaminer: needsExaminer && examinerOn() };
 }
 
 /** Runs the examiner for the latest round, records verdicts, then evaluates. */

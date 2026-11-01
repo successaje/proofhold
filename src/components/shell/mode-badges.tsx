@@ -23,12 +23,18 @@ export function ModeBadges({ system }: { system: SystemInfo }) {
       <Badge
         icon={<Bot />}
         title={
-          system.aiAvailable
+          system.examinerMode === "anthropic"
             ? `Compiler and examiner run on ${system.model}`
-            : "ANTHROPIC_API_KEY not set: starter tests and buyer decisions instead"
+            : system.examinerMode === "simulated"
+              ? "A deterministic stand-in judges judgement lines from file names, readable text and image metadata. Labelled on every verdict; not a real judgement."
+              : "No examiner in this deployment: judgement lines fall to the buyer"
         }
       >
-        {system.aiAvailable ? "Examiner on" : "Examiner off"}
+        {system.examinerMode === "anthropic"
+          ? "Examiner on"
+          : system.examinerMode === "simulated"
+            ? "Examiner simulated"
+            : "Examiner off"}
       </Badge>
     </>
   );

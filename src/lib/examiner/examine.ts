@@ -9,7 +9,7 @@
 import { z } from "zod";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import type Anthropic from "@anthropic-ai/sdk";
-import { aiAvailable, anthropic, asData, model } from "../ai/client";
+import { anthropic, asData, examinerMode, model } from "../ai/client";
 import type { AcceptanceTest, Predicate } from "../domain/test";
 
 export interface ExaminerFile {
@@ -83,8 +83,12 @@ export function judgementPredicates(test: AcceptanceTest): Predicate[] {
 }
 
 export async function examine(input: ExaminerInput): Promise<ExaminerResult> {
-  if (!aiAvailable())
-    throw new Error("Examiner unavailable: ANTHROPIC_API_KEY is not set.");
+  const mode = examinerMode();
+  if (mode === "off") throw new Error("The examiner is off for this deployment.");
+  if (mode === "simulated") {
+    const { examineSimulated } = await import("./simulated");
+    return examineSimulated(input);
+  }
   const predicates = judgementPredicates(input.test);
   if (predicates.length === 0) {
     return {

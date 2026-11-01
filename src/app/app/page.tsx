@@ -17,6 +17,13 @@ import {
   outcomeLine,
 } from "@/lib/domain/outcome";
 import { formatDate, formatMoney, durationLeft } from "@/lib/format";
+import {
+  bucketOf,
+  filterLedger,
+  parseLedgerQuery,
+  type LedgerBucket,
+} from "@/lib/domain/ledger";
+import { LedgerControls } from "./ledger-controls";
 import styles from "./list.module.css";
 
 export const metadata: Metadata = { title: "Proofholds" };
@@ -104,12 +111,25 @@ function Group({ title, items }: { title: string; items: Proofhold[] }) {
   );
 }
 
-export default async function ProofholdsPage() {
+export default async function ProofholdsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const ws = (await currentWorkspace())!;
   const all = await listProofholds(await db(), ws.id);
-  const needs = all.filter((p) => attention.includes(p.status));
-  const open = all.filter((p) => active.includes(p.status));
-  const closed = all.filter((p) => isClosed(p.status));
+  const query = parseLedgerQuery(await searchParams);
+  const shown = filterLedger(all, query);
+  const counts: Record<LedgerBucket, number> = {
+    all: all.length,
+    attention: all.filter((p) => bucketOf(p.status) === "attention").length,
+    active: all.filter((p) => bucketOf(p.status) === "active").length,
+    closed: all.filter((p) => bucketOf(p.status) === "closed").length,
+  };
+  const filtering = Boolean(query.q) || query.bucket !== "all";
+  const needs = shown.filter((p) => attention.includes(p.status));
+  const open = shown.filter((p) => active.includes(p.status));
+  const closed = shown.filter((p) => isClosed(p.status));
   const held = all
     .filter((p) => ["held", "checking", "awaiting_buyer", "in_review"].includes(p.status))
     .reduce((s, p) => s + p.amountCents - p.releasedCents, 0);
@@ -154,9 +174,27 @@ export default async function ProofholdsPage() {
         </EmptyState>
       ) : (
         <>
-          <Group title="Needs attention" items={needs} />
-          <Group title="Active" items={open} />
-          <Group title="Closed" items={closed} />
+          <LedgerControls
+            q={query.q ?? ""}
+            bucket={query.bucket ?? "all"}
+            sort={query.sort ?? "updated"}
+            counts={counts}
+          />
+          {shown.length === 0 ? (
+            <EmptyState title="Nothing matches">
+              {query.q
+                ? `No proofhold mentions “${query.q}”${query.bucket !== "all" ? " in this group" : ""}. Search covers titles, briefs, buyer names and emails, ids and PayPal references.`
+                : "Nothing in this group yet."}
+            </EmptyState>
+          ) : query.sort && query.sort !== "updated" ? (
+            <Group title={filtering ? "Results" : "All proofholds"} items={shown} />
+          ) : (
+            <>
+              <Group title="Needs attention" items={needs} />
+              <Group title="Active" items={open} />
+              <Group title="Closed" items={closed} />
+            </>
+          )}
         </>
       )}
     </>

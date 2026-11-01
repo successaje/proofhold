@@ -22,12 +22,14 @@ const schema = z.object({
   TICK_SECRET: z.string().optional(),
   DEMO_SILENCE_MINUTES: z.coerce.number().positive().optional(),
   EXAMINER_CONFIDENCE_THRESHOLD: z.coerce.number().min(0).max(1).default(0.8),
+  EXAMINER_MODE: z.enum(["auto", "anthropic", "simulated", "off"]).default("auto"),
   NODE_ENV: z.string().default("development"),
 });
 
 export type Config = z.infer<typeof schema> & {
   paypal: { mode: "sandbox" | "simulated"; configured: boolean };
   ai: { configured: boolean };
+  examiner: { mode: "anthropic" | "simulated" | "off" };
 };
 
 let cached: Config | undefined;
@@ -52,6 +54,18 @@ export function config(): Config {
     ...parsed,
     paypal: { mode, configured: paypalConfigured },
     ai: { configured: Boolean(parsed.ANTHROPIC_API_KEY) },
+    examiner: {
+      mode:
+        parsed.EXAMINER_MODE === "simulated"
+          ? "simulated"
+          : parsed.EXAMINER_MODE === "off"
+            ? "off"
+            : parsed.ANTHROPIC_API_KEY
+              ? "anthropic"
+              : parsed.EXAMINER_MODE === "anthropic"
+                ? "off"
+                : "off",
+    },
   };
   return cached;
 }
