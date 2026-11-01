@@ -42,7 +42,8 @@ export function Record({
 }) {
   // Receipt rows are the captures themselves, not later decisions that reference one.
   const captures = decisions.filter(
-    (d) => d.paypalCaptureId && (d.outcome === "capture" || d.outcome === "release"),
+    (d) =>
+      d.paypalCaptureId && (d.outcome === "capture" || d.outcome === "partial_capture"),
   );
   const generated = new Date().toISOString();
   return (
