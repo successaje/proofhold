@@ -90,7 +90,9 @@ export function TestView({
                         {c.source === "validator" || c.source === "tracking"
                           ? "checked automatically"
                           : c.source === "examiner"
-                            ? "examiner"
+                            ? c.detail.model === "simulated-examiner"
+                              ? "simulated examiner"
+                              : "examiner"
                             : "buyer"}
                         {c.confidence !== null && c.source === "examiner" ? (
                           <span className={styles.confidence}>

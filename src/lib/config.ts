@@ -25,6 +25,7 @@ const schema = z.object({
   MAIL_PROVIDER: z.enum(["simulated", "resend"]).default("simulated"),
   RESEND_API_KEY: z.string().optional(),
   MAIL_FROM: z.string().default("Proofhold <proofhold@example.com>"),
+  EXAMINER_MODE: z.enum(["auto", "anthropic", "simulated", "off"]).default("auto"),
   NODE_ENV: z.string().default("development"),
 });
 
@@ -32,6 +33,7 @@ export type Config = z.infer<typeof schema> & {
   paypal: { mode: "sandbox" | "simulated"; configured: boolean };
   ai: { configured: boolean };
   mail: { provider: "simulated" | "resend"; configured: boolean };
+  examiner: { mode: "anthropic" | "simulated" | "off" };
 };
 
 let cached: Config | undefined;
@@ -65,6 +67,17 @@ export function config(): Config {
       provider:
         parsed.MAIL_PROVIDER === "resend" && mailConfigured ? "resend" : "simulated",
       configured: mailConfigured,
+    examiner: {
+      mode:
+        parsed.EXAMINER_MODE === "simulated"
+          ? "simulated"
+          : parsed.EXAMINER_MODE === "off"
+            ? "off"
+            : parsed.ANTHROPIC_API_KEY
+              ? "anthropic"
+              : parsed.EXAMINER_MODE === "anthropic"
+                ? "off"
+                : "off",
     },
   };
   return cached;

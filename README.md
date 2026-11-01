@@ -97,6 +97,14 @@ Both sides are written to at every state change: the invitation with the link, t
 
 Every proofhold has a printable record at `/app/h/[id]/record` (seller) and `/p/[token]/record` (buyer): the receipt after a capture, the agreement with both signatures and the hash, every decision with its PayPal id, evidence fingerprints, messages and the hash-chained history. "Print or save as PDF" uses the print stylesheet.
 
+## The ledger and your data
+
+`/app` is a ledger: search across titles, briefs, buyer names and emails, ids and PayPal references; group by needs attention, active or closed; sort by activity, age, amount or title; export the same view as CSV (`/api/proofholds/export`). Settings exports the whole workspace as JSON and can delete it, after you type the workspace name; deletion removes the workspace, its proofholds, evidence, checks, decisions, messages and history from this deployment, and never voids an active hold, so end those first.
+
+## The examiner, in three modes
+
+`EXAMINER_MODE` picks who judges the lines a machine cannot measure. `auto` uses the model when `ANTHROPIC_API_KEY` is set and is otherwise off. `simulated` runs a deterministic stand-in (`src/lib/examiner/simulated.ts`) that reads file names, readable text and image metadata, passes only on clear signals, fails only on placeholder content, and abstains otherwise; every verdict it writes is labelled "simulated examiner" and the header badge says so. `off` sends judgement lines to the buyer. The simulation exists so the whole judgement path can be demonstrated without a key; it is not a judgement and is never shown as one.
+
 ## Examiner evaluation
 
 `eval/cases.ts` holds 30 labelled cases across copy, data, code and image deliverables, including cases where the only honest answer is to abstain. `npm run eval` prints agreement, pass/fail/abstain counts and, the number that matters, false releases (label fail or abstain, examiner pass above the threshold). Results are written to `eval/results.json` and pasted here as they come out.

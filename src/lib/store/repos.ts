@@ -927,4 +927,49 @@ export async function mailSentFor(
     [proofholdId, event, since ?? ""],
   );
   return Number(row?.n ?? 0) > 0;
+// ---------- workspace export and deletion ----------
+
+/** Everything a workspace owns, without file bytes. */
+export async function exportWorkspace(sql: Sql, workspaceId: string) {
+  const workspace = await getWorkspace(sql, workspaceId);
+  if (!workspace) return null;
+  const proofholds = await listProofholds(sql, workspaceId);
+  const out = [];
+  for (const ph of proofholds) {
+    out.push({
+      proofhold: ph,
+      evidence: (await listEvidence(sql, ph.id)).map((e) => ({ ...e })),
+      checks: await listChecks(sql, ph.id),
+      decisions: await listDecisions(sql, ph.id),
+      messages: await listMessages(sql, ph.id),
+      audit: await listAudit(sql, ph.id),
+    });
+  }
+  const mail = await listMail(sql, { workspaceId }, 1000);
+  return { exportedAt: nowIso(), workspace, proofholds: out, mail };
+}
+
+/** Remove a workspace and everything it owns. Returns what was removed. */
+export async function deleteWorkspaceData(
+  sql: Sql,
+  workspaceId: string,
+): Promise<{ proofholds: number; evidence: number; mail: number }> {
+  const ids = (
+    await sql.all<{ id: string }>("SELECT id FROM proofholds WHERE workspace_id = ?", [
+      workspaceId,
+    ])
+  ).map((r) => r.id);
+  let evidence = 0;
+  for (const id of ids) {
+    evidence += (await sql.run("DELETE FROM evidence WHERE proofhold_id = ?", [id]))
+      .changes;
+    for (const table of ["checks", "decisions", "messages", "audit"]) {
+      await sql.run(`DELETE FROM ${table} WHERE proofhold_id = ?`, [id]);
+    }
+  }
+  const mail = (await sql.run("DELETE FROM mail_outbox WHERE workspace_id = ?", [workspaceId]))
+    .changes;
+  await sql.run("DELETE FROM proofholds WHERE workspace_id = ?", [workspaceId]);
+  await sql.run("DELETE FROM workspaces WHERE id = ?", [workspaceId]);
+  return { proofholds: ids.length, evidence, mail };
 }

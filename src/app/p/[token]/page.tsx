@@ -114,7 +114,7 @@ export default async function BuyerPage({
                 hash={ph.testHash}
                 showChecks={false}
                 demoMinutes={system.demoSilenceMinutes}
-                examinerOff={!system.aiAvailable}
+                examinerOff={!system.examinerOn}
                 agreement={{
                   seller: { name: sellerName, at: ph.sellerAgreedAt },
                   buyer: { name: ph.buyerName, at: null },
@@ -200,7 +200,7 @@ export default async function BuyerPage({
                   threshold={threshold}
                   showChecks={s !== "cancelled"}
                   demoMinutes={system.demoSilenceMinutes}
-                  examinerOff={!system.aiAvailable}
+                  examinerOff={!system.examinerOn}
                   agreement={{
                     seller: { name: sellerName, at: ph.sellerAgreedAt },
                     buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },

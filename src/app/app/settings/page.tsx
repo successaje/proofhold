@@ -9,6 +9,7 @@ import { SettingsForm } from "./settings-form";
 import { Outbox } from "./outbox";
 import { db } from "@/lib/store/sql";
 import { listMail } from "@/lib/store/repos";
+import { DangerZone } from "./danger-zone";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -52,14 +53,17 @@ export default async function SettingsPage() {
               },
               {
                 k: "Examiner",
-                v: system.aiAvailable ? (
-                  <>
-                    On, using <Mono>{system.model}</Mono>. Judgement lines are scored with
-                    abstention allowed.
-                  </>
-                ) : (
-                  "Off. ANTHROPIC_API_KEY is not set, so briefs get a starter test and judgement lines fall to the buyer."
-                ),
+                v:
+                  system.examinerMode === "anthropic" ? (
+                    <>
+                      On, using <Mono>{system.model}</Mono>. Judgement lines are scored
+                      with abstention allowed.
+                    </>
+                  ) : system.examinerMode === "simulated" ? (
+                    "Simulated (EXAMINER_MODE=simulated). A deterministic stand-in judges judgement lines from file names, readable text and image metadata, labelled as simulated on every verdict. Set ANTHROPIC_API_KEY for the real examiner."
+                  ) : (
+                    "Off. ANTHROPIC_API_KEY is not set, so briefs get a starter test and judgement lines fall to the buyer. Set EXAMINER_MODE=simulated to run the judgement path with a labelled stand-in."
+                  ),
               },
               {
                 k: "Mail",
@@ -91,6 +95,7 @@ export default async function SettingsPage() {
           />
         </Panel>
         <Outbox mail={mail} mode={system.mailMode} />
+        <DangerZone workspaceName={ws.name} />
         <Note tone="info">
           Where the money goes today: every capture lands in the PayPal business account
           this deployment runs with, whatever email is saved above. Production would add a

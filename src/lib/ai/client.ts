@@ -11,6 +11,15 @@ export function aiAvailable(): boolean {
   return config().ai.configured;
 }
 
+/** Which examiner judges judgement lines: the model, the labelled simulation, or none. */
+export function examinerMode(): "anthropic" | "simulated" | "off" {
+  return config().examiner.mode;
+}
+
+export function examinerOn(): boolean {
+  return examinerMode() !== "off";
+}
+
 export function anthropic(): Anthropic {
   if (!aiAvailable()) throw new AiUnavailable();
   client ??= new Anthropic({

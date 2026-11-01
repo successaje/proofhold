@@ -6,7 +6,8 @@ import {
   startWorkspace,
 } from "@/lib/session/workspace";
 import { db } from "@/lib/store/sql";
-import { updateWorkspace } from "@/lib/store/repos";
+import { deleteWorkspaceData, updateWorkspace } from "@/lib/store/repos";
+import { log } from "@/lib/log";
 
 const schema = z.object({
   name: z.string().trim().min(1).max(80),
@@ -32,7 +33,21 @@ export const PATCH = handle(async (request: Request) => {
   return json({ workspace: { ...ws, ...input } });
 });
 
-export const DELETE = handle(async () => {
+/** Delete the workspace and everything it owns. The body must repeat the workspace name. */
+export const DELETE = handle(async (request: Request) => {
+  const ws = await currentWorkspace();
+  if (!ws) throw new HttpError("Sign in first.", 401);
+  const body = z
+    .object({ confirm: z.string().trim() })
+    .parse(await readJson(request).catch(() => ({ confirm: "" })));
+  if (body.confirm !== ws.name)
+    throw new HttpError(
+      "Type the workspace name exactly to confirm deletion.",
+      400,
+      "confirm",
+    );
+  const removed = await deleteWorkspaceData(await db(), ws.id);
   await endWorkspaceSession();
-  return json({ ok: true });
+  log("info", "workspace deleted", { workspaceId: ws.id, ...removed });
+  return json({ ok: true, removed });
 });

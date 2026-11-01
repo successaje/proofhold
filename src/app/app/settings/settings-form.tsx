@@ -21,7 +21,7 @@ export function SettingsForm({
   async function signOut() {
     setLeaving(true);
     try {
-      await fetch("/api/workspace", { method: "DELETE" });
+      await fetch("/api/workspace/sign-out", { method: "POST" });
       router.push("/app/start");
       router.refresh();
     } catch {

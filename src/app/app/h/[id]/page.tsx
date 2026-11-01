@@ -169,7 +169,7 @@ export default async function ProofholdPage({
                 threshold={threshold}
                 showChecks={!["proposed", "cancelled"].includes(s)}
                 demoMinutes={system.demoSilenceMinutes}
-                examinerOff={!system.aiAvailable}
+                examinerOff={!system.examinerOn}
                 agreement={{
                   seller: { name: ws.name, at: ph.sellerAgreedAt },
                   buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },
@@ -187,10 +187,13 @@ export default async function ProofholdPage({
                 stages={[
                   { label: "Files measured and counted", state: "done" },
                   {
-                    label: system.aiAvailable
-                      ? "Examiner reviewing judgement lines (may abstain)"
-                      : "Examiner off: judgement lines go to the buyer",
-                    state: system.aiAvailable ? "active" : "done",
+                    label:
+                      system.examinerMode === "anthropic"
+                        ? "Examiner reviewing judgement lines (may abstain)"
+                        : system.examinerMode === "simulated"
+                          ? "Simulated examiner reviewing judgement lines (may abstain)"
+                          : "Examiner off: judgement lines go to the buyer",
+                    state: system.examinerOn ? "active" : "done",
                   },
                   { label: "Decision recorded, buyer window opens", state: "todo" },
                 ]}
@@ -227,7 +230,7 @@ export default async function ProofholdPage({
           ) : null}
 
           {s === "held" || s === "awaiting_buyer" ? (
-            <DeliverPanel ph={ph} evidence={evidence} aiAvailable={system.aiAvailable} />
+            <DeliverPanel ph={ph} evidence={evidence} examinerOn={system.examinerOn} />
           ) : null}
 
           {s === "disputed" ? (
