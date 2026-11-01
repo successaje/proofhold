@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { config } from "@/lib/config";
 import { db } from "@/lib/store/sql";
-import { lastTickInfo } from "@/lib/scheduler/tick";
+import { getMeta } from "@/lib/store/repos";
 import { systemInfo } from "@/lib/view";
 
 const version = (() => {
@@ -30,10 +30,19 @@ export async function GET() {
       detail: error instanceof Error ? error.message : "failed",
     };
   }
-  const tick = lastTickInfo();
+  let tick: { at: string; errors: number } | null = null;
+  try {
+    tick = await getMeta<{ at: string; errors: number }>(
+      await db(),
+      "scheduler.last_tick",
+    );
+  } catch {
+    tick = null;
+  }
   if (c.PROOFHOLD_SCHEDULER === "inline") {
     const age = tick ? Date.now() - Date.parse(tick.at) : null;
-    const stale = age === null ? Date.now() - startedAt > 120_000 : age > 5 * 60_000;
+    // The first pass runs 30 s after boot; allow five minutes before calling it stale.
+    const stale = age === null ? Date.now() - startedAt > 5 * 60_000 : age > 5 * 60_000;
     checks.scheduler = {
       ok: !stale,
       detail: tick ? `last pass ${tick.at}, ${tick.errors} errors` : "no pass yet",

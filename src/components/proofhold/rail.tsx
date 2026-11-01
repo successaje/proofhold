@@ -80,7 +80,13 @@ export function Rail({
       {steps.map((s) => (
         <li
           key={s.key}
-          className={[styles.step, styles[`step-${s.state}`]].join(" ")}
+          className={[
+            styles.step,
+            styles[`step-${s.state}`],
+            s.state === "current" && status === "checking" && styles.running,
+          ]
+            .filter(Boolean)
+            .join(" ")}
           aria-current={s.state === "current" ? "step" : undefined}
           title={variant === "dots" ? s.label : undefined}
         >

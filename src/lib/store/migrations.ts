@@ -166,4 +166,14 @@ CREATE INDEX IF NOT EXISTS mail_outbox_workspace ON mail_outbox (workspace_id, c
 CREATE INDEX IF NOT EXISTS mail_outbox_proofhold ON mail_outbox (proofhold_id, created_at);
 `,
   },
+  {
+    name: "004_meta",
+    sql: `
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+`,
+  },
 ];

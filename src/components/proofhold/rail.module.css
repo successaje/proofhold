@@ -58,6 +58,18 @@
   border-color: var(--held);
   box-shadow: 0 0 0 3px var(--held-soft);
 }
+.running .dot {
+  animation: breathe 1.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 0 3px var(--held-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--held) 18%, transparent);
+  }
+}
 .step-off {
   color: var(--ink-2);
   font-weight: 600;

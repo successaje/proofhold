@@ -976,3 +976,27 @@ export async function deleteWorkspaceData(
   await sql.run("DELETE FROM workspaces WHERE id = ?", [workspaceId]);
   return { proofholds: ids.length, evidence, mail };
 }
+
+// ---------- meta (small process-independent facts, such as the scheduler's last pass) ----------
+
+export async function setMeta(sql: Sql, key: string, value: unknown): Promise<void> {
+  const now = nowIso();
+  const json = JSON.stringify(value);
+  if (sql.dialect === "postgres")
+    await sql.run(
+      "INSERT INTO meta (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at",
+      [key, json, now],
+    );
+  else
+    await sql.run(
+      "INSERT OR REPLACE INTO meta (key, value, updated_at) VALUES (?, ?, ?)",
+      [key, json, now],
+    );
+}
+
+export async function getMeta<T>(sql: Sql, key: string): Promise<T | null> {
+  const row = await sql.get<{ value: string }>("SELECT value FROM meta WHERE key = ?", [
+    key,
+  ]);
+  return row ? (JSON.parse(row.value) as T) : null;
+}

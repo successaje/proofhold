@@ -18,7 +18,7 @@ import { expire } from "../proofholds/release";
 import { appendAudit, listAudit } from "../store/repos";
 import { syncDispute } from "../proofholds/disputes";
 import { notify, reminderDue } from "../mail/notify";
-import { mailSentFor } from "../store/repos";
+import { mailSentFor, setMeta } from "../store/repos";
 
 export interface TickReport {
   at: string;
@@ -196,6 +196,11 @@ export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
     }
   }
   lastTick = { at: report.at, errors: report.errors.length };
+  try {
+    await setMeta(sql, "scheduler.last_tick", lastTick);
+  } catch {
+    /* the pass itself succeeded; the marker is advisory */
+  }
   return report;
 }
 

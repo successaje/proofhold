@@ -42,6 +42,13 @@
 .row:hover {
   background: var(--surface-2);
 }
+.row:hover .rowArrow {
+  transform: translateX(3px);
+  color: var(--ink);
+}
+.row:focus-visible {
+  outline-offset: -2px;
+}
 @media (min-width: 56rem) {
   .row {
     grid-template-columns: auto minmax(14rem, 1.4fr) 1.2fr auto auto 1.25rem;
@@ -96,6 +103,9 @@
   width: 1.1rem;
   height: 1.1rem;
   color: var(--muted);
+  transition:
+    transform var(--t-base) var(--ease-out),
+    color var(--t-fast);
 }
 @media (min-width: 56rem) {
   .rowArrow {

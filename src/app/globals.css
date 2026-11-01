@@ -219,6 +219,23 @@ pre {
   background: var(--brand-soft);
 }
 
+.skipLink {
+  position: absolute;
+  left: var(--s-4);
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: top var(--t-fast);
+}
+.skipLink:focus {
+  top: var(--s-4);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

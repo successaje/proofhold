@@ -6,6 +6,9 @@
   color: var(--muted);
   margin-bottom: var(--s-2);
 }
+.standing {
+  color: var(--muted);
+}
 .title {
   font-family: var(--font-display);
   font-weight: 500;
