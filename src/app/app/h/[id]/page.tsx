@@ -13,6 +13,7 @@ import { Rail } from "@/components/proofhold/rail";
 import {
   BundleButton,
   CancelButton,
+  RecordButton,
   ReuseButton,
   DisputeActions,
   EndHoldButton,
@@ -115,6 +116,7 @@ export default async function ProofholdPage({
           <>
             {s === "draft" || s === "proposed" ? <CancelButton ph={ph} /> : null}
             {held && s !== "checking" ? <EndHoldButton ph={ph} /> : null}
+            {!["draft"].includes(s) ? <RecordButton ph={ph} /> : null}
             {!["draft"].includes(s) ? <BundleButton ph={ph} /> : null}
             {s !== "draft" ? <ReuseButton ph={ph} /> : null}
           </>

@@ -21,6 +21,7 @@ import {
   updateProofhold,
 } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { imageMeta, sniffMime } from "../validators/images";
 import { carrierOptions, runValidators, type ValidationContext } from "../validators/run";
 import { note, ProofholdError, requireStatus, transition } from "./lifecycle";
@@ -367,13 +368,15 @@ export async function apply(
       });
     case "review": {
       if (ph.status === "in_review") return noteDecision(sql, ph, decisionRecord);
-      return transition(
+      const reviewing = await transition(
         sql,
         ph,
         "in_review",
         { decision: decisionRecord, silenceWindowEndsAt: null },
         { type: "decision", data: { outcome: o } },
       );
+      await notify(sql, reviewing, "review");
+      return reviewing;
     }
     case "wait":
     case "blocked": {
@@ -384,11 +387,18 @@ export async function apply(
           o.kind === "wait" && !o.releasesOnSilence ? ph.silenceWindowEndsAt : windowEnd,
       };
       if (ph.status === "awaiting_buyer") return updateProofhold(sql, ph.id, patch);
-      if (ph.status === "checking")
-        return transition(sql, ph, "awaiting_buyer", patch, {
+      if (ph.status === "checking") {
+        const waiting = await transition(sql, ph, "awaiting_buyer", patch, {
           type: "decision",
           data: { outcome: o, silenceWindowEndsAt: patch.silenceWindowEndsAt },
         });
+        await notify(
+          sql,
+          waiting,
+          o.kind === "blocked" ? "window_blocked" : "window_open",
+        );
+        return waiting;
+      }
       return noteDecision(sql, ph, decisionRecord);
     }
   }

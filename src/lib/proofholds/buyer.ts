@@ -4,6 +4,7 @@
 import type { Proofhold } from "../domain/proofhold";
 import { addMessage, latestRound, recordCheck, updateProofhold } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { evaluate } from "./evidence";
 import { note, ProofholdError, requireStatus } from "./lifecycle";
 import { release, voidHold } from "./release";
@@ -102,13 +103,15 @@ export async function proposeOffer(
     );
   const text = input.note.trim();
   if (text) await addMessage(sql, { proofholdId: ph.id, author: "seller", body: text });
-  return note(
+  const offered = await note(
     sql,
     ph,
     "offer_proposed",
     { amountCents: input.amountCents, note: text },
     { offerCents: input.amountCents, offerNote: text || null },
   );
+  await notify(sql, offered, "offer");
+  return offered;
 }
 
 export async function acceptOffer(sql: Sql, ph: Proofhold): Promise<Proofhold> {

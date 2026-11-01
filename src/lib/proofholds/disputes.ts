@@ -12,6 +12,7 @@ import {
   recordDecision,
 } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { bundleSummaryText, evidenceBundle } from "./bundle";
 import { note, ProofholdError, requireStatus, transition } from "./lifecycle";
 
@@ -57,7 +58,7 @@ export async function openSandboxDispute(
     paypalCaptureId: capture.paypalCaptureId,
     paypalDisputeId: dispute.disputeId,
   });
-  return transition(
+  const disputed = await transition(
     sql,
     ph,
     "disputed",
@@ -72,6 +73,8 @@ export async function openSandboxDispute(
       },
     },
   );
+  await notify(sql, disputed, "disputed");
+  return disputed;
 }
 
 /** File the evidence bundle with PayPal through provide-evidence. */
@@ -158,20 +161,26 @@ export async function syncDispute(sql: Sql, ph: Proofhold): Promise<Proofhold> {
     );
   const buyerWon = (d.outcome ?? "").includes("BUYER");
   if (buyerWon) {
-    return transition(
+    const refunded = await transition(
       sql,
       ph,
       "refunded",
       { decidedAt: new Date().toISOString() },
       { type: "dispute_resolved", data: { outcome: d.outcome, disputeId: d.disputeId } },
     );
+    await notify(sql, refunded, "dispute_resolved", {
+      outcome: "buyer favour, refunded",
+    });
+    return refunded;
   }
   const to = ph.releasedCents >= ph.amountCents ? "released" : "partially_released";
-  return transition(
+  const resolved = await transition(
     sql,
     ph,
     to,
     { decidedAt: new Date().toISOString() },
     { type: "dispute_resolved", data: { outcome: d.outcome, disputeId: d.disputeId } },
   );
+  await notify(sql, resolved, "dispute_resolved", { outcome: "seller favour" });
+  return resolved;
 }

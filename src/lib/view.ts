@@ -19,6 +19,7 @@ export interface SystemInfo {
   paypalMode: "sandbox" | "simulated";
   aiAvailable: boolean;
   model: string;
+  mailMode: "simulated" | "resend";
   demoSilenceMinutes: number | null;
   appUrl: string;
 }
@@ -29,6 +30,7 @@ export function systemInfo(): SystemInfo {
     paypalMode: c.paypal.mode,
     aiAvailable: aiAvailable(),
     model: c.ANTHROPIC_MODEL,
+    mailMode: c.mail.provider,
     demoSilenceMinutes: c.DEMO_SILENCE_MINUTES ?? null,
     appUrl: c.APP_URL,
   };

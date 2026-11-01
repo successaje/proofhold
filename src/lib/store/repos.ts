@@ -810,3 +810,121 @@ export async function simList<T>(sql: Sql, kind: string): Promise<T[]> {
   );
   return rows.map((r) => JSON.parse(r.body_json) as T);
 }
+
+// ---------- mail outbox ----------
+
+export interface MailRecord {
+  id: string;
+  workspaceId: string | null;
+  proofholdId: string | null;
+  to: string;
+  toRole: "seller" | "buyer";
+  event: string;
+  subject: string;
+  text: string;
+  html: string;
+  status: "simulated" | "sent" | "failed";
+  provider: string;
+  providerId: string | null;
+  error: string | null;
+  createdAt: string;
+  sentAt: string | null;
+}
+
+interface MailRow {
+  id: string;
+  workspace_id: string | null;
+  proofhold_id: string | null;
+  to_email: string;
+  to_role: MailRecord["toRole"];
+  event: string;
+  subject: string;
+  text_body: string;
+  html_body: string;
+  status: MailRecord["status"];
+  provider: string;
+  provider_id: string | null;
+  error: string | null;
+  created_at: string;
+  sent_at: string | null;
+}
+
+function mailFromRow(r: MailRow): MailRecord {
+  return {
+    id: r.id,
+    workspaceId: r.workspace_id,
+    proofholdId: r.proofhold_id,
+    to: r.to_email,
+    toRole: r.to_role,
+    event: r.event,
+    subject: r.subject,
+    text: r.text_body,
+    html: r.html_body,
+    status: r.status,
+    provider: r.provider,
+    providerId: r.provider_id,
+    error: r.error,
+    createdAt: r.created_at,
+    sentAt: r.sent_at,
+  };
+}
+
+export async function recordMail(
+  sql: Sql,
+  input: Omit<MailRecord, "id" | "createdAt">,
+): Promise<MailRecord> {
+  const id = newId("mail");
+  const createdAt = nowIso();
+  await sql.run(
+    `INSERT INTO mail_outbox (id, workspace_id, proofhold_id, to_email, to_role, event, subject, text_body, html_body, status, provider, provider_id, error, created_at, sent_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      id,
+      input.workspaceId,
+      input.proofholdId,
+      input.to,
+      input.toRole,
+      input.event,
+      input.subject,
+      input.text,
+      input.html,
+      input.status,
+      input.provider,
+      input.providerId,
+      input.error,
+      createdAt,
+      input.sentAt,
+    ],
+  );
+  return { ...input, id, createdAt };
+}
+
+export async function listMail(
+  sql: Sql,
+  where: { workspaceId?: string; proofholdId?: string },
+  limit = 50,
+): Promise<MailRecord[]> {
+  const rows = where.proofholdId
+    ? await sql.all<MailRow>(
+        "SELECT * FROM mail_outbox WHERE proofhold_id = ? ORDER BY created_at DESC LIMIT ?",
+        [where.proofholdId, limit],
+      )
+    : await sql.all<MailRow>(
+        "SELECT * FROM mail_outbox WHERE workspace_id = ? ORDER BY created_at DESC LIMIT ?",
+        [where.workspaceId ?? "", limit],
+      );
+  return rows.map(mailFromRow);
+}
+
+export async function mailSentFor(
+  sql: Sql,
+  proofholdId: string,
+  event: string,
+  since?: string | null,
+): Promise<boolean> {
+  const row = await sql.get<{ n: number }>(
+    "SELECT count(*) AS n FROM mail_outbox WHERE proofhold_id = ? AND event = ? AND created_at >= ?",
+    [proofholdId, event, since ?? ""],
+  );
+  return Number(row?.n ?? 0) > 0;
+}

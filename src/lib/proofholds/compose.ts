@@ -6,6 +6,7 @@ import { acceptanceTestSchema, hashTest, type AcceptanceTest } from "../domain/t
 import { kinds, type Proofhold } from "../domain/proofhold";
 import { appendAudit, createProofhold, updateProofhold } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { ProofholdError, requireStatus, transition } from "./lifecycle";
 
 export const draftInputSchema = z.object({
@@ -78,13 +79,15 @@ export async function propose(sql: Sql, ph: Proofhold): Promise<Proofhold> {
   if (ph.test.predicates.length === 0)
     throw new ProofholdError("Add at least one check first.");
   const now = new Date().toISOString();
-  return transition(
+  const sent = await transition(
     sql,
     ph,
     "proposed",
     { sellerAgreedAt: now },
     { type: "seller_agreed", data: { testHash: ph.testHash, at: now } },
   );
+  await notify(sql, sent, "proposed");
+  return sent;
 }
 
 export async function cancel(

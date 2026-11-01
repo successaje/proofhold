@@ -246,12 +246,17 @@ export default async function BuyerPage({
           <HoldCard ph={ph} checks={checks} system={system} audience="buyer" />
           {s !== "proposed" ? (
             <p className={styles.fine}>
+              <a href={`/p/${token}/record`} className={styles.recordLink}>
+                {ph.releasedCents > 0
+                  ? "Your receipt and the printable record"
+                  : "The printable record"}
+              </a>{" "}
+              ·{" "}
               <a href={`/api/p/${token}/bundle`} className={styles.recordLink}>
-                Download the full record
+                JSON bundle
               </a>{" "}
               · the agreed test and its hash, every check with its reasons, file
-              fingerprints and the hash-chained history. The seller can download the same
-              file.
+              fingerprints and the hash-chained history. The seller has the same record.
             </p>
           ) : null}
         </div>
