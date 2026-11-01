@@ -42,7 +42,21 @@ Status values: **passed**, **failed**, **blocked** (needs something we do not ha
 
 ## Measurements
 
-`npm run measure` against the development server (not a production build; Turbopack dev adds overhead), medians of 5, Chromium headless, same machine:
+**Production build** (`next build` then `next start`, SQLite, same machine, 2026-11-01), `APP_URL=http://127.0.0.1:3300 RUNS=7 npm run measure`, medians of 7, Chromium headless:
+
+| Page / call            | TTFB  | DOMContentLoaded | LCP   |
+| ---------------------- | ----- | ---------------- | ----- |
+| `/`                    | 2 ms  | 8 ms             | 40 ms |
+| `/app/start`           | 13 ms | 28 ms            | 36 ms |
+| `/app`                 | 12 ms | 26 ms            | 40 ms |
+| `/app/new`             | 13 ms | 30 ms            | 44 ms |
+| `/app/h/[id]`          | 8 ms  | 19 ms            | 32 ms |
+| `POST /api/compile`    | 3 ms  |                  |       |
+| `POST /api/proofholds` | 6 ms  |                  |       |
+
+About 205 KB of declared transfer per page, dominated by the framework runtime and the three font families. Conditions: a local loopback, a warm process, an SQLite file with a few hundred rows; a remote Postgres and a cold start would add their own latency, which has not been measured.
+
+**Development server** (`npm run local`, Turbopack dev adds overhead), medians of 5, kept for comparison:
 
 | Page / call            | TTFB   | DOMContentLoaded | LCP    |
 | ---------------------- | ------ | ---------------- | ------ |
