@@ -378,6 +378,8 @@ export default function Landing() {
           </p>
           <nav aria-label="Footer">
             <Link href="/app">App</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/privacy">Privacy</Link>
             <a href={REPO}>GitHub</a>
           </nav>
         </div>

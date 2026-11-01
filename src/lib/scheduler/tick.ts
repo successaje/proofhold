@@ -31,6 +31,12 @@ export interface TickReport {
 
 const RECONCILE_EVERY_MS = 10 * 60_000;
 
+let lastTick: { at: string; errors: number } | null = null;
+/** When the scheduler last completed a pass in this process, for the health endpoint. */
+export function lastTickInfo() {
+  return lastTick;
+}
+
 export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
   const report: TickReport = {
     at: now.toISOString(),
@@ -170,6 +176,7 @@ export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
       });
     }
   }
+  lastTick = { at: report.at, errors: report.errors.length };
   return report;
 }
 

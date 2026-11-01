@@ -238,3 +238,9 @@
   color: var(--muted);
   line-height: var(--leading-snug);
 }
+.buyerFoot a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  padding: 0.25rem 0;
+}

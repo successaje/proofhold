@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "./brand";
 import { ModeBadges } from "./mode-badges";
@@ -24,7 +25,8 @@ export function BuyerShell({
       <main className={styles.buyerMain}>{children}</main>
       <footer className={styles.buyerFoot}>
         Proofhold never holds your money. Approval creates a PayPal authorization that
-        only PayPal can capture or release, and only under the test shown on this page.
+        only PayPal can capture or release, and only under the test shown on this page.{" "}
+        <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link>
       </footer>
     </>
   );
