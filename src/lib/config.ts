@@ -67,6 +67,7 @@ export function config(): Config {
       provider:
         parsed.MAIL_PROVIDER === "resend" && mailConfigured ? "resend" : "simulated",
       configured: mailConfigured,
+    },
     examiner: {
       mode:
         parsed.EXAMINER_MODE === "simulated"

@@ -927,6 +927,8 @@ export async function mailSentFor(
     [proofholdId, event, since ?? ""],
   );
   return Number(row?.n ?? 0) > 0;
+}
+
 // ---------- workspace export and deletion ----------
 
 /** Everything a workspace owns, without file bytes. */
@@ -967,8 +969,9 @@ export async function deleteWorkspaceData(
       await sql.run(`DELETE FROM ${table} WHERE proofhold_id = ?`, [id]);
     }
   }
-  const mail = (await sql.run("DELETE FROM mail_outbox WHERE workspace_id = ?", [workspaceId]))
-    .changes;
+  const mail = (
+    await sql.run("DELETE FROM mail_outbox WHERE workspace_id = ?", [workspaceId])
+  ).changes;
   await sql.run("DELETE FROM proofholds WHERE workspace_id = ?", [workspaceId]);
   await sql.run("DELETE FROM workspaces WHERE id = ?", [workspaceId]);
   return { proofholds: ids.length, evidence, mail };
