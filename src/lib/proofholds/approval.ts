@@ -8,6 +8,7 @@ import { paypal } from "../paypal";
 import type { Proofhold } from "../domain/proofhold";
 import { getProofholdByOrder, updateProofhold } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { note, ProofholdError, requireStatus, transition } from "./lifecycle";
 
 export async function startApproval(
@@ -54,7 +55,7 @@ export async function completeApproval(sql: Sql, orderId: string): Promise<Proof
       "paypal",
     );
   const now = new Date().toISOString();
-  return transition(
+  const held = await transition(
     sql,
     ph,
     "held",
@@ -81,6 +82,8 @@ export async function completeApproval(sql: Sql, orderId: string): Promise<Proof
       },
     },
   );
+  await notify(sql, held, "approved");
+  return held;
 }
 
 export async function cancelApproval(

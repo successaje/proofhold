@@ -12,7 +12,7 @@ export function Countdown({ to }: { to: string }) {
   }, []);
   const left = durationLeft(to, now);
   return (
-    <time dateTime={to} className={styles.countdown}>
+    <time dateTime={to} className={styles.countdown} suppressHydrationWarning>
       {left === "now" ? "any moment now" : `in ${left}`}
     </time>
   );

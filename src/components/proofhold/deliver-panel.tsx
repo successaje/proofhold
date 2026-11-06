@@ -28,11 +28,11 @@ const carriers = [
 export function DeliverPanel({
   ph,
   evidence,
-  aiAvailable,
+  examinerOn,
 }: {
   ph: ProofholdView;
   evidence: EvidenceItem[];
-  aiAvailable: boolean;
+  examinerOn: boolean;
 }) {
   const router = useRouter();
   const { toast } = useToast();
@@ -121,6 +121,7 @@ export function DeliverPanel({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not submit.");
+    } finally {
       setSubmitting(false);
     }
   }
@@ -180,7 +181,7 @@ export function DeliverPanel({
               )}
               <span style={{ color: "var(--muted)", fontSize: "var(--text-xs)" }}>
                 Images are measured for size and resolution.
-                {aiAvailable ? " Images and text are shown to the examiner." : ""}
+                {examinerOn ? " Images and text are shown to the examiner." : ""}
               </span>
               <input
                 ref={fileInput}

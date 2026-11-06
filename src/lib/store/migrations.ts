@@ -142,4 +142,38 @@ ALTER TABLE proofholds ADD COLUMN payer_email TEXT;
 ALTER TABLE proofholds ADD COLUMN released_cents INTEGER NOT NULL DEFAULT 0;
 `,
   },
+  {
+    name: "003_mail",
+    sql: `
+CREATE TABLE IF NOT EXISTS mail_outbox (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT,
+  proofhold_id TEXT,
+  to_email TEXT NOT NULL,
+  to_role TEXT NOT NULL,
+  event TEXT NOT NULL,
+  subject TEXT NOT NULL,
+  text_body TEXT NOT NULL,
+  html_body TEXT NOT NULL,
+  status TEXT NOT NULL,
+  provider TEXT NOT NULL,
+  provider_id TEXT,
+  error TEXT,
+  created_at TEXT NOT NULL,
+  sent_at TEXT
+);
+CREATE INDEX IF NOT EXISTS mail_outbox_workspace ON mail_outbox (workspace_id, created_at);
+CREATE INDEX IF NOT EXISTS mail_outbox_proofhold ON mail_outbox (proofhold_id, created_at);
+`,
+  },
+  {
+    name: "004_meta",
+    sql: `
+CREATE TABLE IF NOT EXISTS meta (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+`,
+  },
 ];

@@ -38,7 +38,7 @@ test("Flow A: service deliverable passes the checks and the buyer releases", asy
   await expect(page.getByText("Buyer window").first()).toBeVisible({ timeout: 90_000 });
 
   await buyer.reload();
-  await expect(buyer.getByText("3 matching files")).toBeVisible();
+  await expect(buyer.getByText("3 matching files").first()).toBeVisible();
   await buyer.getByRole("button", { name: "Confirm and release" }).click();
   await buyer.getByRole("button", { name: "Release now" }).click();
   await expect(buyer.getByText("Released", { exact: true }).first()).toBeVisible();
@@ -51,6 +51,18 @@ test("Flow A: service deliverable passes the checks and the buyer releases", asy
   await page.goto("/app");
   await expect(page.getByText(/Released \$420\.00 · .* from submission/)).toBeVisible();
   await expect(page.getByText(/typical time from submission to release/)).toBeVisible();
+
+  // The record is printable and doubles as the buyer's receipt; the outbox holds the mail.
+  await page.goto(`/app/h/${id}/record`);
+  await expect(page.getByRole("heading", { name: "Receipt" })).toBeVisible();
+  await expect(page.getByText(/Captured \$420\.00 of \$420\.00/)).toBeVisible();
+  await buyer.goto(`${buyerUrl}/record`);
+  await expect(buyer.getByRole("heading", { name: "Receipt" })).toBeVisible();
+  await page.goto("/app/settings");
+  await expect(page.getByText(/Receipt: \$420\.00 paid to/)).toBeVisible();
+  await expect(
+    page.getByText("Held: $420.00 for Logo concepts for Driftwood Café"),
+  ).toBeVisible();
 
   // The next proofhold starts from this one's test.
   await page.goto(`/app/h/${id}`);

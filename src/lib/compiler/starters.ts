@@ -34,6 +34,75 @@ const numberWords: Record<string, number> = {
   ten: 10,
 };
 
+const WEEKDAYS = [
+  "sunday",
+  "monday",
+  "tuesday",
+  "wednesday",
+  "thursday",
+  "friday",
+  "saturday",
+];
+
+/**
+ * A deadline written in words, resolved against `today` (UTC): "by Friday",
+ * "within 5 days", "in two weeks", "tomorrow", "end of the month", or an ISO
+ * date. Returns the end of that day, or null when nothing readable is there.
+ */
+export function relativeDeadline(brief: string, today = new Date()): string | null {
+  const b = brief.toLowerCase();
+  const iso = b.match(/\b(20\d{2}-\d{2}-\d{2})\b/);
+  if (iso) return endOfDayUtc(iso[1]!);
+  const base = new Date(
+    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
+  );
+  const plus = (days: number) =>
+    endOfDayUtc(new Date(base.getTime() + days * 86_400_000).toISOString().slice(0, 10));
+  if (/\btomorrow\b/.test(b)) return plus(1);
+  const n = b.match(
+    /\b(?:within|in)\s+(\d{1,2}|one|two|three|four|five|six|seven|ten)\s+(day|week)s?\b/,
+  );
+  if (n) {
+    const count = numberWords[n[1]!] ?? Number(n[1]);
+    return plus(count * (n[2] === "week" ? 7 : 1));
+  }
+  const day = b.match(
+    /\b(?:by|before|due|on)\s+(?:next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/,
+  );
+  if (day) {
+    const target = WEEKDAYS.indexOf(day[1]!);
+    let ahead = (target - base.getUTCDay() + 7) % 7;
+    if (ahead === 0 || /next/.test(day[0])) ahead += 7;
+    return plus(ahead);
+  }
+  if (/\bend of (?:the )?month\b/.test(b)) {
+    const last = new Date(Date.UTC(base.getUTCFullYear(), base.getUTCMonth() + 1, 0));
+    return endOfDayUtc(last.toISOString().slice(0, 10));
+  }
+  if (/\bnext week\b/.test(b)) return plus(7);
+  return null;
+}
+
+/** Whether the brief mentions a deadline at all, readable or not. */
+export function mentionsDeadline(brief: string): boolean {
+  return /\b(due|deadline|by (monday|tuesday|wednesday|thursday|friday|saturday|sunday|the|end|tomorrow|\d)|within \d|in \d+ (days?|weeks?)|tomorrow|next week)\b/i.test(
+    brief,
+  );
+}
+
+/** Types joined by "plus", "and" or "&" are each required, not alternatives. */
+export function requiredTogether(brief: string, types: string[]): boolean {
+  if (types.length < 2) return false;
+  const exts = Object.entries(extensionMime)
+    .filter(([, m]) => types.includes(m))
+    .map(([e]) => e);
+  const alt = exts.join("|");
+  return new RegExp(
+    `\\b(${alt})s?\\b[^.]{0,60}?\\b(plus|and|&)\\b[^.]{0,40}?\\b(${alt})s?\\b`,
+    "i",
+  ).test(brief);
+}
+
 /** What the brief states plainly enough for a machine to check: counts, types, dpi, width. */
 export function briefFacts(brief: string) {
   const b = brief.toLowerCase();
@@ -61,9 +130,15 @@ export function briefFacts(brief: string) {
 }
 
 export function starterTest(input: CompileInput): AcceptanceTest {
-  const deadline = input.deadline ? endOfDayUtc(input.deadline) : null;
+  const today = input.today ? new Date(input.today) : new Date();
+  const readDeadline = input.deadline ? null : relativeDeadline(input.brief, today);
+  const deadline = input.deadline ? endOfDayUtc(input.deadline) : readDeadline;
+  const deadlineLabel =
+    input.deadline ?? (readDeadline ? readDeadline.slice(0, 10) : null);
   const facts = briefFacts(input.brief);
+  const together = requiredTogether(input.brief, facts.types);
   if (input.kind === "goods") {
+    const shipBy = deadlineLabel;
     return acceptanceTestSchema.parse({
       version: 1,
       summary: firstSentence(input.brief) || "Item as described, shipped with tracking",
@@ -100,7 +175,7 @@ export function starterTest(input: CompileInput): AcceptanceTest {
           ? [
               {
                 id: "p4",
-                text: `Shipped by ${input.deadline}`,
+                text: `Shipped by ${shipBy}`,
                 evidence: "file",
                 must_pass: true,
                 check: { kind: "deadline", before: deadline },
@@ -133,6 +208,15 @@ export function starterTest(input: CompileInput): AcceptanceTest {
       },
     },
   ];
+  if (together)
+    for (const t of facts.types)
+      predicates.push({
+        id: `p${predicates.length + 1}`,
+        text: `At least one ${mimeName(t)} file`,
+        evidence: "file",
+        must_pass: true,
+        check: { kind: "count", min: 1, mime: [t] },
+      });
   if (facts.dpi)
     predicates.push({
       id: `p${predicates.length + 1}`,
@@ -152,7 +236,7 @@ export function starterTest(input: CompileInput): AcceptanceTest {
   if (deadline)
     predicates.push({
       id: `p${predicates.length + 1}`,
-      text: `Delivered by ${input.deadline}`,
+      text: `Delivered by ${deadlineLabel}`,
       evidence: "file",
       must_pass: true,
       check: { kind: "deadline", before: deadline },
@@ -177,6 +261,19 @@ export function starterTest(input: CompileInput): AcceptanceTest {
       ...(facts.types.length === 0 && !facts.count
         ? [
             "The brief does not say how many files or which formats; the first line accepts any file.",
+          ]
+        : []),
+      ...(readDeadline && !input.deadline
+        ? [`The deadline "${deadlineLabel}" was read from the brief's wording; check it.`]
+        : []),
+      ...(!deadline && mentionsDeadline(input.brief)
+        ? [
+            "The brief mentions a deadline that could not be read. Set it in the Deadline field or edit the test.",
+          ]
+        : []),
+      ...(facts.types.length >= 2 && !together
+        ? [
+            `The brief names ${facts.types.map(mimeName).join(" and ")}; line 1 accepts either. If both are required, add a line per format.`,
           ]
         : []),
     ],

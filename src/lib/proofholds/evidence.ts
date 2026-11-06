@@ -9,7 +9,7 @@ import { config } from "../config";
 import { decide, type Decision } from "../decision/decide";
 import type { Proofhold } from "../domain/proofhold";
 import { examine, judgementPredicates } from "../examiner/examine";
-import { aiAvailable } from "../ai/client";
+import { examinerOn } from "../ai/client";
 import {
   addEvidence,
   appendAudit,
@@ -21,6 +21,7 @@ import {
   updateProofhold,
 } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { imageMeta, sniffMime } from "../validators/images";
 import { carrierOptions, runValidators, type ValidationContext } from "../validators/run";
 import { note, ProofholdError, requireStatus, transition } from "./lifecycle";
@@ -40,11 +41,7 @@ export async function addFile(
   ph: Proofhold,
   file: { name: string; bytes: Uint8Array; declaredMime?: string | null },
 ) {
-  requireStatus(
-    ph,
-    ["held", "awaiting_buyer", "in_review", "checking"],
-    "Uploading evidence",
-  );
+  requireStatus(ph, ["held"], "Uploading evidence");
   if (file.bytes.byteLength === 0) throw new ProofholdError("That file is empty.");
   if (file.bytes.byteLength > MAX_FILE_BYTES)
     throw new ProofholdError("Files are limited to 8 MB each.");
@@ -82,7 +79,7 @@ export async function addFile(
 }
 
 export async function removeFile(sql: Sql, ph: Proofhold, evidenceId: string) {
-  requireStatus(ph, ["held", "awaiting_buyer", "in_review"], "Removing evidence");
+  requireStatus(ph, ["held"], "Removing evidence");
   const items = await listEvidence(sql, ph.id);
   const item = items.find((e) => e.id === evidenceId);
   if (!item) throw new ProofholdError("Evidence not found", 404);
@@ -95,11 +92,7 @@ export async function addTracking(
   ph: Proofhold,
   input: { carrier: string; number: string },
 ) {
-  requireStatus(
-    ph,
-    ["held", "awaiting_buyer", "in_review", "checking"],
-    "Adding tracking",
-  );
+  requireStatus(ph, ["held"], "Adding tracking");
   const carrier = input.carrier.toUpperCase();
   if (!carrierOptions.includes(carrier)) throw new ProofholdError("Unknown carrier.");
   const number = input.number.trim();
@@ -158,7 +151,7 @@ export async function submit(
   ph: Proofhold,
   sellerNote?: string | null,
 ): Promise<{ proofhold: Proofhold; round: number; needsExaminer: boolean }> {
-  requireStatus(ph, ["held", "awaiting_buyer", "in_review"], "Submitting evidence");
+  requireStatus(ph, ["held"], "Submitting evidence");
   const items = await listEvidence(sql, ph.id);
   if (items.length === 0)
     throw new ProofholdError("Add at least one file or a tracking number first.");
@@ -217,7 +210,7 @@ export async function submit(
   }
   const needsExaminer = judgementPredicates(current.test).length > 0;
   if (!needsExaminer) current = await evaluate(sql, current);
-  else if (!aiAvailable()) {
+  else if (!examinerOn()) {
     for (const p of judgementPredicates(current.test)) {
       await recordCheck(sql, {
         proofholdId: ph.id,
@@ -234,7 +227,7 @@ export async function submit(
     }
     current = await evaluate(sql, current);
   }
-  return { proofhold: current, round, needsExaminer: needsExaminer && aiAvailable() };
+  return { proofhold: current, round, needsExaminer: needsExaminer && examinerOn() };
 }
 
 /** Runs the examiner for the latest round, records verdicts, then evaluates. */
@@ -290,7 +283,7 @@ export async function runExaminer(sql: Sql, ph: Proofhold): Promise<Proofhold> {
       round,
       source: "examiner",
       verdict: v.verdict,
-      confidence: v.confidence,
+      confidence: result.model === "simulated-examiner" ? null : v.confidence,
       reasons: v.reasons,
       detail: { whatWouldResolve: v.what_would_resolve, model: result.model },
     });
@@ -367,13 +360,15 @@ export async function apply(
       });
     case "review": {
       if (ph.status === "in_review") return noteDecision(sql, ph, decisionRecord);
-      return transition(
+      const reviewing = await transition(
         sql,
         ph,
         "in_review",
         { decision: decisionRecord, silenceWindowEndsAt: null },
         { type: "decision", data: { outcome: o } },
       );
+      await notify(sql, reviewing, "review");
+      return reviewing;
     }
     case "wait":
     case "blocked": {
@@ -384,11 +379,18 @@ export async function apply(
           o.kind === "wait" && !o.releasesOnSilence ? ph.silenceWindowEndsAt : windowEnd,
       };
       if (ph.status === "awaiting_buyer") return updateProofhold(sql, ph.id, patch);
-      if (ph.status === "checking")
-        return transition(sql, ph, "awaiting_buyer", patch, {
+      if (ph.status === "checking") {
+        const waiting = await transition(sql, ph, "awaiting_buyer", patch, {
           type: "decision",
           data: { outcome: o, silenceWindowEndsAt: patch.silenceWindowEndsAt },
         });
+        await notify(
+          sql,
+          waiting,
+          o.kind === "blocked" ? "window_blocked" : "window_open",
+        );
+        return waiting;
+      }
       return noteDecision(sql, ph, decisionRecord);
     }
   }

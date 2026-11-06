@@ -219,6 +219,23 @@ pre {
   background: var(--brand-soft);
 }
 
+.skipLink {
+  position: absolute;
+  left: var(--s-4);
+  top: -3rem;
+  z-index: 100;
+  padding: 0.5rem 0.8rem;
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: top var(--t-fast);
+}
+.skipLink:focus {
+  top: var(--s-4);
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -239,5 +256,28 @@ pre {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  :root {
+    --paper: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f4f4f4;
+    --ink: #000000;
+    --ink-2: #222222;
+    --muted: #555555;
+    --line: #cccccc;
+    --rule: #999999;
+  }
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .noPrint {
+    display: none !important;
+  }
+  a {
+    color: inherit;
   }
 }

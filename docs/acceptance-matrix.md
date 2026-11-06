@@ -42,7 +42,21 @@ Status values: **passed**, **failed**, **blocked** (needs something we do not ha
 
 ## Measurements
 
-`npm run measure` against the development server (not a production build; Turbopack dev adds overhead), medians of 5, Chromium headless, same machine:
+**Production build** (`next build` then `next start`, SQLite, same machine, 2026-11-01), `APP_URL=http://127.0.0.1:3300 RUNS=7 npm run measure`, medians of 7, Chromium headless:
+
+| Page / call            | TTFB  | DOMContentLoaded | LCP   |
+| ---------------------- | ----- | ---------------- | ----- |
+| `/`                    | 2 ms  | 8 ms             | 40 ms |
+| `/app/start`           | 13 ms | 28 ms            | 36 ms |
+| `/app`                 | 12 ms | 26 ms            | 40 ms |
+| `/app/new`             | 13 ms | 30 ms            | 44 ms |
+| `/app/h/[id]`          | 8 ms  | 19 ms            | 32 ms |
+| `POST /api/compile`    | 3 ms  |                  |       |
+| `POST /api/proofholds` | 6 ms  |                  |       |
+
+About 205 KB of declared transfer per page, dominated by the framework runtime and the three font families. Conditions: a local loopback, a warm process, an SQLite file with a few hundred rows; a remote Postgres and a cold start would add their own latency, which has not been measured.
+
+**Development server** (`npm run local`, Turbopack dev adds overhead), medians of 5, kept for comparison:
 
 | Page / call            | TTFB   | DOMContentLoaded | LCP    |
 | ---------------------- | ------ | ---------------- | ------ |
@@ -82,6 +96,33 @@ A separate reviewer drove the full journey at 375, 768 and 1280 px in both schem
 | 18  | Any file type accepted silently                                         | See 4                                                                                                                                                                                                                                           |
 
 Found during the re-run in CI: a second `next dev` started on the first job's compile cache reloads pages in a loop, so the flows and the axe scan now run in one Playwright invocation. Also found: clicking Continue on the start form before hydration triggered a native submit, which put the fields in the URL and navigated nowhere. Primary controls on the start, compose and approval forms are now disabled until React mounts (`src/lib/use-hydrated.ts`).
+
+## Second critique pass (2026-11-01, integrated tree)
+
+A separate reviewer drove the whole journey again at 375, 768 and 1280 px in both schemes, checked the first pass's eighteen fixes, and ranked eighteen new findings. All are fixed in this branch:
+
+| #   | Finding                                                                                           | Fix                                                                                                                                                                                                                                                   |
+| --- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Evidence could be added or removed while the buyer window was open, under a live verdict          | Evidence is frozen once submitted (server-side guards on add, remove, tracking and submit). "Withdraw and resubmit" is a real transition back to held: verdicts and the window are cancelled, the buyer is told, the next submission is a fresh round |
+| 2   | The buyer page went stale while the window closed and money moved                                 | The buyer page refreshes while a window is open; the countdown ticks; a late confirm or objection gets a 409 that names the outcome, and the page refreshes                                                                                           |
+| 3   | The simulated examiner's "pass · 84% confident" could release money by silence                    | The simulated examiner only observes and then abstains on every line, with no confidence figure; the sheet says "simulated examiner · not a judgement"; health reports the examiner mode                                                              |
+| 4   | The scheduler tick was callable without a secret; mutations without an Origin passed              | The tick endpoint is 404 unless `TICK_SECRET` is set; a mutation must carry `Sec-Fetch-Site` or an `Origin` that is ours, so anonymous requests are refused                                                                                           |
+| 5   | The starter test dropped "due by Friday" and read "PNG plus SVG" as either                        | Deadlines written in words are read (weekdays, "within N days", "tomorrow", "end of month", ISO dates); "plus"/"and" emits one required line per format; what could not be read is listed under "worth clearing up"                                   |
+| 6   | "Submit for checks" stayed in a spinner after the checks finished                                 | The pending flag clears after the refresh                                                                                                                                                                                                             |
+| 7   | The comparison table hid the Proofhold column on phones                                           | Rows become labelled cards under 640 px                                                                                                                                                                                                               |
+| 8   | The rail still clipped on phone detail pages                                                      | Under 480 px the rail wraps and drops its connectors (last step's right edge 358 px in a 375 px viewport)                                                                                                                                             |
+| 9   | The release dialog had no name, focused the optional field, and said nothing about the simulation | `aria-labelledby`, `aria-modal`, focus on the title; a note inside the dialog when PayPal is simulated; the toast says "captured" in the past tense                                                                                                   |
+| 10  | Onboarding copy was written for the operator; the email field did nothing                         | Plain seller copy; the field is "Contact email" (notifications); inline validation instead of browser bubbles; the operator note lives in Settings                                                                                                    |
+| 11  | No skip link on public pages                                                                      | Skip links and `main#main` on the landing, legal, start, record and not-found pages                                                                                                                                                                   |
+| 12  | Intermittent hydration warning from relative times                                                | `suppressHydrationWarning` on the countdown; relative durations are server-rendered text                                                                                                                                                              |
+| 13  | Mode badges vanished from the seller app under 1024 px                                            | A compact "Simulated" chip with the full modes in its title on narrow screens                                                                                                                                                                         |
+| 14  | Header totals counted unapproved proposals; phone rows truncated titles                           | Totals count holds only, with a separate "awaiting the buyer's approval"; titles wrap to two lines on phones                                                                                                                                          |
+| 15  | A rail dot pulsed forever on the landing                                                          | Illustrative rails are `still`                                                                                                                                                                                                                        |
+| 16  | Generic 404 copy; `/p/notatoken` returned 200                                                     | Route-specific not-found pages; the loading shells on those routes are gone so `notFound()` returns a real 404                                                                                                                                        |
+| 17  | Nav and footer links under 24 px                                                                  | Padded to 32 px minimum                                                                                                                                                                                                                               |
+| 18  | Buyer-facing wording about the seller's outbox; receipt ids wrapped; narrow check inputs          | Hint reworded; receipt tables scroll on phones; the check text is an auto-sizing textarea                                                                                                                                                             |
+
+Verified after the fixes: 128 unit tests, four flows and both axe scans pass on the integrated tree.
 
 ## Known gaps
 

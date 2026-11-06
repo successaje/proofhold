@@ -7,6 +7,7 @@ import {
   CopyPlus,
   Download,
   FileCheck2,
+  FileText,
   Gavel,
   RotateCcw,
   Send,
@@ -207,12 +208,30 @@ export function ReopenButton({ ph }: { ph: ProofholdView }) {
     <Button
       variant="secondary"
       onClick={() =>
-        run("reopen", "/reopen", undefined, "Reopened. Add evidence and resubmit.")
+        run(
+          "reopen",
+          "/reopen",
+          undefined,
+          "Withdrawn. The buyer has been told; add or change evidence and resubmit.",
+        )
       }
       loading={busy === "reopen"}
       icon={<RotateCcw />}
     >
-      Fix and resubmit
+      Withdraw and resubmit
+    </Button>
+  );
+}
+
+export function RecordButton({ ph }: { ph: ProofholdView }) {
+  return (
+    <Button
+      href={`/app/h/${ph.id}/record`}
+      variant="secondary"
+      size="sm"
+      icon={<FileText />}
+    >
+      Record
     </Button>
   );
 }

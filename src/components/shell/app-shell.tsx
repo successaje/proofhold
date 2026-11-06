@@ -36,6 +36,9 @@ export function AppShell({
     .toUpperCase();
   return (
     <>
+      <a href="#main" className="skipLink">
+        Skip to content
+      </a>
       <header className={styles.topbar}>
         <div className={styles.topbarInner}>
           <Brand href="/app" />
@@ -56,6 +59,9 @@ export function AppShell({
             <div className={styles.badges}>
               <ModeBadges system={system} />
             </div>
+            <div className={styles.badgeCompact}>
+              <ModeBadges system={system} compact />
+            </div>
             <Link
               href="/app/settings"
               className={styles.workspace}
@@ -69,7 +75,9 @@ export function AppShell({
           </div>
         </div>
       </header>
-      <main className={styles.main}>{children}</main>
+      <main id="main" className={styles.main} tabIndex={-1}>
+        {children}
+      </main>
       <nav className={styles.bottomNav} aria-label="Primary">
         {links.map((l) => (
           <Link

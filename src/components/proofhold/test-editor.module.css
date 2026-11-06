@@ -109,3 +109,8 @@
   width: 7rem;
   color: var(--muted);
 }
+.predicateText {
+  min-height: 2.5rem;
+  resize: none;
+  field-sizing: content;
+}

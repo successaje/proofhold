@@ -6,6 +6,10 @@ import { currentWorkspace } from "@/lib/session/workspace";
 import { systemInfo } from "@/lib/view";
 import { config } from "@/lib/config";
 import { SettingsForm } from "./settings-form";
+import { Outbox } from "./outbox";
+import { db } from "@/lib/store/sql";
+import { listMail } from "@/lib/store/repos";
+import { DangerZone } from "./danger-zone";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -13,6 +17,7 @@ export default async function SettingsPage() {
   const ws = (await currentWorkspace())!;
   const system = systemInfo();
   const c = config();
+  const mail = await listMail(await db(), { workspaceId: ws.id }, 50);
   return (
     <Narrow>
       <PageHeader
@@ -48,14 +53,24 @@ export default async function SettingsPage() {
               },
               {
                 k: "Examiner",
-                v: system.aiAvailable ? (
-                  <>
-                    On, using <Mono>{system.model}</Mono>. Judgement lines are scored with
-                    abstention allowed.
-                  </>
-                ) : (
-                  "Off. ANTHROPIC_API_KEY is not set, so briefs get a starter test and judgement lines fall to the buyer."
-                ),
+                v:
+                  system.examinerMode === "anthropic" ? (
+                    <>
+                      On, using <Mono>{system.model}</Mono>. Judgement lines are scored
+                      with abstention allowed.
+                    </>
+                  ) : system.examinerMode === "simulated" ? (
+                    "Simulated (EXAMINER_MODE=simulated). A deterministic stand-in judges judgement lines from file names, readable text and image metadata, labelled as simulated on every verdict. Set ANTHROPIC_API_KEY for the real examiner."
+                  ) : (
+                    "Off. ANTHROPIC_API_KEY is not set, so briefs get a starter test and judgement lines fall to the buyer. Set EXAMINER_MODE=simulated to run the judgement path with a labelled stand-in."
+                  ),
+              },
+              {
+                k: "Mail",
+                v:
+                  system.mailMode === "resend"
+                    ? "Resend. Buyers and you are emailed at every state change; the outbox below shows each result."
+                    : "Simulated. Notifications are composed and kept in the outbox below; nothing is sent. Set MAIL_PROVIDER=resend and RESEND_API_KEY to send.",
               },
               {
                 k: "Scheduler",
@@ -79,6 +94,8 @@ export default async function SettingsPage() {
             ]}
           />
         </Panel>
+        <Outbox mail={mail} mode={system.mailMode} />
+        <DangerZone workspaceName={ws.name} />
         <Note tone="info">
           Where the money goes today: every capture lands in the PayPal business account
           this deployment runs with, whatever email is saved above. Production would add a

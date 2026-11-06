@@ -5,6 +5,7 @@ import { DecisionNote } from "@/components/proofhold/decision-card";
 import { EvidenceList } from "@/components/proofhold/evidence-list";
 import { HoldCard } from "@/components/proofhold/hold-card";
 import { Rail } from "@/components/proofhold/rail";
+import { BuyerFaq } from "@/components/proofhold/buyer-faq";
 import { TestView } from "@/components/proofhold/test-view";
 import { BuyerShell } from "@/components/shell/buyer-shell";
 import { ToastProvider } from "@/components/ui/toast";
@@ -20,6 +21,7 @@ import {
   listDecisions,
   listEvidence,
   listMessages,
+  listProofholds,
 } from "@/lib/store/repos";
 import { proofholdView, systemInfo } from "@/lib/view";
 import { ApproveForm, BuyerResponse, DisputeDemo, OfferResponse } from "./buyer-actions";
@@ -51,13 +53,22 @@ export default async function BuyerPage({
   const sql = await db();
   const raw = await getProofholdByToken(sql, token);
   if (!raw || raw.status === "draft") notFound();
-  const [evidence, checks, decisions, messages, seller] = await Promise.all([
+  const [evidence, checks, decisions, messages, seller, siblings] = await Promise.all([
     listEvidence(sql, raw.id),
     listChecks(sql, raw.id),
     listDecisions(sql, raw.id),
     listMessages(sql, raw.id),
     getWorkspace(sql, raw.workspaceId),
+    listProofholds(sql, raw.workspaceId),
   ]);
+  const standing = {
+    released: siblings.filter(
+      (p) => p.status === "released" || p.status === "partially_released",
+    ).length,
+    returned: siblings.filter((p) => p.status === "voided" || p.status === "refunded")
+      .length,
+    since: seller?.createdAt ?? raw.createdAt,
+  };
   const ph = proofholdView(raw);
   const system = systemInfo();
   const s = ph.status;
@@ -71,11 +82,25 @@ export default async function BuyerPage({
     <ToastProvider>
       <BuyerShell system={system}>
         <AutoRefresh
-          active={s === "checking" || s === "held" || s === "in_review"}
+          active={
+            s === "checking" ||
+            s === "held" ||
+            s === "in_review" ||
+            s === "awaiting_buyer"
+          }
           every={s === "checking" ? 2500 : 8000}
         />
         <header className={styles.header}>
-          <p className={styles.from}>{sellerName} sent you a payment hold to approve</p>
+          <p className={styles.from}>
+            {sellerName} sent you a payment hold to approve
+            <span className={styles.standing}>
+              {" "}
+              · on Proofhold since {formatDate(standing.since, { time: false })}
+              {standing.released + standing.returned > 0
+                ? ` · ${standing.released} released, ${standing.returned} returned`
+                : " · first proofhold"}
+            </span>
+          </p>
           <h1 className={styles.title}>{ph.title}</h1>
           <p className={styles.amountLine}>
             <span className={styles.amount}>{ph.amount}</span>
@@ -114,7 +139,7 @@ export default async function BuyerPage({
                 hash={ph.testHash}
                 showChecks={false}
                 demoMinutes={system.demoSilenceMinutes}
-                examinerOff={!system.aiAvailable}
+                examinerOff={!system.examinerOn}
                 agreement={{
                   seller: { name: sellerName, at: ph.sellerAgreedAt },
                   buyer: { name: ph.buyerName, at: null },
@@ -139,8 +164,13 @@ export default async function BuyerPage({
                   seller can offer a partial release or return the hold. The authorization
                   lapses on its own after 29 days.
                 </p>
+                <p>
+                  <strong>Fees.</strong> Nothing is added to {ph.amount}. Standard PayPal
+                  fees are the seller's, on capture; a void costs nothing.
+                </p>
               </div>
               <ApproveForm token={token} ph={ph} system={system} />
+              <BuyerFaq ph={ph} sellerName={sellerName} stage="before" />
             </Panel>
           ) : null}
 
@@ -180,7 +210,8 @@ export default async function BuyerPage({
                         : "Confirm to release now, or object with a reason. If you do nothing, the hold releases when the window closes."
                   }
                 >
-                  <BuyerResponse token={token} ph={ph} />
+                  <BuyerResponse token={token} ph={ph} system={system} />
+                  <BuyerFaq ph={ph} sellerName={sellerName} stage="during" />
                 </Panel>
               ) : null}
 
@@ -200,7 +231,7 @@ export default async function BuyerPage({
                   threshold={threshold}
                   showChecks={s !== "cancelled"}
                   demoMinutes={system.demoSilenceMinutes}
-                  examinerOff={!system.aiAvailable}
+                  examinerOff={!system.examinerOn}
                   agreement={{
                     seller: { name: sellerName, at: ph.sellerAgreedAt },
                     buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },
@@ -246,12 +277,17 @@ export default async function BuyerPage({
           <HoldCard ph={ph} checks={checks} system={system} audience="buyer" />
           {s !== "proposed" ? (
             <p className={styles.fine}>
+              <a href={`/p/${token}/record`} className={styles.recordLink}>
+                {ph.releasedCents > 0
+                  ? "Your receipt and the printable record"
+                  : "The printable record"}
+              </a>{" "}
+              ·{" "}
               <a href={`/api/p/${token}/bundle`} className={styles.recordLink}>
-                Download the full record
+                JSON bundle
               </a>{" "}
               · the agreed test and its hash, every check with its reasons, file
-              fingerprints and the hash-chained history. The seller can download the same
-              file.
+              fingerprints and the hash-chained history. The seller has the same record.
             </p>
           ) : null}
         </div>

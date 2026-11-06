@@ -10,6 +10,7 @@ Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/). MIT
 - Design direction and feature inventory: [docs/design.md](docs/design.md)
 - Brand kit: [docs/brand.md](docs/brand.md), assets in [public/brand](public/brand)
 - Architecture: [docs/architecture.md](docs/architecture.md)
+- Comparison with the products people use today, and the gap list: [docs/comparison.md](docs/comparison.md)
 - Acceptance matrix, measurements and known gaps: [docs/acceptance-matrix.md](docs/acceptance-matrix.md)
 - Build log: [docs/build-log.md](docs/build-log.md)
 
@@ -62,6 +63,8 @@ Useful scripts:
 
 ```bash
 npm run seed                          # a workspace with three demo proofholds, prints the cookie and links
+npm run backup                        # snapshot the database into .data/backups/
+npm run reset -- --yes                # back up, then remove the local SQLite database
 npx tsx scripts/paypal-smoke.ts       # prove the sandbox: authorize → partial capture → void
 npm run eval                          # examiner over the labelled cases (needs ANTHROPIC_API_KEY)
 ```
@@ -88,11 +91,33 @@ The interface is built on one idea: the acceptance test is a document and the Pa
 
 Tokens live in `src/app/globals.css`; the rules, colour contrast table and asset licences are in [docs/brand.md](docs/brand.md); the research and the three directions considered are in [docs/design.md](docs/design.md).
 
+## Notifications and the record
+
+Both sides are written to at every state change: the invitation with the link, the hold, the delivery and the window, an objection, an offer, the release with a receipt, a void, an expiry, a dispute and its resolution, plus two reminders (before the buyer window closes, before a hold lapses). Mail goes through a provider adapter; without `RESEND_API_KEY` it is simulated, which means every message is composed and kept in Settings → Outbox and nothing is sent. The buyer's email field says so.
+
+Every proofhold has a printable record at `/app/h/[id]/record` (seller) and `/p/[token]/record` (buyer): the receipt after a capture, the agreement with both signatures and the hash, every decision with its PayPal id, evidence fingerprints, messages and the hash-chained history. "Print or save as PDF" uses the print stylesheet.
+
+## The ledger and your data
+
+`/app` is a ledger: search across titles, briefs, buyer names and emails, ids and PayPal references; group by needs attention, active or closed; sort by activity, age, amount or title; export the same view as CSV (`/api/proofholds/export`). Settings exports the whole workspace as JSON and can delete it, after you type the workspace name; deletion removes the workspace, its proofholds, evidence, checks, decisions, messages and history from this deployment, and never voids an active hold, so end those first.
+
+## The examiner, in three modes
+
+`EXAMINER_MODE` picks who judges the lines a machine cannot measure. `auto` uses the model when `ANTHROPIC_API_KEY` is set and is otherwise off. `simulated` runs a deterministic stand-in (`src/lib/examiner/simulated.ts`) that reads file names, readable text and image metadata, reports what it saw, and then abstains on every line, so a simulation can never release money; every verdict it writes is labelled "simulated examiner · not a judgement" and the header badge says so. `off` sends judgement lines to the buyer. The simulation exists so the whole judgement path, manifest and reasons included, can be seen without a key.
+
 ## Examiner evaluation
 
 `eval/cases.ts` holds 30 labelled cases across copy, data, code and image deliverables, including cases where the only honest answer is to abstain. `npm run eval` prints agreement, pass/fail/abstain counts and, the number that matters, false releases (label fail or abstain, examiner pass above the threshold). Results are written to `eval/results.json` and pasted here as they come out.
 
 _Not yet run against a model in this repository; the numbers will be added when an API key is available._
+
+## Operating it
+
+- **Security.** Every response carries a Content-Security-Policy, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy` and `Permissions-Policy`; HSTS when `APP_URL` is HTTPS. Mutating API calls from a browser must come from the app's own origin (the session is a cookie), except the PayPal webhook and the scheduler tick, which authenticate themselves. The public surfaces are rate-limited per client address (workspace creation, buyer-link actions, uploads, PayPal return handlers, the compiler). JSON bodies are capped at 256 KB and files at 8 MB each.
+- **Logs.** One JSON line per API call and per error (`LOG_LEVEL` picks the floor). Secrets are redacted and emails masked before writing. Every request gets an `x-request-id`; a 500 tells the user the first eight characters so a report can be matched to a line.
+- **Health.** `GET /api/health` checks the database, reports the PayPal and examiner modes and the scheduler's last pass, and returns 503 when the inline scheduler has not run for five minutes.
+- **Backups.** `npm run backup` snapshots SQLite (`VACUUM INTO`) or runs `pg_dump` into `<data dir>/backups/`. `npm run restore -- <file> --yes` verifies the backup's integrity, keeps the current database as a pre-restore snapshot, then replaces it (stop the app first). `npm run reset -- --yes` backs up and removes the local SQLite database; it refuses to touch Postgres. The restore path is exercised by `tests/unit/backup.test.ts`.
+- **Legal.** `/terms` and `/privacy` say what the service does, what it stores and for how long, and how to delete it. No compliance is claimed.
 
 ## Deploy
 

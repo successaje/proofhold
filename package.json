@@ -21,7 +21,10 @@
     "eval": "tsx scripts/eval.ts",
     "seed": "tsx scripts/seed.ts",
     "test:a11y": "playwright test tests/browser/a11y.spec.ts",
-    "measure": "tsx scripts/measure.ts"
+    "measure": "tsx scripts/measure.ts",
+    "backup": "tsx scripts/backup.ts",
+    "restore": "tsx scripts/restore.ts",
+    "reset": "tsx scripts/reset.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",

@@ -10,6 +10,10 @@ import { PayPalError } from "./paypal/client";
 import { db } from "./store/sql";
 import { getProofhold, getProofholdByToken } from "./store/repos";
 import { currentWorkspace } from "./session/workspace";
+import { describeError, log } from "./log";
+
+/** JSON bodies above this size are refused before parsing. */
+export const MAX_JSON_BYTES = 256 * 1024;
 
 export class HttpError extends Error {
   constructor(
@@ -25,7 +29,7 @@ export function json(body: unknown, init?: ResponseInit): Response {
   return Response.json(body, init);
 }
 
-export function errorResponse(error: unknown): Response {
+export function errorResponse(error: unknown, requestId?: string): Response {
   if (error instanceof HttpError || error instanceof ProofholdError)
     return json({ error: error.message, code: error.code }, { status: error.status });
   if (error instanceof InvalidTransition)
@@ -47,24 +51,49 @@ export function errorResponse(error: unknown): Response {
       { error: error.message, code: "paypal", detail: error.name_ },
       { status: 502 },
     );
-  console.error(error);
-  return json({ error: "Something went wrong on our side. Try again." }, { status: 500 });
+  log("error", "unhandled route error", { requestId, ...describeError(error) });
+  return json(
+    {
+      error: `Something went wrong on our side. Try again${requestId ? ` and quote reference ${requestId.slice(0, 8)}` : ""}.`,
+      code: "internal",
+      reference: requestId?.slice(0, 8),
+    },
+    { status: 500 },
+  );
 }
 
-/** Wrap a handler so thrown errors become JSON responses. */
+/** Wrap a handler so thrown errors become JSON responses and every call is logged. */
 export function handle<A extends unknown[]>(fn: (...args: A) => Promise<Response>) {
   return async (...args: A): Promise<Response> => {
+    const request = args[0] instanceof Request ? args[0] : undefined;
+    const requestId = request?.headers.get("x-request-id") ?? undefined;
+    const started = Date.now();
+    let response: Response;
     try {
-      return await fn(...args);
+      response = await fn(...args);
     } catch (error) {
-      return errorResponse(error);
+      response = errorResponse(error, requestId);
     }
+    if (request) {
+      const url = new URL(request.url);
+      log(response.status >= 500 ? "error" : "info", "api", {
+        requestId,
+        method: request.method,
+        path: url.pathname,
+        status: response.status,
+        ms: Date.now() - started,
+      });
+    }
+    return response;
   };
 }
 
 export async function readJson<T = Record<string, unknown>>(
   request: Request,
 ): Promise<T> {
+  const length = Number(request.headers.get("content-length") ?? 0);
+  if (length > MAX_JSON_BYTES)
+    throw new HttpError("That request is too large.", 413, "too_large");
   try {
     return (await request.json()) as T;
   } catch {

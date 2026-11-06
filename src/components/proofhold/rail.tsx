@@ -58,11 +58,14 @@ export function Rail({
   status,
   compact = false,
   variant = "labels",
+  still = false,
 }: {
   status: Status;
   compact?: boolean;
   /** "dots" draws the five steps without text; each dot keeps its name for assistive tech. */
   variant?: "labels" | "dots";
+  /** Illustrations: nothing is actually running, so nothing breathes. */
+  still?: boolean;
 }) {
   const steps = rail(status);
   const current = steps.find((s) => s.state === "current" || s.state === "off");
@@ -80,7 +83,13 @@ export function Rail({
       {steps.map((s) => (
         <li
           key={s.key}
-          className={[styles.step, styles[`step-${s.state}`]].join(" ")}
+          className={[
+            styles.step,
+            styles[`step-${s.state}`],
+            !still && s.state === "current" && status === "checking" && styles.running,
+          ]
+            .filter(Boolean)
+            .join(" ")}
           aria-current={s.state === "current" ? "step" : undefined}
           title={variant === "dots" ? s.label : undefined}
         >

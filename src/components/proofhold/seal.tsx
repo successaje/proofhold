@@ -132,10 +132,13 @@ export function Seal({
           const end = start + span - gap;
           return (
             <path
-              key={i}
+              key={`${i}-${v}`}
               d={arc(78, start, end)}
-              className={[styles.arc, styles[`arc-${v}`]].join(" ")}
-              style={{ transitionDelay: `${i * 60}ms` }}
+              pathLength={1}
+              className={[styles.arc, styles[`arc-${v}`], v !== "pending" && styles.drawn]
+                .filter(Boolean)
+                .join(" ")}
+              style={{ animationDelay: `${i * 90}ms` }}
             />
           );
         })

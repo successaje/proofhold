@@ -37,7 +37,7 @@ test("the starter service test carries count, type, dpi, width, deadline and jud
   });
   assert.deepEqual(
     t.predicates.map((p) => p.check.kind),
-    ["count", "dpi", "dimensions", "deadline", "judgement"],
+    ["count", "count", "count", "dpi", "dimensions", "deadline", "judgement"],
   );
   const count = t.predicates[0]!.check;
   assert.equal(count.kind, "count");
@@ -62,4 +62,40 @@ test("the goods starter is unchanged in shape", () => {
     t.predicates.map((p) => p.check.kind),
     ["tracking_shipped", "count", "buyer_confirms"],
   );
+});
+
+test("deadlines written in words become a deadline line, and 'plus' means both formats", () => {
+  const t = starterTest({
+    brief: "Three logo concepts. Deliver as PNG at 300 dpi plus SVG. Due by Friday.",
+    kind: "service",
+    amountCents: 42000,
+    currency: "USD",
+    deadline: null,
+    today: "2026-11-02T09:00:00.000Z", // a Monday
+  });
+  assert.deepEqual(
+    t.predicates.map((p) => p.check.kind),
+    ["count", "count", "count", "dpi", "deadline", "judgement"],
+  );
+  assert.deepEqual(
+    t.predicates.slice(1, 3).map((p) => p.text),
+    ["At least one PNG file", "At least one SVG file"],
+  );
+  assert.equal(
+    t.predicates.find((p) => p.check.kind === "deadline")!.text,
+    "Delivered by 2026-11-06",
+  );
+  assert.ok(t.unclear.some((u) => /read from the brief's wording/.test(u)));
+});
+
+test("a deadline that cannot be read is called out", () => {
+  const t = starterTest({
+    brief: "Three PNG concepts, due before the launch.",
+    kind: "service",
+    amountCents: 42000,
+    currency: "USD",
+    deadline: null,
+  });
+  assert.ok(!t.predicates.some((p) => p.check.kind === "deadline"));
+  assert.ok(t.unclear.some((u) => /mentions a deadline that could not be read/.test(u)));
 });

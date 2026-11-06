@@ -13,6 +13,7 @@ import { Rail } from "@/components/proofhold/rail";
 import {
   BundleButton,
   CancelButton,
+  RecordButton,
   ReuseButton,
   DisputeActions,
   EndHoldButton,
@@ -115,6 +116,7 @@ export default async function ProofholdPage({
           <>
             {s === "draft" || s === "proposed" ? <CancelButton ph={ph} /> : null}
             {held && s !== "checking" ? <EndHoldButton ph={ph} /> : null}
+            {!["draft"].includes(s) ? <RecordButton ph={ph} /> : null}
             {!["draft"].includes(s) ? <BundleButton ph={ph} /> : null}
             {s !== "draft" ? <ReuseButton ph={ph} /> : null}
           </>
@@ -167,7 +169,7 @@ export default async function ProofholdPage({
                 threshold={threshold}
                 showChecks={!["proposed", "cancelled"].includes(s)}
                 demoMinutes={system.demoSilenceMinutes}
-                examinerOff={!system.aiAvailable}
+                examinerOff={!system.examinerOn}
                 agreement={{
                   seller: { name: ws.name, at: ph.sellerAgreedAt },
                   buyer: { name: ph.buyerName, at: ph.buyerAgreedAt },
@@ -185,10 +187,13 @@ export default async function ProofholdPage({
                 stages={[
                   { label: "Files measured and counted", state: "done" },
                   {
-                    label: system.aiAvailable
-                      ? "Examiner reviewing judgement lines (may abstain)"
-                      : "Examiner off: judgement lines go to the buyer",
-                    state: system.aiAvailable ? "active" : "done",
+                    label:
+                      system.examinerMode === "anthropic"
+                        ? "Examiner reviewing judgement lines (may abstain)"
+                        : system.examinerMode === "simulated"
+                          ? "Simulated examiner reviewing judgement lines (may abstain)"
+                          : "Examiner off: judgement lines go to the buyer",
+                    state: system.examinerOn ? "active" : "done",
                   },
                   { label: "Decision recorded, buyer window opens", state: "todo" },
                 ]}
@@ -224,8 +229,26 @@ export default async function ProofholdPage({
             </Panel>
           ) : null}
 
-          {s === "held" || s === "awaiting_buyer" ? (
-            <DeliverPanel ph={ph} evidence={evidence} aiAvailable={system.aiAvailable} />
+          {s === "held" ? (
+            <DeliverPanel ph={ph} evidence={evidence} examinerOn={system.examinerOn} />
+          ) : null}
+
+          {s === "awaiting_buyer" ? (
+            <Panel
+              title="Evidence is frozen"
+              subtitle="The buyer is deciding on exactly these files. Nothing can be added or removed while the window is open."
+            >
+              <div className={styles.stack}>
+                <EvidenceList items={evidence} />
+                <div className={styles.actionsRow}>
+                  <span className="lead">
+                    To change anything, withdraw the delivery: the verdicts are cancelled,
+                    the buyer is told, and the next submission runs the checks again.
+                  </span>
+                  <ReopenButton ph={ph} />
+                </div>
+              </div>
+            </Panel>
           ) : null}
 
           {s === "disputed" ? (
@@ -288,7 +311,7 @@ export default async function ProofholdPage({
             </Panel>
           ) : null}
 
-          {evidence.length > 0 && !(s === "held" || s === "awaiting_buyer") ? (
+          {evidence.length > 0 && s !== "held" && s !== "awaiting_buyer" ? (
             <Panel
               title="Evidence"
               subtitle={

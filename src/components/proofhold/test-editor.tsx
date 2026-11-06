@@ -379,12 +379,14 @@ export function TestEditor({
           <li key={p.id} className={styles.predicate}>
             <div className={styles.predicateHead}>
               <span className={styles.index}>{i + 1}</span>
-              <Input
+              <Textarea
                 aria-label={`Check ${i + 1} text`}
                 value={p.text}
+                rows={1}
                 placeholder="What must be true, in one sentence"
                 onChange={(e) => updatePredicate(i, { text: e.target.value })}
                 maxLength={240}
+                className={styles.predicateText}
               />
               <Button
                 variant="ghost"

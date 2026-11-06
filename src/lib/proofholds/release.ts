@@ -6,6 +6,7 @@ import { PayPalError } from "../paypal/client";
 import type { Decision as DecisionRecord, Proofhold } from "../domain/proofhold";
 import { appendAudit, listEvidence, recordDecision } from "../store/repos";
 import type { Sql } from "../store/sql";
+import { notify } from "../mail/notify";
 import { ProofholdError, requireStatus, transition } from "./lifecycle";
 
 /** Make sure the authorization can still be captured; reauthorize once if the honor period passed. */
@@ -119,6 +120,11 @@ export async function release(
       });
     }
   }
+  await notify(
+    sql,
+    updated,
+    updated.status === "partially_released" ? "partially_released" : "released",
+  );
   return updated;
 }
 
@@ -150,7 +156,7 @@ export async function voidHold(
     paypalCaptureId: null,
     paypalDisputeId: null,
   });
-  return transition(
+  const voided = await transition(
     sql,
     ph,
     "voided",
@@ -160,6 +166,8 @@ export async function voidHold(
       data: { reason: input.reason, actor: input.actor, decisionId: decision.id },
     },
   );
+  await notify(sql, voided, "voided");
+  return voided;
 }
 
 export async function expire(
@@ -172,13 +180,15 @@ export async function expire(
     ["proposed", "held", "checking", "awaiting_buyer", "in_review"],
     "Expiring",
   );
-  return transition(
+  const expired = await transition(
     sql,
     ph,
     "expired",
     { decidedAt: new Date().toISOString() },
     { type: "expired", data: { reason } },
   );
+  await notify(sql, expired, "expired");
+  return expired;
 }
 
 /**

@@ -363,7 +363,7 @@ export function Composer({
               <TestEditor
                 test={test}
                 onChange={setTest}
-                examinerOff={!system.aiAvailable}
+                examinerOff={!system.examinerOn}
               />
               {error ? <Note tone="fail">{error}</Note> : null}
               <div className={styles.actions}>

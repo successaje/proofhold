@@ -22,12 +22,18 @@ const schema = z.object({
   TICK_SECRET: z.string().optional(),
   DEMO_SILENCE_MINUTES: z.coerce.number().positive().optional(),
   EXAMINER_CONFIDENCE_THRESHOLD: z.coerce.number().min(0).max(1).default(0.8),
+  MAIL_PROVIDER: z.enum(["simulated", "resend"]).default("simulated"),
+  RESEND_API_KEY: z.string().optional(),
+  MAIL_FROM: z.string().default("Proofhold <proofhold@example.com>"),
+  EXAMINER_MODE: z.enum(["auto", "anthropic", "simulated", "off"]).default("auto"),
   NODE_ENV: z.string().default("development"),
 });
 
 export type Config = z.infer<typeof schema> & {
   paypal: { mode: "sandbox" | "simulated"; configured: boolean };
   ai: { configured: boolean };
+  mail: { provider: "simulated" | "resend"; configured: boolean };
+  examiner: { mode: "anthropic" | "simulated" | "off" };
 };
 
 let cached: Config | undefined;
@@ -48,10 +54,32 @@ export function config(): Config {
   if (parsed.PROOFHOLD_STORE === "postgres" && !parsed.DATABASE_URL) {
     throw new Error("PROOFHOLD_STORE=postgres requires DATABASE_URL.");
   }
+  const mailConfigured = Boolean(parsed.RESEND_API_KEY);
+  if (parsed.MAIL_PROVIDER === "resend" && !mailConfigured)
+    console.warn(
+      "MAIL_PROVIDER=resend but RESEND_API_KEY is missing; mail stays in the outbox.",
+    );
   cached = {
     ...parsed,
     paypal: { mode, configured: paypalConfigured },
     ai: { configured: Boolean(parsed.ANTHROPIC_API_KEY) },
+    mail: {
+      provider:
+        parsed.MAIL_PROVIDER === "resend" && mailConfigured ? "resend" : "simulated",
+      configured: mailConfigured,
+    },
+    examiner: {
+      mode:
+        parsed.EXAMINER_MODE === "simulated"
+          ? "simulated"
+          : parsed.EXAMINER_MODE === "off"
+            ? "off"
+            : parsed.ANTHROPIC_API_KEY
+              ? "anthropic"
+              : parsed.EXAMINER_MODE === "anthropic"
+                ? "off"
+                : "off",
+    },
   };
   return cached;
 }

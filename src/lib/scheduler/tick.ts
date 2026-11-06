@@ -17,6 +17,8 @@ import { reconcile } from "../proofholds/reconcile";
 import { expire } from "../proofholds/release";
 import { appendAudit, listAudit } from "../store/repos";
 import { syncDispute } from "../proofholds/disputes";
+import { notify, reminderDue } from "../mail/notify";
+import { mailSentFor, setMeta } from "../store/repos";
 
 export interface TickReport {
   at: string;
@@ -26,10 +28,17 @@ export interface TickReport {
   expired: string[];
   reconciled: string[];
   disputesSynced: string[];
+  reminders: string[];
   errors: { id: string; step: string; message: string }[];
 }
 
 const RECONCILE_EVERY_MS = 10 * 60_000;
+
+let lastTick: { at: string; errors: number } | null = null;
+/** When the scheduler last completed a pass in this process, for the health endpoint. */
+export function lastTickInfo() {
+  return lastTick;
+}
 
 export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
   const report: TickReport = {
@@ -40,6 +49,7 @@ export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
     expired: [],
     reconciled: [],
     disputesSynced: [],
+    reminders: [],
     errors: [],
   };
   const active = await listProofholdsByStatus(sql, [
@@ -120,6 +130,21 @@ export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
       if (moved) continue;
     }
 
+    // Reminders: once per window or hold, before the deadline.
+    const due = reminderDue(ph, now);
+    if (due) {
+      await guard(ph, "reminder", async () => {
+        const since =
+          due.event === "reminder_window" ? ph.evidenceSubmittedAt : ph.buyerAgreedAt;
+        if (await mailSentFor(sql, ph.id, due.event, since)) return;
+        const sent = await notify(sql, ph, due.event, {
+          closesAt: new Date(due.at).toUTCString(),
+          expiresAt: new Date(due.at).toUTCString(),
+        });
+        if (sent.length) report.reminders.push(ph.id);
+      });
+    }
+
     // Reauthorize once after the honor period so a later capture is guaranteed.
     const honorEnded =
       ph.honorPeriodEndsAt && Date.parse(ph.honorPeriodEndsAt) <= now.getTime();
@@ -169,6 +194,12 @@ export async function tick(sql: Sql, now = new Date()): Promise<TickReport> {
         report.reconciled.push(ph.id);
       });
     }
+  }
+  lastTick = { at: report.at, errors: report.errors.length };
+  try {
+    await setMeta(sql, "scheduler.last_tick", lastTick);
+  } catch {
+    /* the pass itself succeeded; the marker is advisory */
   }
   return report;
 }
