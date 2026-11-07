@@ -12,6 +12,8 @@ Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/). MIT
 - Architecture: [docs/architecture.md](docs/architecture.md)
 - Comparison with the products people use today, and the gap list: [docs/comparison.md](docs/comparison.md)
 - Acceptance matrix, measurements and known gaps: [docs/acceptance-matrix.md](docs/acceptance-matrix.md)
+- Demo video pipeline and script: [docs/demo-script.md](docs/demo-script.md); gallery in [docs/screens](docs/screens)
+- Devpost draft: [docs/submission.md](docs/submission.md)
 - Build log: [docs/build-log.md](docs/build-log.md)
 
 ## The problem
@@ -62,7 +64,9 @@ Open http://127.0.0.1:3200/app. Do not run `npm run build` while `npm run local`
 Useful scripts:
 
 ```bash
-npm run seed                          # a workspace with three demo proofholds, prints the cookie and links
+npm run seed                          # a workspace with a proofhold in every state, prints the cookie and links
+npm run screens                       # the gallery in docs/screens/, from a fresh seeded workspace
+npm run demo:video                    # the demo video and subtitles in demo-video/ (needs macOS `say` and ffmpeg)
 npm run backup                        # snapshot the database into .data/backups/
 npm run reset -- --yes                # back up, then remove the local SQLite database
 npx tsx scripts/paypal-smoke.ts       # prove the sandbox: authorize → partial capture → void
