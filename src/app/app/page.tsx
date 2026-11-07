@@ -48,10 +48,15 @@ function nextStep(ph: Proofhold): string {
         : "Deliver and submit evidence";
     case "checking":
       return "Checks running";
-    case "awaiting_buyer":
+    case "awaiting_buyer": {
+      const blocked =
+        (ph.decision as { outcome?: { kind?: string } } | null)?.outcome?.kind ===
+        "blocked";
+      if (blocked) return "Waiting for the buyer's decision · no deadline";
       return ph.silenceWindowEndsAt
-        ? `Buyer window closes in ${durationLeft(ph.silenceWindowEndsAt)}`
+        ? `Releases in ${durationLeft(ph.silenceWindowEndsAt)} unless the buyer objects`
         : "Waiting for the buyer";
+    }
     case "in_review":
       return ph.offerCents
         ? "Offer sent; waiting for the buyer"
