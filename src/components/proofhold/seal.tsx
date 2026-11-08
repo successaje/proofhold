@@ -36,6 +36,30 @@ export function stampFor(status: Status): Stamp {
   }
 }
 
+/** The words around the ring: who has the money now, by state. */
+export function holderFor(status: Status): string {
+  switch (status) {
+    case "draft":
+    case "proposed":
+      return "Not held yet";
+    case "released":
+      return "Captured by PayPal";
+    case "partially_released":
+      return "Part captured by PayPal";
+    case "voided":
+    case "expired":
+      return "Returned to buyer";
+    case "cancelled":
+      return "Nothing was held";
+    case "refunded":
+      return "Refunded by PayPal";
+    case "disputed":
+      return "In PayPal dispute";
+    default:
+      return "Held by PayPal";
+  }
+}
+
 /** One ring segment per line of the test, coloured by its latest verdict. */
 export function segmentsFor(test: AcceptanceTest, checks: CheckResult[]): Verdict[] {
   const latestRound = checks.reduce((m, c) => Math.max(m, c.round), 0);

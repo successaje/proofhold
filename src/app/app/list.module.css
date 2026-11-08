@@ -28,16 +28,88 @@
 .list li + li {
   border-top: 1px solid var(--line);
 }
+.list li {
+  position: relative;
+}
 .row {
   display: grid;
   grid-template-columns: auto 1fr auto;
+  padding-right: var(--s-4);
   grid-template-areas:
-    "seal main status"
-    "seal next amount";
+    "seal main main"
+    "seal next amount"
+    "seal when status";
   gap: var(--s-2) var(--s-4);
   align-items: center;
   padding: var(--s-4) var(--s-4);
   transition: background-color var(--t-fast);
+}
+@media (min-width: 72rem) {
+  .row {
+    padding-right: 3.25rem;
+  }
+}
+.rowNo {
+  display: none;
+  grid-area: no;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.rowId {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-right: var(--s-2);
+}
+.rowWhen {
+  grid-area: when;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.rowStatus {
+  grid-area: status;
+  justify-self: end;
+}
+.rowPeeked .row {
+  background: var(--brand-soft);
+}
+.peek {
+  display: none;
+  position: absolute;
+  top: 50%;
+  right: var(--s-3);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--r-md);
+  color: var(--ink-2);
+  transition:
+    background-color var(--t-fast),
+    color var(--t-fast);
+}
+@media (min-width: 72rem) {
+  .peek {
+    display: inline-flex;
+  }
+}
+.peek svg {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.peek:hover,
+.peek[aria-current="true"] {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.peek[aria-current="true"] {
+  color: var(--brand);
 }
 .row:hover {
   background: var(--surface-2);
@@ -49,11 +121,23 @@
 .row:focus-visible {
   outline-offset: -2px;
 }
-@media (min-width: 56rem) {
+/* Beside the inspector the list is narrower: drop the time column, keep one line per row. */
+@container ledger (min-width: 46rem) and (max-width: 58rem) {
+  .rowWhen {
+    display: none;
+  }
+}
+@container ledger (min-width: 46rem) {
   .row {
-    grid-template-columns: auto minmax(14rem, 1.4fr) 1.2fr auto auto 1.25rem;
-    grid-template-areas: "seal main next amount status arrow";
-    padding: var(--s-4) var(--s-5);
+    grid-template-columns: 1.5rem auto minmax(10rem, 1.4fr) 1.2fr auto auto auto 1.25rem;
+    grid-template-areas: "no seal main next when amount status arrow";
+    padding: var(--s-3) 3.25rem var(--s-3) var(--s-4);
+  }
+  .rowNo {
+    display: block;
+  }
+  .rowWhen {
+    justify-self: end;
   }
 }
 .row > svg:first-child {
@@ -75,7 +159,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-@media (max-width: 56rem) {
+@container ledger (max-width: 46rem) {
   .rowTitle {
     white-space: normal;
     display: -webkit-box;
@@ -101,10 +185,6 @@
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
-.row > :global(span):nth-child(5) {
-  grid-area: status;
-  justify-self: end;
-}
 .rowArrow {
   grid-area: arrow;
   display: none;
@@ -115,7 +195,7 @@
     transform var(--t-base) var(--ease-out),
     color var(--t-fast);
 }
-@media (min-width: 56rem) {
+@container ledger (min-width: 46rem) {
   .rowArrow {
     display: block;
   }
@@ -207,4 +287,137 @@
   background: var(--surface);
   color: var(--ink);
   font-size: var(--text-sm);
+}
+
+/* ---------- the ledger with its inspector ---------- */
+.ledger,
+.ledgerWithInspector {
+  display: grid;
+  gap: var(--s-6);
+  align-items: start;
+}
+@media (min-width: 72rem) {
+  .ledgerWithInspector {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+  .ledgerWithInspector .inspector {
+    order: 2;
+  }
+}
+.ledgerMain {
+  min-width: 0;
+  container: ledger / inline-size;
+}
+.inspector {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+  animation: inspectorIn var(--t-slow) var(--ease-out);
+}
+@media (min-width: 72rem) {
+  .inspector {
+    position: sticky;
+    top: var(--s-6);
+  }
+}
+@media (max-width: 71.98rem) {
+  /* Below this width the row itself opens the detail page; the inspector is a desktop tool. */
+  .inspector {
+    display: none;
+  }
+}
+@keyframes inspectorIn {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.inspectorHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.inspectorId {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.inspectorClose {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: -0.5rem -0.5rem -0.5rem 0;
+  border-radius: var(--r-md);
+  color: var(--muted);
+}
+.inspectorClose:hover {
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.inspectorClose svg {
+  width: 1rem;
+  height: 1rem;
+}
+.inspectorSeal {
+  display: flex;
+  justify-content: center;
+  padding: var(--s-2) 0;
+}
+.inspectorTitle {
+  outline: none;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+.inspectorStatus {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.inspectorNext {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  border: 1px dashed var(--rule);
+}
+.inspectorFacts {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--text-sm);
+}
+.inspectorFacts > div {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  gap: var(--s-2);
+}
+.inspectorFacts dt {
+  color: var(--muted);
+}
+.inspectorFacts dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.inspectorActions {
+  display: flex;
+  gap: var(--s-2);
+  padding-top: var(--s-2);
 }

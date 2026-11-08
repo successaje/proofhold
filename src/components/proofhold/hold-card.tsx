@@ -4,7 +4,7 @@ import { formatDate, formatMoney } from "@/lib/format";
 import type { CheckResult } from "@/lib/domain/proofhold";
 import type { ProofholdView, SystemInfo } from "@/lib/view";
 import { Countdown } from "./countdown";
-import { Seal, segmentsFor, stampFor } from "./seal";
+import { Seal, holderFor, segmentsFor, stampFor } from "./seal";
 import styles from "./proofhold.module.css";
 
 export function HoldCard({
@@ -74,7 +74,7 @@ export function HoldCard({
           }
           stamp={stamp}
           pending={notYet}
-          holder={notYet ? "Not held yet" : "Held by PayPal"}
+          holder={holderFor(ph.status)}
         />
       </div>
       <p className={styles.holdSub}>

@@ -92,7 +92,11 @@ export default async function BuyerPage({
         />
         <header className={styles.header}>
           <p className={styles.from}>
-            {sellerName} sent you a payment hold to approve
+            {s === "proposed"
+              ? `${sellerName} sent you a payment hold to approve`
+              : ["held", "checking", "awaiting_buyer", "in_review"].includes(s)
+                ? `${sellerName}'s proofhold · ${ph.statusLabel.toLowerCase()}`
+                : `${sellerName}'s proofhold · ${ph.statusLabel.toLowerCase()}${ph.decidedAt ? ` ${formatDate(ph.decidedAt, { time: false })}` : ""}`}
             <span className={styles.standing}>
               {" "}
               · on Proofhold since {formatDate(standing.since, { time: false })}
