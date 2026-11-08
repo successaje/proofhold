@@ -64,8 +64,9 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 
 ## Gallery (docs/screens)
 
-1. `landing.png` — the hero: a real acceptance test with the seal at its corner, and the start form.
-2. `ledger.png` — the seller's ledger with every state, search, buckets, sort and CSV.
+1. `landing.png` — the hero: the two-tone headline, the start form, and the product itself on a teal band.
+2. `ledger.png` — the seller's ledger with every state: sidebar with live counts, numbered rows, verdict rings, search, buckets, sort and CSV.
+2b. `ledger-inspector-1440.png` — the inspector open beside the list: seal, status, next step and the PayPal ids without leaving the page.
 3. `buyer-approve.png` — what the buyer agrees to: the sheet, both signatures, the hash, and the questions.
 4. `seller-window-open.png` — checks passed, the buyer window open, the seal half-lit.
 5. `buyer-decide.png` — a blocked line routed to the buyer: no deadline, confirm or object.
