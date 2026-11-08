@@ -588,19 +588,50 @@ export default function Landing() {
       </main>
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <Brand />
-          <p>
-            Built for the{" "}
-            <a href="https://paypalaihackathon.devpost.com/">PayPal AI Hackathon</a>. MIT
-            licensed. Runs against the PayPal sandbox; what is real, simulated and
-            unproven is stated in the app and the README.
-          </p>
-          <nav aria-label="Footer">
-            <Link href="/app">App</Link>
+          <div className={styles.footerBrand}>
+            <Brand />
+            <p>
+              A PayPal payment that is held until the agreed proof arrives. Write what
+              “done” means; the buyer approves a hold against exactly that; deliver, and
+              the checks decide.
+            </p>
+            <p className={styles.footerModes}>
+              This deployment · {simulated ? "Simulated PayPal" : "PayPal sandbox"} ·
+              Examiner {system.examinerMode} · Mail {system.mailMode}
+            </p>
+          </div>
+          <nav className={styles.footerCol} aria-label="Product">
+            <span className={styles.footerColTitle}>Product</span>
+            <a href="#brief">How it works</a>
+            <a href="#release">Release and return</a>
+            <a href="#real">What is real</a>
+            <a href="#compare">Compare</a>
+            <Link href="/app">Open the app</Link>
+          </nav>
+          <nav className={styles.footerCol} aria-label="Repository">
+            <span className={styles.footerColTitle}>Repository</span>
+            <a href={REPO}>Source on GitHub</a>
+            <a href={`${REPO}#readme`}>README</a>
+            <a href={`${REPO}/blob/main/docs/integration-checklist.md`}>
+              Integration checklist
+            </a>
+            <a href={`${REPO}/blob/main/docs/acceptance-matrix.md`}>Acceptance matrix</a>
+            <a href={`${REPO}/blob/main/docs/design.md`}>Design notes</a>
+          </nav>
+          <nav className={styles.footerCol} aria-label="Legal">
+            <span className={styles.footerColTitle}>Legal</span>
             <Link href="/terms">Terms</Link>
             <Link href="/privacy">Privacy</Link>
-            <a href={REPO}>GitHub</a>
+            <a href={`${REPO}/blob/main/LICENSE`}>MIT licence</a>
           </nav>
+        </div>
+        <div className={styles.footerBottom}>
+          <p>
+            Built for the{" "}
+            <a href="https://paypalaihackathon.devpost.com/">PayPal AI Hackathon</a>,
+            2026. What is real, simulated and unproven is stated in the app and the
+            README.
+          </p>
         </div>
       </footer>
     </div>
