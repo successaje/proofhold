@@ -1,0 +1,98 @@
+[
+  {
+    "id": "s1",
+    "title": "The problem",
+    "chunks": [
+      {
+        "cap": "Freelancers get paid late. Buyers paying strangers get scammed.",
+        "say": "Freelancers get paid late. Buyers paying strangers get scammed."
+      },
+      {
+        "cap": "Proofhold binds a payment PayPal already holds to a test both sides agreed to.",
+        "say": "Proofhold binds a payment PayPal already holds to a test both sides agreed to."
+      }
+    ]
+  },
+  {
+    "id": "s2",
+    "title": "The brief becomes a test",
+    "chunks": [
+      {
+        "cap": "The seller writes the brief in plain words.",
+        "say": "The seller writes the brief in plain words."
+      },
+      {
+        "cap": "It becomes an acceptance test: counts, formats, resolution, a deadline, and a judgement line.",
+        "say": "It becomes an acceptance test: counts, formats, resolution, a deadline, and one judgement line a machine cannot check."
+      },
+      { "cap": "One link goes to the buyer.", "say": "The seller sends one link." }
+    ]
+  },
+  {
+    "id": "s3",
+    "title": "The buyer approves a hold",
+    "chunks": [
+      {
+        "cap": "The buyer reads the same sheet and approves a PayPal authorization, not a payment.",
+        "say": "The buyer reads the same sheet, with both signatures and the hash, and approves a PayPal authorization. Not a payment."
+      },
+      {
+        "cap": "PayPal holds the money. Proofhold never does.",
+        "say": "PayPal holds the money. Proofhold never does. The test's hash is written into the PayPal order."
+      }
+    ]
+  },
+  {
+    "id": "s4",
+    "title": "Deliver, and the checks run",
+    "chunks": [
+      {
+        "cap": "The seller delivers through Proofhold. Validators measure the files.",
+        "say": "The seller delivers through Proofhold. Validators measure the files: how many, what format, what resolution."
+      },
+      {
+        "cap": "The examiner judges only what a machine cannot, and may abstain.",
+        "say": "The examiner judges only what a machine cannot measure, with its reasons shown, and it may abstain. An abstention never releases money."
+      }
+    ]
+  },
+  {
+    "id": "s5",
+    "title": "Money follows the test",
+    "chunks": [
+      {
+        "cap": "The buyer confirms. PayPal captures. The seal is stamped.",
+        "say": "The buyer confirms, or stays silent past the window. PayPal captures, and the seal is stamped with the capture id beside it."
+      }
+    ]
+  },
+  {
+    "id": "s6",
+    "title": "When it goes wrong",
+    "chunks": [
+      {
+        "cap": "Every hold in one ledger. Objections go to review; a declined offer returns the money.",
+        "say": "Every hold lives in one ledger. An objection goes to review; the seller can offer a partial release; a declined offer returns the whole hold to the buyer."
+      },
+      {
+        "cap": "After capture, PayPal decides. Proofhold files the evidence bundle.",
+        "say": "After capture, PayPal decides. Proofhold files the evidence bundle through the Disputes API, with every check and its reasons."
+      },
+      {
+        "cap": "A printable record is the receipt.",
+        "say": "Both sides get a printable record that doubles as the receipt, with the hash-chained history."
+      }
+    ]
+  },
+  {
+    "id": "s7",
+    "title": "Honest about the machine",
+    "chunks": [
+      {
+        "cap": "What is real, simulated and unproven is on screen, on every page.",
+        "say": "What is real, simulated and unproven is stated on screen, on every page. This recording runs the simulated PayPal client; the sandbox client is in the repository."
+      },
+      { "cap": "github.com/successaje/proofhold", "say": "Proofhold. Open source, MIT." }
+    ]
+  }
+]
