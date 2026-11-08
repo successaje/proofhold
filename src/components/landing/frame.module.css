@@ -1,0 +1,110 @@
+.frame {
+  display: grid;
+  gap: var(--s-4);
+}
+.window {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-3);
+  overflow: hidden;
+  contain: inline-size;
+  max-height: clamp(28rem, 62vh, 40rem);
+  mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+}
+@media (min-width: 64rem) {
+  .window {
+    max-height: 36rem;
+  }
+}
+.caption {
+  font-size: var(--text-sm);
+  color: color-mix(in srgb, var(--brand-ink) 82%, transparent);
+  text-align: center;
+  text-wrap: balance;
+}
+.chrome {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: 0.55rem var(--s-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+.dots {
+  display: inline-flex;
+  gap: 0.35rem;
+}
+.dots i {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--line-strong);
+}
+.url {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.exampleTag {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--held);
+  background: var(--held-soft);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--r-pill);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-6);
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--line);
+}
+.headText {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.sub {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+.rail {
+  min-width: 0;
+}
+.body {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-5) var(--s-5);
+  background: var(--paper);
+}
+@media (min-width: 64rem) {
+  .body {
+    grid-template-columns: minmax(0, 1.6fr) minmax(18rem, 1fr);
+    gap: var(--s-5);
+  }
+}
+.sheet,
+.hold {
+  min-width: 0;
+}

@@ -1,0 +1,48 @@
+.index {
+  display: none;
+}
+@media (min-width: 76rem) {
+  .index {
+    display: block;
+    position: sticky;
+    top: 6rem;
+    align-self: start;
+  }
+}
+.index ol {
+  display: grid;
+  gap: 0.6rem;
+}
+.index li {
+  position: relative;
+  padding-left: 1.25rem;
+}
+.index li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65em;
+  width: 0.75rem;
+  height: 1px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 280ms var(--ease-out);
+}
+.index li.active::before {
+  transform: scaleX(1);
+}
+.index a {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: color var(--t-fast);
+  display: inline-block;
+  padding: 0.15rem 0;
+}
+.index li.active a,
+.index a:hover {
+  color: var(--ink);
+}
