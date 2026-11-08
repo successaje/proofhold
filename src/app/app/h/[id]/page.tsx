@@ -109,9 +109,9 @@ export default async function ProofholdPage({
               </StatusPill>
               <span>{ph.statusSummary}</span>
             </span>
-            <Rail status={s} />
           </span>
         }
+        below={<Rail status={s} />}
         actions={
           <>
             {s === "draft" || s === "proposed" ? <CancelButton ph={ph} /> : null}

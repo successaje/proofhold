@@ -19,6 +19,7 @@ export function Outbox({
 }) {
   return (
     <Panel
+      id="outbox"
       title="Outbox"
       subtitle={
         mode === "simulated"
