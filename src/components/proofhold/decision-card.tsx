@@ -25,11 +25,7 @@ export function DecisionNote({
     if (o.kind === "blocked")
       return (
         <Note tone="held">
-          <strong>Blocked.</strong>{" "}
-          {(o.reason ?? "").replace(
-            /^Release is blocked until the buyer confirms:\s*/i,
-            "",
-          )}{" "}
+          <strong>Blocked.</strong> {sentence(o.reason ?? "")}{" "}
           {audience === "buyer"
             ? "There is no deadline: nothing moves until you confirm or object."
             : "There is no deadline: nothing moves until the buyer confirms or objects, or you add evidence and resubmit."}
@@ -56,4 +52,14 @@ export function DecisionNote({
       </Note>
     );
   return null;
+}
+
+/** The reason as a sentence of its own: prefix stripped, capitalised, full stop. */
+function sentence(reason: string): string {
+  const r = reason
+    .replace(/^Release is blocked until the buyer confirms:\s*/i, "")
+    .trim();
+  if (!r) return "";
+  const cap = r.charAt(0).toUpperCase() + r.slice(1);
+  return /[.!?]$/.test(cap) ? cap : `${cap}.`;
 }
