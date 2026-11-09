@@ -186,11 +186,8 @@ await pause(2200);
 await page.goto(BASE + "/app/settings", { waitUntil: "networkidle" });
 h.mark("settings");
 await pause(2200);
-await page.goto(BASE + "/#honest", { waitUntil: "networkidle" });
-await h.smoothScrollTo(
-  page.getByRole("heading", { name: "What is real, simulated and unproven" }),
-  "start",
-);
+await page.goto(BASE + "/#real", { waitUntil: "networkidle" });
+await h.smoothScrollTo(page.locator("#real").getByRole("heading", { level: 2 }), "start");
 h.mark("honest");
 await pause(3000);
 h.mark("end");

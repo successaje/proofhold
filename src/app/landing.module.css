@@ -48,21 +48,15 @@
   }
 }
 
+/* ---------- hero: claim and start form, then the product on a band ---------- */
 .hero {
   position: relative;
-  display: grid;
-  gap: var(--s-10);
-  max-width: var(--page-max);
-  margin: 0 auto;
-  padding: var(--s-12) var(--gutter) var(--s-16);
-  align-items: center;
+  padding: var(--s-16) var(--gutter) var(--s-12);
 }
 @media (min-width: 64rem) {
   .hero {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    gap: var(--s-12);
-    padding-top: var(--s-16);
-    padding-bottom: var(--s-20);
+    padding-top: var(--s-20);
+    padding-bottom: var(--s-16);
   }
 }
 .hero::before {
@@ -79,82 +73,303 @@
   );
   mask-image: linear-gradient(to bottom, rgb(0 0 0 / 0.9), transparent 90%);
 }
-.heroCopy {
+.heroInner {
   display: flex;
   flex-direction: column;
   gap: var(--s-5);
+  max-width: 50rem;
+  margin: 0 auto;
+  text-align: center;
+  align-items: center;
 }
 .kicker {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--brand);
 }
 .h1 {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: clamp(2.1rem, 4.8vw, 3.5rem);
-  letter-spacing: -0.025em;
-  line-height: 1.04;
+  font-size: clamp(2.2rem, 5.6vw, 4rem);
+  letter-spacing: -0.028em;
+  line-height: 1.02;
   text-wrap: balance;
   font-variation-settings: "SOFT" 60;
+}
+.h1 em,
+.h2 em {
+  font-style: normal;
+  color: var(--brand);
 }
 .lead {
   font-size: var(--text-lg);
   color: var(--ink-2);
-  max-width: 36rem;
+  max-width: 38rem;
   line-height: var(--leading-normal);
+  text-wrap: pretty;
 }
 .ctas {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--s-3);
 }
 .fine {
   font-size: var(--text-sm);
   color: var(--muted);
 }
-.heroExample {
-  min-width: 0;
+
+.band {
+  position: relative;
+  padding: 0 var(--gutter);
+}
+.band::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 5rem;
+  bottom: 0;
+  background: var(--brand);
+  z-index: -1;
+}
+.bandInner {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding-bottom: var(--s-16);
 }
 
-.section,
-.sectionAlt {
-  padding: var(--s-16) var(--gutter);
+/* ---------- the index and the flow ---------- */
+.columns {
+  max-width: calc(var(--page-max) + 14rem);
+  margin: 0 auto;
 }
-.sectionAlt {
+@media (min-width: 76rem) {
+  .columns {
+    display: grid;
+    grid-template-columns: 12rem minmax(0, 1fr);
+    gap: var(--s-8);
+    padding-left: var(--gutter);
+  }
+  .columns > nav {
+    padding-top: var(--s-20);
+  }
+}
+.flow {
+  min-width: 0;
+}
+.block {
+  padding: var(--s-16) var(--gutter);
+  display: grid;
+  gap: var(--s-10);
+  scroll-margin-top: 4rem;
+}
+@media (min-width: 76rem) {
+  .block {
+    border-radius: var(--r-lg) 0 0 var(--r-lg);
+    padding-right: max(var(--gutter), calc((100vw - var(--page-max) - 14rem) / 2));
+  }
+}
+.block > * {
+  max-width: var(--page-max);
+}
+.blockSurface {
   background: var(--surface);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
-.section > *,
-.sectionAlt > * {
-  max-width: var(--page-max);
-  margin-left: auto;
-  margin-right: auto;
+.blockTint {
+  background: var(--brand-soft);
 }
-.sectionHead {
-  max-width: 44rem !important;
-  margin-bottom: var(--s-10);
+.blockBrand {
+  background: var(--brand);
+  color: var(--brand-ink);
+}
+.blockBrand .no,
+.blockBrand .blockLead,
+.blockBrand .triadItem p {
+  color: color-mix(in srgb, var(--brand-ink) 78%, transparent);
+}
+.blockBrand .h2 {
+  color: color-mix(in srgb, var(--brand-ink) 78%, transparent);
+}
+.blockBrand .h2 em {
+  color: var(--brand-ink);
+}
+.blockBrand .triadItem {
+  border-color: color-mix(in srgb, var(--brand-ink) 18%, transparent);
+}
+.blockBrand .pill {
+  color: var(--brand-ink);
+  background: color-mix(in srgb, var(--brand-ink) 14%, transparent);
+}
+.blockHead {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 46rem;
+}
+.no {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 .h2 {
   font-family: var(--font-display);
   font-weight: 500;
-  font-size: clamp(1.6rem, 3vw, 2.25rem);
-  letter-spacing: -0.02em;
-  line-height: 1.12;
+  font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+  letter-spacing: -0.022em;
+  line-height: 1.08;
   text-wrap: balance;
 }
-.sectionLead {
-  margin-top: var(--s-4);
+.blockLead {
   font-size: var(--text-lg);
   color: var(--ink-2);
+  line-height: var(--leading-normal);
+  text-wrap: pretty;
 }
 
+/* ---------- plates: tinted frames that hold real UI ---------- */
+.plate {
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  contain: inline-size;
+  transition: transform var(--t-slow) var(--ease-out);
+}
+@media (min-width: 48rem) {
+  .plate {
+    padding: var(--s-6);
+  }
+}
+.platePaper {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-2);
+}
+.plateSurface {
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.plateDark {
+  background: color-mix(in srgb, var(--brand) 70%, black);
+  border: 1px solid color-mix(in srgb, var(--brand-ink) 14%, transparent);
+}
+.plateLabel {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--s-3);
+}
+.compile {
+  display: grid;
+  gap: var(--s-5);
+  align-items: start;
+}
+@media (min-width: 64rem) {
+  .compile {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.5fr);
+    gap: var(--s-6);
+  }
+}
+.compileArrow {
+  display: none;
+  color: var(--brand);
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 3rem;
+}
+@media (min-width: 64rem) {
+  .compileArrow {
+    display: block;
+  }
+}
+.briefIn p {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: 1.45;
+  color: var(--ink-2);
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  border: 1px dashed var(--rule);
+}
+.briefOut {
+  min-width: 0;
+}
+
+/* ---------- triads ---------- */
+.triad {
+  display: grid;
+  gap: var(--s-4);
+}
+@media (min-width: 48rem) {
+  .triad {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-5);
+  }
+}
+.triadItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--line-strong);
+  height: 100%;
+}
+.triadItem h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.triadItem p {
+  color: var(--ink-2);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+}
+.pill {
+  align-self: flex-start;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+  background: var(--brand-soft);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--r-pill);
+  margin-bottom: var(--s-1);
+}
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: auto;
+  padding-top: var(--s-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--brand);
+  min-height: 2.25rem;
+}
+.arrow svg {
+  width: 1rem;
+  height: 1rem;
+  transition: transform var(--t-base) var(--ease-out);
+}
+.arrow:hover svg {
+  transform: translate(2px, -2px);
+}
+
+/* ---------- the five states, inside the release plate ---------- */
 .states {
   display: grid;
-  gap: var(--s-6);
+  gap: var(--s-5);
 }
 @media (min-width: 48rem) {
   .states {
@@ -164,57 +379,52 @@
 @media (min-width: 72rem) {
   .states {
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: var(--s-5);
+    gap: var(--s-4);
   }
 }
 .state {
   display: flex;
   flex-direction: column;
-  gap: var(--s-3);
-  padding: var(--s-5);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  background: var(--surface);
-}
-.stateRail {
-  padding-bottom: var(--s-3);
-  border-bottom: 1px dashed var(--rule);
-}
-.state h3 {
-  display: flex;
-  align-items: baseline;
   gap: var(--s-2);
-  font-family: var(--font-display);
-  font-size: var(--text-xl);
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  padding: var(--s-4);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  transition:
+    transform var(--t-base) var(--ease-out),
+    border-color var(--t-base);
+}
+.state:hover {
+  transform: translateY(-2px);
+  border-color: var(--line-strong);
 }
 .stateNo {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   color: var(--muted);
 }
+.stateRail {
+  padding-bottom: var(--s-2);
+  border-bottom: 1px dashed var(--rule);
+}
+.state h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
 .state p {
   color: var(--ink-2);
-  font-size: var(--text-md);
+  font-size: var(--text-sm);
   line-height: var(--leading-normal);
 }
 
-.seals {
-  display: grid;
-  gap: var(--s-8);
-}
-@media (min-width: 64rem) {
-  .seals {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
-    align-items: center;
-    gap: var(--s-16);
-  }
-}
+/* ---------- seals on the dark plate ---------- */
 .sealRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--s-6) var(--s-4);
+  color: var(--brand-ink);
 }
 @media (min-width: 48rem) {
   .sealRow {
@@ -228,8 +438,10 @@
   gap: var(--s-3);
   text-align: center;
   font-size: var(--text-sm);
-  color: var(--ink-2);
   text-wrap: balance;
+}
+.sealRow li > span {
+  color: color-mix(in srgb, var(--brand-ink) 80%, transparent);
 }
 
 .tableWrap {
@@ -291,7 +503,7 @@
   .table td::before {
     content: attr(data-label);
     font-family: var(--font-mono);
-    font-size: 0.65rem;
+    font-size: var(--text-xs);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--muted);
@@ -338,39 +550,15 @@
   color: var(--brand) !important;
 }
 
-.split {
-  display: grid;
-  gap: var(--s-8);
-}
-@media (min-width: 64rem) {
-  .split {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    gap: var(--s-16);
-  }
-}
-.defs {
-  display: grid;
-  gap: var(--s-6);
-}
-.defs dt {
-  font-weight: 600;
-  font-size: var(--text-md);
-  margin-bottom: var(--s-1);
-}
-.defs dd {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: var(--text-md);
-  line-height: var(--leading-normal);
-}
-
 .cta {
+  text-align: center;
+  padding: var(--s-20) var(--gutter);
+}
+.cta > div {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--s-6);
-  text-align: center;
-  padding: var(--s-20) var(--gutter);
 }
 .ctaMark {
   color: var(--brand);
@@ -378,34 +566,102 @@
 
 .footer {
   border-top: 1px solid var(--line);
-  padding: var(--s-8) var(--gutter) calc(var(--s-8) + env(safe-area-inset-bottom));
+  background: var(--surface);
+  padding: var(--s-12) var(--gutter) calc(var(--s-6) + env(safe-area-inset-bottom));
 }
 .footerInner {
   display: grid;
-  gap: var(--s-4);
+  gap: var(--s-8);
   max-width: var(--page-max);
   margin: 0 auto;
   font-size: var(--text-sm);
   color: var(--muted);
 }
-.footerInner a {
+@media (min-width: 48rem) {
+  .footerInner {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .footerBrand {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 64rem) {
+  .footerInner {
+    grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr));
+  }
+  .footerBrand {
+    grid-column: auto;
+  }
+}
+.footerBrand {
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+  max-width: 26rem;
+}
+.footerBrand p {
+  line-height: var(--leading-normal);
+  color: var(--ink-2);
+}
+.footerModes {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted) !important;
+}
+.footerCol {
+  display: grid;
+  gap: 0.15rem;
+  align-content: start;
+}
+.footerColTitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--s-2);
+}
+.footerCol a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  color: var(--ink-2);
+  transition:
+    color var(--t-fast),
+    transform var(--t-base) var(--ease-out);
+}
+.footerCol a:hover {
+  color: var(--ink);
+  transform: translateX(2px);
+}
+.footerBottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  max-width: var(--page-max);
+  margin: var(--s-10) auto 0;
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--line);
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+.footerBottom a {
   color: var(--ink-2);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.footerInner nav {
-  display: flex;
-  gap: var(--s-4);
-}
-.footerInner nav a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2rem;
-  text-decoration: none;
-}
-@media (min-width: 48rem) {
-  .footerInner {
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-  }
+/* The wordmark is decoration, so it lives in CSS where it has no text to read. */
+.footerBottom::after {
+  content: "Proofhold";
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  letter-spacing: -0.03em;
+  line-height: 0.85;
+  color: var(--brand-soft);
+  user-select: none;
 }

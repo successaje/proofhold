@@ -510,6 +510,27 @@ export async function listChecks(
   return rows.map(rowToCheck);
 }
 
+/** Every check for a set of proofholds in one query, for list views. */
+export async function listChecksFor(
+  sql: Sql,
+  proofholdIds: string[],
+): Promise<Map<string, CheckResult[]>> {
+  const out = new Map<string, CheckResult[]>();
+  if (proofholdIds.length === 0) return out;
+  const marks = proofholdIds.map(() => "?").join(",");
+  const rows = await sql.all<CheckRow>(
+    `SELECT * FROM checks WHERE proofhold_id IN (${marks}) ORDER BY round, created_at`,
+    proofholdIds,
+  );
+  for (const row of rows) {
+    const c = rowToCheck(row);
+    const list = out.get(c.proofholdId) ?? [];
+    list.push(c);
+    out.set(c.proofholdId, list);
+  }
+  return out;
+}
+
 export async function latestRound(sql: Sql, proofholdId: string): Promise<number> {
   const row = await sql.get<{ r: number | null }>(
     "SELECT MAX(round) AS r FROM checks WHERE proofhold_id = ?",

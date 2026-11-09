@@ -29,6 +29,11 @@ const shots: {
 }[] = [
   { name: "landing", path: "/", widths: [1280, 375] },
   { name: "ledger", path: "/app", widths: [1280, 375] },
+  {
+    name: "ledger-inspector",
+    path: `/app?peek=${by("awaiting_buyer").id}`,
+    widths: [1440],
+  },
   { name: "compose", path: "/app/new?kind=service&amount=420" },
   {
     name: "seller-window-open",

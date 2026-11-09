@@ -93,7 +93,9 @@ The interface is built on one idea: the acceptance test is a document and the Pa
 - **The Sheet** (`src/components/proofhold/test-view.tsx`): the test as a ruled page with a numbered margin, who agreed and when, and the hash that was written into the PayPal order.
 - **The Rail** (`src/components/proofhold/rail.tsx`): Proposed, Held, Checking, Buyer window, Released or Returned, on every page and on the landing.
 
-Tokens live in `src/app/globals.css`; the rules, colour contrast table and asset licences are in [docs/brand.md](docs/brand.md); the research and the three directions considered are in [docs/design.md](docs/design.md).
+Around those three pieces: a landing page that shows the product itself under a teal band, with a sticky section index and one real UI plate per section; a seller shell with a sidebar on desktop (counts for what needs attention and what is in the outbox, the modes in force) and a bottom bar on phones; and a ledger with numbered rows, mono ids, relative times and an inspector panel (`/app?peek=<id>`) that opens beside the list.
+
+Tokens live in `src/app/globals.css`; the rules, colour contrast table and asset licences are in [docs/brand.md](docs/brand.md); the research, the three directions considered and the motion system are in [docs/design.md](docs/design.md); the second iteration's study of Braintrust and what was taken from it is in [docs/design-iteration-2.md](docs/design-iteration-2.md).
 
 ## Notifications and the record
 

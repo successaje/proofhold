@@ -33,7 +33,18 @@ Looked at on 2026-10-28, in the built-in browser, at phone width. Principles onl
 
 ### Motion
 
-Three durations (120, 180, 280 ms), one ease-out. The stamp lands with a short scale-down and settle; ring arcs draw in when a verdict arrives; status dots pulse only while something is genuinely in progress. Under `prefers-reduced-motion`, every transition collapses to an instant change and nothing pulses.
+Four durations and two curves, written down so every surface moves the same way:
+
+| Token           | Value                          | Used for                                                                               |
+| --------------- | ------------------------------ | -------------------------------------------------------------------------------------- |
+| `--t-fast`      | 120 ms                         | colour and background changes on hover and focus                                       |
+| `--t-base`      | 180 ms                         | hover nudges (an arrow moves 2–3 px, a card lifts 2 px), the stamp's settle            |
+| `--t-slow`      | 280 ms                         | position changes: the inspector sliding in, the index dash, ring arcs drawing in       |
+| reveal          | 400 ms                         | landing sections rising 12 px as they first enter view, staggered 60 ms across a triad |
+| `--ease-out`    | cubic-bezier(0.2, 0.8, 0.2, 1) | every entrance and nudge                                                               |
+| `--ease-in-out` | cubic-bezier(0.65, 0, 0.35, 1) | anything that moves from one resting place to another                                  |
+
+Rules: nothing loops except the status dot while a check is genuinely running; motion explains a change of state and never decorates; anything the reader has already scrolled past is shown at once rather than waiting for a reveal. Under `prefers-reduced-motion`, every transition collapses to an instant change and nothing pulses. The second iteration, which took the frame-and-index landing, the sidebar shell and the ledger inspector from a study of Braintrust, is in [design-iteration-2.md](design-iteration-2.md).
 
 ### Voice
 
