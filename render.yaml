@@ -1,5 +1,6 @@
 # Render blueprint: one web service with the inline scheduler, plus Postgres.
-# Set PAYPAL_* and ANTHROPIC_API_KEY in the Render dashboard (sync: false).
+# Set PAYPAL_* and one model key (ANTHROPIC_API_KEY or GEMINI_API_KEY) in the Render
+# dashboard (sync: false). Leave the other key blank.
 services:
   - type: web
     name: proofhold
@@ -36,6 +37,10 @@ services:
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-opus-5-5
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
       - key: PROOFHOLD_SCHEDULER
         value: inline
       - key: DEMO_SILENCE_MINUTES

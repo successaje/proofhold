@@ -7,9 +7,13 @@
  * never changes the test, and its output is policy input, not a decision.
  */
 import { z } from "zod";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import type Anthropic from "@anthropic-ai/sdk";
-import { anthropic, asData, examinerMode, model } from "../ai/client";
+import {
+  asData,
+  examinerMode,
+  generateStructured,
+  model,
+  type AiPart,
+} from "../ai/client";
 import type { AcceptanceTest, Predicate } from "../domain/test";
 
 export interface ExaminerFile {
@@ -100,7 +104,7 @@ export async function examine(input: ExaminerInput): Promise<ExaminerResult> {
     };
   }
 
-  const content: Anthropic.ContentBlockParam[] = [];
+  const content: AiPart[] = [];
   const manifest: ExaminerResult["inputManifest"] = [];
   let images = 0;
   for (const f of input.files) {
@@ -118,11 +122,8 @@ export async function examine(input: ExaminerInput): Promise<ExaminerResult> {
       });
       content.push({
         type: "image",
-        source: {
-          type: "base64",
-          media_type: f.mime as "image/png" | "image/jpeg" | "image/gif" | "image/webp",
-          data: Buffer.from(f.bytes).toString("base64"),
-        },
+        mime: f.mime,
+        base64: Buffer.from(f.bytes).toString("base64"),
       });
       manifest.push({ name: f.name, mime: f.mime, size: f.size, sent: "image" });
     } else if (f.bytes && f.mime && TEXT_MIMES.has(f.mime)) {
@@ -156,14 +157,13 @@ export async function examine(input: ExaminerInput): Promise<ExaminerResult> {
     .filter(Boolean)
     .join("\n\n");
 
-  const response = await anthropic().messages.parse({
-    model: model(),
-    max_tokens: 4000,
-    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-    output_config: { effort: "medium", format: zodOutputFormat(examinerOutputSchema) },
-    messages: [{ role: "user", content: [{ type: "text", text: header }, ...content] }],
+  const response = await generateStructured({
+    system: SYSTEM,
+    parts: [{ type: "text", text: header }, ...content],
+    schema: examinerOutputSchema,
+    maxTokens: 4000,
   });
-  if (response.stop_reason === "refusal" || !response.parsed_output) {
+  if (!response.output) {
     return {
       verdicts: predicates.map((p) => ({
         predicate_id: p.id,
@@ -174,14 +174,11 @@ export async function examine(input: ExaminerInput): Promise<ExaminerResult> {
       })),
       evidenceSummary: "The examiner declined to review the evidence.",
       inputManifest: manifest,
-      usage: {
-        inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens,
-      },
-      model: model(),
+      usage: response.usage,
+      model: response.model,
     };
   }
-  const out = response.parsed_output;
+  const out = response.output;
   const verdicts: ExaminerVerdict[] = predicates.map((p) => {
     const v = out.verdicts.find((x) => x.predicate_id === p.id);
     if (!v)
@@ -198,10 +195,7 @@ export async function examine(input: ExaminerInput): Promise<ExaminerResult> {
     verdicts,
     evidenceSummary: out.evidence_summary,
     inputManifest: manifest,
-    usage: {
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-    },
-    model: model(),
+    usage: response.usage,
+    model: response.model,
   };
 }

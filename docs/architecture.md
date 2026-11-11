@@ -13,9 +13,9 @@ One Next.js application serves the marketing site, the seller workspace, the buy
 │                                                              │
 │  src/lib                                                     │
 │   ├─ domain/     types, state machine, decision engine       │
-│   ├─ compiler/   brief → acceptance test (Claude, zod)       │
+│   ├─ compiler/   brief → acceptance test (model, zod)        │
 │   ├─ validators/ deterministic checks (files, dates, track)  │
-│   ├─ examiner/   judgement checks (Claude, abstain)          │
+│   ├─ examiner/   judgement checks (model, abstain)           │
 │   ├─ paypal/     REST client + simulated client (same iface) │
 │   ├─ scheduler/  reauthorize, silence windows, reconcile     │
 │   ├─ store/      sql adapters (sqlite | postgres), repos     │
@@ -53,7 +53,7 @@ Evidence bytes are stored in the database (capped per file) so hosted deployment
 
 ## Configuration
 
-All configuration is read once in `src/lib/config.ts` from environment variables and validated. Missing optional capabilities (no Anthropic key, no PayPal credentials, no mail provider) degrade to named states that the UI explains rather than crashing.
+All configuration is read once in `src/lib/config.ts` from environment variables and validated. Missing optional capabilities (no model key, no PayPal credentials, no mail provider) degrade to named states that the UI explains rather than crashing.
 
 ## Testing
 

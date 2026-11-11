@@ -188,7 +188,7 @@ export default async function ProofholdPage({
                   { label: "Files measured and counted", state: "done" },
                   {
                     label:
-                      system.examinerMode === "anthropic"
+                      system.examinerMode === "model"
                         ? "Examiner reviewing judgement lines (may abstain)"
                         : system.examinerMode === "simulated"
                           ? "Simulated examiner reviewing judgement lines (may abstain)"

@@ -13,12 +13,14 @@ import {
   type Proofhold,
 } from "./domain/proofhold";
 import type { AuditEntry } from "./audit/chain";
-import { aiAvailable, examinerMode } from "./ai/client";
+import { aiAvailable, aiProvider, examinerMode } from "./ai/client";
 
 export interface SystemInfo {
   paypalMode: "sandbox" | "simulated";
   aiAvailable: boolean;
-  examinerMode: "anthropic" | "simulated" | "off";
+  /** Whose model compiles and examines, or null when neither key is set. */
+  aiProvider: "anthropic" | "gemini" | null;
+  examinerMode: "model" | "simulated" | "off";
   examinerOn: boolean;
   model: string;
   mailMode: "simulated" | "resend";
@@ -31,9 +33,10 @@ export function systemInfo(): SystemInfo {
   return {
     paypalMode: c.paypal.mode,
     aiAvailable: aiAvailable(),
+    aiProvider: aiProvider(),
     examinerMode: examinerMode(),
     examinerOn: examinerMode() !== "off",
-    model: c.ANTHROPIC_MODEL,
+    model: c.ai.model,
     mailMode: c.mail.provider,
     demoSilenceMinutes: c.DEMO_SILENCE_MINUTES ?? null,
     appUrl: c.APP_URL,
