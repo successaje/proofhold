@@ -26,7 +26,7 @@ Around that core: notifications and reminders to both sides at every state chang
 
 - Next.js 16 and TypeScript; one app for the seller workspace, the buyer page and the API. SQLite locally, Postgres hosted. 128 unit tests, four Playwright journeys, an axe accessibility scan over eleven routes in both colour schemes, all in CI.
 - PayPal Orders v2 (`intent: AUTHORIZE`), Payments v2 (capture, partial capture, reauthorize once after the honor period, void, refund), order tracking attached after capture, webhooks with signature verification plus reconciliation polling, and Disputes v1 (`provide-evidence`, and the sandbox-only `create`, `require-evidence` and `adjudicate`). A simulated PayPal client sits behind the same interface with the same state rules, so the app runs without credentials and says so on every page.
-- Claude through the Anthropic SDK with structured outputs for two prompts: the compiler (brief → test) and the examiner (evidence → verdict with abstention). Evidence is passed as data, never as instructions. Without a key, a starter test is read from the brief's plain facts, and a labelled simulated examiner observes and abstains so the judgement path can be seen without ever releasing money.
+- One structured-output interface with two providers behind it, Claude through the Anthropic SDK or Gemini through the Interactions API, for two prompts: the compiler (brief → test) and the examiner (evidence → verdict with abstention). Evidence is passed as data, never as instructions. Without a key, a starter test is read from the brief's plain facts, and a labelled simulated examiner observes and abstains so the judgement path can be seen without ever releasing money.
 - Production layer: security headers, same-origin checks on every mutation, rate limits, structured redacted logs with request ids, a health check, terms and privacy pages, backup and restore scripts, a mail adapter (Resend, or a simulated outbox), and a printable record.
 - Two independent critique passes, thirty-six findings, all fixed and listed with evidence in `docs/acceptance-matrix.md`.
 
@@ -52,13 +52,13 @@ Login with PayPal for sellers, templates from past tests, a verified-human fallb
 
 ## Built with
 
-Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Orders v2, Payments v2, Order Tracking, Webhooks, Disputes v1), Anthropic Claude (structured outputs), Resend, Playwright, axe, Render.
+Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Orders v2, Payments v2, Order Tracking, Webhooks, Disputes v1), Anthropic Claude or Google Gemini (structured outputs), Resend, Playwright, axe, Render.
 
 ## Links
 
 - Repository: https://github.com/successaje/proofhold (MIT)
 - Hosted demo: _add Render URL_
-- Video: _add YouTube URL_ (upload `demo-video/proofhold-demo.mp4`, 2:10, with `proofhold-demo.srt` as captions; regenerate with `npm run demo:video`)
+- Video: _add YouTube URL_ (upload `demo-video/proofhold-demo.mp4`, 1:53, with `proofhold-demo.srt` as captions; regenerate with `npm run demo:video`)
 - Judge sandbox credentials: _add a sandbox Personal account email and password in the Devpost private notes_
 - Demo workspace: run `npm run seed` on the hosted instance and paste the printed cookie, or use the judge workspace link in the private notes
 
@@ -77,6 +77,8 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 10. `landing-375.png`, `buyer-approve-375.png`, `buyer-decide-375.png`, `seller-released-375.png`, `ledger-375.png` — phone width.
 11. `landing-dark.png`, `seller-released-dark.png` — dark scheme.
 
+12. `sandbox-seller-held.png`, `sandbox-seller-blocked.png`, `sandbox-buyer-decide.png`, `sandbox-seller-released.png`, `sandbox-buyer-receipt.png` — the same journey against the real PayPal sandbox with the Gemini examiner: a $420.00 authorization, two judgement lines failed with reasons, the buyer's decision, and PayPal's capture id in the history.
+
 ## What is real, simulated and unproven
 
-Copy the section from the README verbatim at submission time. As of this draft: everything PayPal is real in the sandbox client and simulated on the demo until sandbox credentials are set; the examiner is simulated (observes and abstains) until an Anthropic key is set; mail is simulated into the outbox until a Resend key is set; whether PayPal policy permits third-party conditional release at scale in production is unproven.
+Copy the section from the README verbatim at submission time. As of 2026-11-11: order, approval, authorization and full capture have run against the PayPal sandbox through the app, with Gemini compiling the brief and judging the uploads (`docs/screens/sandbox-*.png`), and partial capture and void have run through the smoke script; the other PayPal calls (reauthorize, refund, tracking, disputes) are real in the client and exercised only against the simulator; the demo video was recorded in simulated mode and says so; mail is simulated into the outbox until a Resend key is set; whether PayPal policy permits third-party conditional release at scale in production is unproven.

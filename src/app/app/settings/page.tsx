@@ -54,15 +54,15 @@ export default async function SettingsPage() {
               {
                 k: "Examiner",
                 v:
-                  system.examinerMode === "anthropic" ? (
+                  system.examinerMode === "model" ? (
                     <>
                       On, using <Mono>{system.model}</Mono>. Judgement lines are scored
                       with abstention allowed.
                     </>
                   ) : system.examinerMode === "simulated" ? (
-                    "Simulated (EXAMINER_MODE=simulated). A deterministic stand-in judges judgement lines from file names, readable text and image metadata, labelled as simulated on every verdict. Set ANTHROPIC_API_KEY for the real examiner."
+                    "Simulated (EXAMINER_MODE=simulated). A deterministic stand-in judges judgement lines from file names, readable text and image metadata, labelled as simulated on every verdict. Set ANTHROPIC_API_KEY or GEMINI_API_KEY and EXAMINER_MODE=auto for the real examiner."
                   ) : (
-                    "Off. ANTHROPIC_API_KEY is not set, so briefs get a starter test and judgement lines fall to the buyer. Set EXAMINER_MODE=simulated to run the judgement path with a labelled stand-in."
+                    "Off. Neither ANTHROPIC_API_KEY nor GEMINI_API_KEY is set, so briefs get a starter test and judgement lines fall to the buyer. Set EXAMINER_MODE=simulated to run the judgement path with a labelled stand-in."
                   ),
               },
               {

@@ -12,7 +12,7 @@ export function ModeBadges({
   if (compact) {
     const parts = [
       system.paypalMode === "sandbox" ? "PayPal sandbox" : "Simulated PayPal",
-      system.examinerMode === "anthropic"
+      system.examinerMode === "model"
         ? "examiner on"
         : system.examinerMode === "simulated"
           ? "examiner simulated"
@@ -20,7 +20,7 @@ export function ModeBadges({
     ];
     return (
       <Badge icon={<FlaskConical />} title={parts.join(" · ")}>
-        {system.paypalMode === "sandbox" && system.examinerMode === "anthropic"
+        {system.paypalMode === "sandbox" && system.examinerMode === "model"
           ? "Sandbox"
           : "Simulated"}
       </Badge>
@@ -46,14 +46,14 @@ export function ModeBadges({
       <Badge
         icon={<Bot />}
         title={
-          system.examinerMode === "anthropic"
+          system.examinerMode === "model"
             ? `Compiler and examiner run on ${system.model}`
             : system.examinerMode === "simulated"
               ? "A deterministic stand-in judges judgement lines from file names, readable text and image metadata. Labelled on every verdict; not a real judgement."
               : "No examiner in this deployment: judgement lines fall to the buyer"
         }
       >
-        {system.examinerMode === "anthropic"
+        {system.examinerMode === "model"
           ? "Examiner on"
           : system.examinerMode === "simulated"
             ? "Examiner simulated"

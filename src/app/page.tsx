@@ -83,6 +83,12 @@ function Triad({
   );
 }
 
+/** "on (Gemini)", "simulated" or "off", for the footer's modes line. */
+function examinerLabel(system: ReturnType<typeof systemInfo>): string {
+  if (system.examinerMode !== "model") return system.examinerMode;
+  return system.aiProvider === "gemini" ? "on (Gemini)" : "on (Claude)";
+}
+
 export default function Landing() {
   const system = systemInfo();
   const { view: example, checks } = sample();
@@ -597,7 +603,7 @@ export default function Landing() {
             </p>
             <p className={styles.footerModes}>
               This deployment · {simulated ? "Simulated PayPal" : "PayPal sandbox"} ·
-              Examiner {system.examinerMode} · Mail {system.mailMode}
+              Examiner {examinerLabel(system)} · Mail {system.mailMode}
             </p>
           </div>
           <nav className={styles.footerCol} aria-label="Product">

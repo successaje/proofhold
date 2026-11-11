@@ -4,7 +4,7 @@
  * that matters most: false releases (label fail or abstain, examiner pass
  * at or above the release threshold).
  *
- *   npm run eval              # needs ANTHROPIC_API_KEY
+ *   npm run eval              # needs ANTHROPIC_API_KEY or GEMINI_API_KEY
  *   npm run eval -- --limit 6 # first six cases
  *
  * Writes eval/results.json. Paste the summary into the README as it is.
@@ -18,7 +18,7 @@ const { examine } = await import("../src/lib/examiner/examine");
 const { cases } = await import("../eval/cases");
 
 if (!config().ai.configured) {
-  console.error("Set ANTHROPIC_API_KEY to run the eval.");
+  console.error("Set ANTHROPIC_API_KEY or GEMINI_API_KEY to run the eval.");
   process.exit(1);
 }
 
@@ -123,7 +123,8 @@ writeFileSync(
   "eval/results.json",
   JSON.stringify(
     {
-      model: config().ANTHROPIC_MODEL,
+      provider: config().ai.provider,
+      model: config().ai.model,
       threshold,
       at: new Date().toISOString(),
       summary: [...summary, total],
@@ -134,5 +135,5 @@ writeFileSync(
   ),
 );
 console.log(
-  `\nModel ${config().ANTHROPIC_MODEL}, threshold ${threshold}. Written to eval/results.json.`,
+  `\nModel ${config().ai.model}, threshold ${threshold}. Written to eval/results.json.`,
 );

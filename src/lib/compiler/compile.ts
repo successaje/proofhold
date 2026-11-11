@@ -4,8 +4,7 @@
  * The model proposes; the seller edits; the buyer approves the final text.
  * The compiler never sees evidence and never moves money.
  */
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { aiAvailable, anthropic, asData, model } from "../ai/client";
+import { aiAvailable, asData, generateStructured } from "../ai/client";
 import type { AcceptanceTest } from "../domain/test";
 import type { Kind } from "../domain/proofhold";
 import { compilerOutputSchema, toAcceptanceTest } from "./schema";
@@ -22,7 +21,7 @@ export interface CompileInput {
 
 export interface CompileResult {
   test: AcceptanceTest;
-  /** "ai" when Claude compiled it; "starter" when a template was used because AI is unavailable. */
+  /** "ai" when the model compiled it; "starter" when a template was used because AI is unavailable. */
   source: "ai" | "starter";
   dropped: string[];
   usage?: { inputTokens: number; outputTokens: number };
@@ -55,26 +54,17 @@ export async function compileBrief(input: CompileInput): Promise<CompileResult> 
     "Return the acceptance test.",
   ].join("\n\n");
 
-  const response = await anthropic().messages.parse({
-    model: model(),
-    max_tokens: 4000,
-    system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
-    output_config: { effort: "medium", format: zodOutputFormat(compilerOutputSchema) },
-    messages: [{ role: "user", content: user }],
+  const response = await generateStructured({
+    system: SYSTEM,
+    parts: [{ type: "text", text: user }],
+    schema: compilerOutputSchema,
+    maxTokens: 4000,
   });
-  if (response.stop_reason === "refusal" || !response.parsed_output) {
+  if (!response.output) {
     throw new Error(
       "The compiler did not return a usable acceptance test. Try rewording the brief.",
     );
   }
-  const { test, dropped } = toAcceptanceTest(response.parsed_output);
-  return {
-    test,
-    source: "ai",
-    dropped,
-    usage: {
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-    },
-  };
+  const { test, dropped } = toAcceptanceTest(response.output);
+  return { test, source: "ai", dropped, usage: response.usage };
 }

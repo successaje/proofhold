@@ -24,7 +24,7 @@ Freelancers and private sellers get paid late or not at all; buyers paying stran
 
 | Step    | What happens                                                                                      | PayPal object                                                                      |
 | ------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| Compose | Brief → acceptance test (Claude, structured output) → seller edits                                | —                                                                                  |
+| Compose | Brief → acceptance test (model, structured output) → seller edits                                 | —                                                                                  |
 | Approve | Buyer reads the same test and approves with PayPal                                                | Order with `intent: AUTHORIZE`, `custom_id` = test hash → authorization            |
 | Deliver | Files and tracking are checked: counts, types, dimensions, dpi, deadlines, sizes, carrier formats | —                                                                                  |
 | Judge   | The examiner scores judgement lines with a confidence and reasons, or abstains                    | —                                                                                  |
@@ -39,7 +39,8 @@ Three kinds of check, and the UI says which is which:
 
 ## What is real, simulated and unproven
 
-- **Real (PayPal sandbox):** order creation, buyer approval, authorization, reauthorization, full and partial capture, void, refund, order tracking, webhook signature verification, dispute evidence filing, and the sandbox-only dispute create and adjudicate calls. All in [`src/lib/paypal/rest.ts`](src/lib/paypal/rest.ts).
+- **Real, and run against the PayPal sandbox (2026-11-11):** order creation, buyer approval, authorization and full capture through the app, with the acceptance test's hash as the order's `custom_id`; partial capture and void of the remainder through `scripts/paypal-smoke.ts`. The model (Gemini) compiled the brief and judged the uploads. Screens in [`docs/screens`](docs/screens) (`sandbox-*.png`), ids in [`docs/integration-checklist.md`](docs/integration-checklist.md).
+- **Real client, not yet run against the sandbox:** reauthorization, refund, order tracking, webhook signature verification, dispute evidence filing, and the sandbox-only dispute create and adjudicate calls. All in [`src/lib/paypal/rest.ts`](src/lib/paypal/rest.ts); the journeys that cover them run against the simulator.
 - **Simulated:** when `PAYPAL_MODE=simulated` (the default without credentials) an in-process simulator with the same interface and state rules stands in, and the UI badges it on every page. The sandbox dispute adjudication is a sandbox-only endpoint, labelled as such in the product. Buyer windows can be shortened for demos with `DEMO_SILENCE_MINUTES`.
 - **Unproven:** whether PayPal policy permits a third party to run conditional release at scale in production, and how accurate the examiner is on real deliverables beyond the shipped evaluation set. Identity is a signed cookie per browser; production would add a real sign-in.
 
@@ -54,12 +55,12 @@ npm run local
 
 Open http://127.0.0.1:3200/app. Do not run `npm run build` while `npm run local` is running; the dev server picks up the production manifests and starts answering 404 until restarted. Without any keys the app runs with simulated PayPal and the examiner off: briefs get a starter test and judgement lines fall to the buyer. To use the real integrations, copy `.env.example` to `.env.local` and set:
 
-| Variable                                                          | Purpose                                                                                                                                  |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `PAYPAL_MODE=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | A REST app on a sandbox Business account. Buyers approve with a sandbox Personal account.                                                |
-| `PAYPAL_WEBHOOK_ID`                                               | Optional. Register with `npx tsx scripts/register-webhook.ts https://your-host` on a public URL. Polling keeps holds in step without it. |
-| `ANTHROPIC_API_KEY`                                               | Turns on the compiler and the examiner. `ANTHROPIC_MODEL` defaults to `claude-opus-5-5`.                                                 |
-| `DEMO_SILENCE_MINUTES`                                            | Shortens buyer windows for demos.                                                                                                        |
+| Variable                                                          | Purpose                                                                                                                                                                                 |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PAYPAL_MODE=sandbox`, `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | A REST app on a sandbox Business account. Buyers approve with a sandbox Personal account.                                                                                               |
+| `PAYPAL_WEBHOOK_ID`                                               | Optional. Register with `npx tsx scripts/register-webhook.ts https://your-host` on a public URL. Polling keeps holds in step without it.                                                |
+| `ANTHROPIC_API_KEY` or `GEMINI_API_KEY`                           | Either key turns on the compiler and the examiner. `ANTHROPIC_MODEL` defaults to `claude-sonnet-5-5`, `GEMINI_MODEL` to `gemini-3.8-flash`. `AI_PROVIDER` forces one when both are set. |
+| `DEMO_SILENCE_MINUTES`                                            | Shortens buyer windows for demos.                                                                                                                                                       |
 
 Useful scripts:
 
@@ -70,7 +71,7 @@ npm run demo:video                    # the demo video and subtitles in demo-vid
 npm run backup                        # snapshot the database into .data/backups/
 npm run reset -- --yes                # back up, then remove the local SQLite database
 npx tsx scripts/paypal-smoke.ts       # prove the sandbox: authorize → partial capture → void
-npm run eval                          # examiner over the labelled cases (needs ANTHROPIC_API_KEY)
+npm run eval                          # examiner over the labelled cases (needs ANTHROPIC_API_KEY or GEMINI_API_KEY)
 ```
 
 ## Testing
@@ -109,7 +110,7 @@ Every proofhold has a printable record at `/app/h/[id]/record` (seller) and `/p/
 
 ## The examiner, in three modes
 
-`EXAMINER_MODE` picks who judges the lines a machine cannot measure. `auto` uses the model when `ANTHROPIC_API_KEY` is set and is otherwise off. `simulated` runs a deterministic stand-in (`src/lib/examiner/simulated.ts`) that reads file names, readable text and image metadata, reports what it saw, and then abstains on every line, so a simulation can never release money; every verdict it writes is labelled "simulated examiner · not a judgement" and the header badge says so. `off` sends judgement lines to the buyer. The simulation exists so the whole judgement path, manifest and reasons included, can be seen without a key.
+`EXAMINER_MODE` picks who judges the lines a machine cannot measure. `auto` uses the model when `ANTHROPIC_API_KEY` or `GEMINI_API_KEY` is set and is otherwise off. `simulated` runs a deterministic stand-in (`src/lib/examiner/simulated.ts`) that reads file names, readable text and image metadata, reports what it saw, and then abstains on every line, so a simulation can never release money; every verdict it writes is labelled "simulated examiner · not a judgement" and the header badge says so. `off` sends judgement lines to the buyer. The simulation exists so the whole judgement path, manifest and reasons included, can be seen without a key.
 
 ## Examiner evaluation
 
@@ -127,7 +128,7 @@ _Not yet run against a model in this repository; the numbers will be added when 
 
 ## Deploy
 
-[`render.yaml`](render.yaml) describes a Render web service (Node runtime, inline scheduler) with a free Postgres database. Set `PAYPAL_*` and `ANTHROPIC_API_KEY` in the dashboard, then register the webhook against the public URL. Any Node host works: `npm run build && npm start` with `PROOFHOLD_STORE=postgres` and `DATABASE_URL`.
+[`render.yaml`](render.yaml) describes a Render web service (Node runtime, inline scheduler) with a free Postgres database. Set `PAYPAL_*` and one model key (`ANTHROPIC_API_KEY` or `GEMINI_API_KEY`) in the dashboard, then register the webhook against the public URL. Any Node host works: `npm run build && npm start` with `PROOFHOLD_STORE=postgres` and `DATABASE_URL`.
 
 ## Repository
 
@@ -136,7 +137,8 @@ src/app/            routes: / (landing), /app/* (seller), /p/[token] (buyer), /s
 src/components/     ui (design system), shell (brand, nav), proofhold (seal, sheet, rail, delivery, hold card, history), landing
 public/brand/       mark, wordmark and lockup SVGs; src/app/icon.svg and opengraph-image.tsx derive from them
 src/lib/domain/     acceptance test schema and hashing; proofhold state machine
-src/lib/compiler/   brief → test (Claude) and starter templates
+src/lib/ai/         one structured-output call, two providers (Anthropic SDK, Gemini REST)
+src/lib/compiler/   brief → test (model) and starter templates
 src/lib/validators/ image header parsing and deterministic checks
 src/lib/examiner/   judgement prompt with abstention
 src/lib/decision/   the decision engine (pure)

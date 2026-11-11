@@ -40,6 +40,7 @@ let sim: SimulatedPayPalClient;
 
 before(async () => {
   delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.GEMINI_API_KEY;
   process.env.PAYPAL_MODE = "simulated";
   process.env.DEMO_SILENCE_MINUTES = "1";
   resetConfig();

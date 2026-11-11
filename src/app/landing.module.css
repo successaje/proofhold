@@ -183,6 +183,10 @@
 .blockTint {
   background: var(--brand-soft);
 }
+/* The section number is small text: muted on the tint is under 4.5:1 in dark. */
+.blockTint .no {
+  color: var(--ink-2);
+}
 .blockBrand {
   background: var(--brand);
   color: var(--brand-ink);
@@ -190,10 +194,10 @@
 .blockBrand .no,
 .blockBrand .blockLead,
 .blockBrand .triadItem p {
-  color: color-mix(in srgb, var(--brand-ink) 78%, transparent);
+  color: var(--brand-ink-muted);
 }
 .blockBrand .h2 {
-  color: color-mix(in srgb, var(--brand-ink) 78%, transparent);
+  color: var(--brand-ink-muted);
 }
 .blockBrand .h2 em {
   color: var(--brand-ink);
@@ -441,7 +445,7 @@
   text-wrap: balance;
 }
 .sealRow li > span {
-  color: color-mix(in srgb, var(--brand-ink) 80%, transparent);
+  color: var(--brand-plate-ink);
 }
 
 .tableWrap {

@@ -37,10 +37,21 @@ const order = await client.createAuthorizeOrder({
 console.log(`Order ${order.orderId} created.`);
 console.log(`Approve it here with a sandbox buyer account:\n  ${order.approveUrl}\n`);
 
-let status = (await client.getOrder(order.orderId)).status;
+// A poll that fails is not the end of the test: say so and keep waiting.
+const orderStatus = async (previous: string) => {
+  try {
+    return (await client.getOrder(order.orderId)).status;
+  } catch (error) {
+    process.stdout.write(
+      `\r  PayPal did not answer (${error instanceof Error ? error.message : error}); retrying…   `,
+    );
+    return previous;
+  }
+};
+let status = await orderStatus("CREATED");
 while (status !== "APPROVED" && status !== "COMPLETED") {
   await sleep(3000);
-  status = (await client.getOrder(order.orderId)).status;
+  status = await orderStatus(status);
   process.stdout.write(`\r  waiting for approval… (${status})   `);
 }
 console.log("\nApproved.");

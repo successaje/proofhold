@@ -134,6 +134,9 @@ interface Token {
   expiresAt: number;
 }
 
+/** Gateway and overload statuses that are worth one more attempt. */
+const TRANSIENT = new Set([502, 503, 504]);
+
 export class PayPalRestClient implements PayPalClient {
   readonly mode = "sandbox" as const;
   private token: Token | undefined;
@@ -144,6 +147,8 @@ export class PayPalRestClient implements PayPalClient {
     private readonly clientSecret: string,
     private readonly baseUrl: string = SANDBOX,
     private readonly fetchImpl: typeof fetch = fetch,
+    /** Waits between attempts on a transient failure; empty disables retries. */
+    private readonly retryDelaysMs: number[] = [500, 1500],
   ) {}
 
   // ---------- auth ----------
@@ -203,7 +208,25 @@ export class PayPalRestClient implements PayPalClient {
     }
     if (method !== "GET" && options.idempotent !== false)
       headers["PayPal-Request-Id"] = randomUUID();
-    const res = await this.fetchImpl(`${this.baseUrl}${path}`, { method, headers, body });
+    // A read, or a write that carries a PayPal-Request-Id, is safe to send
+    // again: PayPal answers a repeated id with the first result. Retry those
+    // on a gateway error or a dropped connection, with the same id.
+    const repeatable = method === "GET" || "PayPal-Request-Id" in headers;
+    const delays = repeatable ? this.retryDelaysMs : [];
+    let res: Response | undefined;
+    for (let attempt = 0; ; attempt++) {
+      try {
+        res = await this.fetchImpl(`${this.baseUrl}${path}`, { method, headers, body });
+        if (!TRANSIENT.has(res.status) || attempt >= delays.length) break;
+      } catch (error) {
+        if (attempt >= delays.length)
+          throw new PayPalError(
+            `PayPal could not be reached (${error instanceof Error ? error.message : String(error)})`,
+            503,
+          );
+      }
+      await new Promise((r) => setTimeout(r, delays[attempt]));
+    }
     if (res.status === 401 && !options.retry)
       return this.request(method, path, { ...options, retry: true });
     const text = await res.text();

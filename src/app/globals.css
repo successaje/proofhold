@@ -17,6 +17,10 @@
   /* Brand and semantic colour */
   --brand: #0d5c4e;
   --brand-ink: #ffffff;
+  /* Secondary text on a brand block, and captions on the darker plate inside
+     one. Set per scheme so both clear 4.5:1 (checked by the axe scan). */
+  --brand-ink-muted: color-mix(in srgb, #ffffff 78%, transparent);
+  --brand-plate-ink: color-mix(in srgb, #ffffff 80%, transparent);
   --brand-soft: #dcefe9;
   --held: #8b6010;
   --held-soft: #f6ebd3;
@@ -97,6 +101,8 @@
     --line-strong: #403c36;
     --brand: #3ea58f;
     --brand-ink: #0b1511;
+    --brand-ink-muted: color-mix(in srgb, #0b1511 90%, transparent);
+    --brand-plate-ink: #f3f7f5;
     --brand-soft: #16302a;
     --held: #d9a441;
     --held-soft: #3a2d12;

@@ -3,7 +3,7 @@
  *
  *   npm run local
  *
- * Reads .env.local when present. PayPal and Anthropic credentials are optional:
+ * Reads .env.local when present. PayPal and model (Anthropic or Gemini) credentials are optional:
  * without them the app runs the simulated PayPal client and reports the AI
  * compiler and examiner as unavailable.
  */
@@ -36,9 +36,13 @@ const paypal =
   env.PAYPAL_MODE === "sandbox" && env.PAYPAL_CLIENT_ID && env.PAYPAL_CLIENT_SECRET
     ? "PayPal sandbox (api-m.sandbox.paypal.com)"
     : "simulated PayPal (set PAYPAL_MODE=sandbox and credentials to use the sandbox)";
-const ai = env.ANTHROPIC_API_KEY
-  ? `Anthropic ${env.ANTHROPIC_MODEL || "claude-sonnet-5-5"}`
-  : "unavailable (set ANTHROPIC_API_KEY to enable the compiler and examiner)";
+const want = env.AI_PROVIDER || "auto";
+const ai =
+  env.ANTHROPIC_API_KEY && want !== "gemini"
+    ? `Anthropic ${env.ANTHROPIC_MODEL || "claude-sonnet-5-5"}`
+    : env.GEMINI_API_KEY && want !== "anthropic"
+      ? `Gemini ${env.GEMINI_MODEL || "gemini-3.8-flash"}`
+      : "unavailable (set ANTHROPIC_API_KEY or GEMINI_API_KEY to enable the compiler and examiner)";
 
 console.log(`Proofhold  ${env.APP_URL}/app`);
 console.log(`Storage    local SQLite under .data/`);

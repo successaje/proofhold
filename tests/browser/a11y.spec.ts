@@ -36,7 +36,10 @@ async function scan(page: import("@playwright/test").Page, name: string) {
 
 for (const scheme of ["light", "dark"] as const) {
   test(`accessibility scan, ${scheme} scheme`, async ({ page, browser }) => {
-    await page.emulateMedia({ colorScheme: scheme });
+    // Reduced motion shows every section at full opacity. Without it the scan
+    // can catch a landing section mid-fade and read half-transparent text as
+    // low contrast, which made this test pass or fail by timing.
+    await page.emulateMedia({ colorScheme: scheme, reducedMotion: "reduce" });
     const report: Record<string, string[]> = {};
     await page.goto("/");
     report.landing = await scan(page, "landing");
@@ -50,7 +53,10 @@ for (const scheme of ["light", "dark"] as const) {
     const { id, buyerUrl } = await composeAndSend(page, "service");
     await page.goto(`/app/h/${id}`);
     report.detailProposed = await scan(page, "detail (proposed)");
-    const ctx = await browser.newContext({ colorScheme: scheme });
+    const ctx = await browser.newContext({
+      colorScheme: scheme,
+      reducedMotion: "reduce",
+    });
     const buyer = await ctx.newPage();
     await buyer.goto(buyerUrl);
     report.buyerProposed = await scan(buyer, "buyer (proposed)");
