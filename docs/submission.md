@@ -77,6 +77,8 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 10. `landing-375.png`, `buyer-approve-375.png`, `buyer-decide-375.png`, `seller-released-375.png`, `ledger-375.png` — phone width.
 11. `landing-dark.png`, `seller-released-dark.png` — dark scheme.
 
+12. `sandbox-seller-held.png`, `sandbox-seller-blocked.png`, `sandbox-buyer-decide.png`, `sandbox-seller-released.png`, `sandbox-buyer-receipt.png` — the same journey against the real PayPal sandbox with the Gemini examiner: a $420.00 authorization, two judgement lines failed with reasons, the buyer's decision, and PayPal's capture id in the history.
+
 ## What is real, simulated and unproven
 
-Copy the section from the README verbatim at submission time. As of this draft: everything PayPal is real in the sandbox client and simulated on the demo until sandbox credentials are set; the examiner is simulated (observes and abstains) until an Anthropic or Gemini key is set; mail is simulated into the outbox until a Resend key is set; whether PayPal policy permits third-party conditional release at scale in production is unproven.
+Copy the section from the README verbatim at submission time. As of 2026-11-11: order, approval, authorization and full capture have run against the PayPal sandbox through the app, with Gemini compiling the brief and judging the uploads (`docs/screens/sandbox-*.png`); the other PayPal calls (partial capture, void, reauthorize, refund, tracking, disputes) are real in the client and exercised only against the simulator; the demo video was recorded in simulated mode and says so; mail is simulated into the outbox until a Resend key is set; whether PayPal policy permits third-party conditional release at scale in production is unproven.
