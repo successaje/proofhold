@@ -156,6 +156,28 @@ An independent reviewer read the iteration-2 source and drove the served build a
 
 Also from the pass: the empty first header cell of the compare table has a visually hidden "Question". Verified as fine without change: every sampled colour pair, hit targets, reduced motion, dark mode, no horizontal overflow at any width.
 
+## Fourth pass (2026-11-12, an outside flow review and the owner's notes)
+
+An outside reviewer read the repository and the documented flow (not the running app) and the owner tried the app. What was raised, and what was done:
+
+| #   | Raised                                                                                    | Done                                                                                                                              |
+| --- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | No way to switch between light and dark                                                   | A theme button in every header, System / Light / Dark in Settings, remembered per browser, applied before first paint             |
+| 2   | Opening the app lands on workspace setup with no way back and no explanation              | "Name your workspace": Back to home, Cancel, what a workspace is, and the three things that happen next                           |
+| 3   | Changing the brief or deadline after compiling left the old test in place                 | Reproduced. The test is flagged as stale and cannot be saved or sent until the seller compiles again or keeps it on purpose       |
+| 4   | "No deadline" on a blocked release could be read as "the hold never expires"              | Now "nothing releases automatically", followed by the date the PayPal hold itself lapses, on both pages, the ledger and the email |
+| 5   | The buyer email hint said it only labels the proofhold, but notifications use it          | The hint states what happens in the mail mode in force                                                                            |
+| 6   | The buyer's decision panel came before the agreement and the evidence                     | The delivery and what each check found come first, with a link down to the decision                                               |
+| 7   | The demo was described as sandbox-capable but had only run simulated                      | Run against the PayPal sandbox on 2026-11-11 (row 17) and stated per call in the README                                           |
+| 8   | The landing could show one agreement moving through its states, with motion that explains | The scroll story: four moments beside a pinned card whose seal, rail and facts change                                             |
+| 9   | Dark-mode contrast on the landing's brand block (found by CI, hidden by the fade)         | Per-scheme tokens for text on brand surfaces; the scan runs with reduced motion so nothing is skipped                             |
+
+Raised and not changed, with the reason:
+
+- **Payouts go to the deployment's PayPal business account, not to each seller.** True of this build, and said on workspace setup and in Settings. Paying each seller needs PayPal's multiparty (partner) product, which needs partner approval; it is listed under "What's next".
+- **Call it an "agreement" rather than an "acceptance test" throughout.** A vocabulary change across the product, the recorded video and the docs the day before the deadline would leave them disagreeing. The buyer page already leads with "What you are agreeing to". Left as a decision for the owner.
+- **"Ask for changes" on the buyer page.** Not built. The buyer can decline to approve, and after delivery can object with a reason.
+
 ## Known gaps
 
 - The PayPal sandbox is verified for order, approval, authorization, full capture, partial capture and void (row 17). Reauthorization, refund, tracking and the dispute calls run against the simulator and have not been exercised in the sandbox. Row 19 still needs a public URL.

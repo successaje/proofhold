@@ -37,6 +37,8 @@ Paper and ink carry the interface. Teal is the brand and the colour of money mov
 | `--wax`     | = brand   | = brand   | Stamp ink                         |
 | `--rule`    | `#cbc5ba` | `#403c36` | Ledger rules and the sheet margin |
 
+Theme: the page follows the system until the visitor picks. One button in every header flips light and dark, Settings has System, Light and Dark, the choice is kept in the browser under `proofhold:theme`, and an inline script applies it before first paint. Dark tokens are written twice in `globals.css` (system dark unless light was picked, and an explicit dark) and must stay identical. Text on brand surfaces uses `--brand-ink`, `--brand-ink-muted` and `--brand-plate-ink`, which are set per scheme.
+
 Contrast: every text colour meets 4.5:1 on the surfaces it is used on, in both schemes (checked by `tests/browser/a11y.spec.ts` with axe, and by the pair table in the build log). Verdict colours are always paired with an icon or a word, never alone.
 
 ## Type
@@ -59,7 +61,7 @@ Lucide, 1.5 px stroke at 16 px, 1 px at 20 px and above. Icons never carry meani
 
 ## Motion
 
-Durations 120 / 180 / 280 ms, one ease-out curve. Stamps land (scale 1.25 → 1 with a settle). Ring arcs draw in when a verdict arrives. Dots pulse only while something is actually running. Under `prefers-reduced-motion: reduce` every animation collapses to an instant change.
+Durations 120 / 180 / 280 ms, one ease-out curve. Stamps land (scale 1.25 → 1 with a settle). Ring arcs draw in when a verdict arrives. Dots pulse only while something is actually running. The landing's hero arrives in order once, and its story card changes only when the reader scrolls to the next moment. Under `prefers-reduced-motion: reduce` every animation collapses to an instant change.
 
 ## Voice
 

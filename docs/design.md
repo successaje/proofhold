@@ -41,10 +41,13 @@ Four durations and two curves, written down so every surface moves the same way:
 | `--t-base`      | 180 ms                         | hover nudges (an arrow moves 2–3 px, a card lifts 2 px), the stamp's settle            |
 | `--t-slow`      | 280 ms                         | position changes: the inspector sliding in, the index dash, ring arcs drawing in       |
 | reveal          | 400 ms                         | landing sections rising 12 px as they first enter view, staggered 60 ms across a triad |
+| hero entrance   | 560 ms, 70 ms apart            | the hero's five pieces and the product frame arriving in reading order, once           |
+| story           | 320 ms card, 360 ms facts      | the pinned agreement card changing as a moment crosses the middle of the viewport      |
+| theme           | 220 ms                         | a crossfade of the whole page when the visitor switches light and dark                 |
 | `--ease-out`    | cubic-bezier(0.2, 0.8, 0.2, 1) | every entrance and nudge                                                               |
 | `--ease-in-out` | cubic-bezier(0.65, 0, 0.35, 1) | anything that moves from one resting place to another                                  |
 
-Rules: nothing loops except the status dot while a check is genuinely running; motion explains a change of state and never decorates; anything the reader has already scrolled past is shown at once rather than waiting for a reveal. Under `prefers-reduced-motion`, every transition collapses to an instant change and nothing pulses. The second iteration, which took the frame-and-index landing, the sidebar shell and the ledger inspector from a study of Braintrust, is in [design-iteration-2.md](design-iteration-2.md).
+Rules: nothing loops except the status dot while a check is genuinely running; motion explains a change of state and never decorates; anything the reader has already scrolled past is shown at once rather than waiting for a reveal. Under `prefers-reduced-motion`, every transition collapses to an instant change and nothing pulses. The third iteration (2026-11-12) added the scroll story, the hero entrance, the rotating audience line and the theme switch after a study of the Bakeoff board's landing: its pinned panel that changes per step, its staggered rows and its light, dark or system choice were taken as ideas and rebuilt in CSS and a small observer, with no animation library. The story's card is hidden from assistive tech because the list beside it says the same thing; on narrow screens each moment carries its own card, and with reduced motion or no JavaScript every card is simply shown. The second iteration, which took the frame-and-index landing, the sidebar shell and the ledger inspector from a study of Braintrust, is in [design-iteration-2.md](design-iteration-2.md).
 
 ### Voice
 
