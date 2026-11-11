@@ -87,6 +87,29 @@
   text-align: center;
   align-items: center;
 }
+/* The hero arrives in order: who it is for, the claim, the form, the product. */
+.heroInner > *,
+.bandInner {
+  animation: rise 560ms var(--ease-out) both;
+  animation-delay: calc(40ms + var(--d, 0) * 70ms);
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .heroInner > *,
+  .bandInner {
+    animation: none;
+  }
+}
+.rise {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
 .kicker {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -429,30 +452,6 @@
 }
 
 /* ---------- seals on the dark plate ---------- */
-.sealRow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--s-6) var(--s-4);
-  color: var(--brand-ink);
-}
-@media (min-width: 48rem) {
-  .sealRow {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-.sealRow li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--s-3);
-  text-align: center;
-  font-size: var(--text-sm);
-  text-wrap: balance;
-}
-.sealRow li > span {
-  color: var(--brand-plate-ink);
-}
-
 .tableWrap {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
@@ -673,4 +672,71 @@
   line-height: 0.85;
   color: var(--brand-soft);
   user-select: none;
+}
+
+/* ---------- how it works: the scroll story ---------- */
+.how {
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: var(--s-16) var(--gutter) var(--s-8);
+  display: grid;
+  gap: var(--s-10);
+  scroll-margin-top: 4.5rem;
+}
+@media (min-width: 64rem) {
+  .how {
+    padding-top: var(--s-20);
+    gap: var(--s-4);
+  }
+}
+.howHead {
+  display: grid;
+  gap: var(--s-4);
+  max-width: 46rem;
+}
+
+/* ---------- the order object, on the dark plate ---------- */
+.order {
+  display: grid;
+  gap: var(--s-4);
+  color: var(--brand-plate-ink);
+}
+.orderTitle {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.orderRows {
+  display: grid;
+}
+.orderRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-1);
+  padding: var(--s-3) 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.orderRow dd {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-1) var(--s-4);
+}
+.orderValue {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.orderNote {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+}
+@media (min-width: 40rem) {
+  .orderRow {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: var(--s-4);
+    align-items: baseline;
+  }
 }

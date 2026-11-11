@@ -1,0 +1,225 @@
+.story {
+  display: grid;
+  gap: var(--s-8);
+}
+.list {
+  display: grid;
+  gap: var(--s-10);
+}
+.step {
+  display: grid;
+  gap: var(--s-3);
+  align-content: start;
+}
+.stepNo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.stepDot {
+  display: inline-grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--line-strong);
+  color: var(--brand-ink);
+  transition:
+    background-color var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out);
+}
+.stepDot svg {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+.stepTitle {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-2xl);
+  letter-spacing: -0.015em;
+  line-height: var(--leading-tight);
+}
+.stepText {
+  max-width: 32rem;
+  color: var(--ink-2);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  text-wrap: pretty;
+}
+.inline {
+  margin-top: var(--s-3);
+}
+.pin {
+  display: none;
+}
+
+/* ---------- the agreement card ---------- */
+.card {
+  display: grid;
+  gap: var(--s-4);
+  padding: var(--s-5);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-2);
+}
+.cardHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+.cardTitle {
+  display: grid;
+  gap: 2px;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: var(--leading-snug);
+}
+.cardSub {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--ink-2);
+}
+.example {
+  flex: none;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: var(--held-soft);
+  color: var(--held);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.progress {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--s-1);
+}
+.progress span {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+  transition: background-color var(--t-slow) var(--ease-out);
+}
+.progress .on {
+  background: var(--brand);
+}
+.rail {
+  display: flex;
+  justify-content: center;
+}
+.sealWrap {
+  display: grid;
+  justify-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) 0;
+  animation: stageIn 320ms var(--ease-out) both;
+}
+.caption {
+  font-size: var(--text-sm);
+  color: var(--ink-2);
+  text-align: center;
+  text-wrap: balance;
+}
+.facts {
+  display: grid;
+  border-top: 1px solid var(--line);
+}
+.fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-4);
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-sm);
+  animation: factIn 360ms var(--ease-out) both;
+  animation-delay: calc(120ms + var(--i, 0) * 70ms);
+}
+.fact:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+.fact dt {
+  color: var(--muted);
+  flex: none;
+}
+.fact dd {
+  text-align: right;
+  color: var(--ink);
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+@keyframes stageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+@keyframes factIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---------- wide: pin the card, let the moments scroll ---------- */
+@media (min-width: 64rem) {
+  .story {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 26rem);
+    gap: var(--s-16);
+    align-items: start;
+  }
+  .list {
+    gap: 0;
+  }
+  .step {
+    min-height: 62vh;
+    align-content: center;
+    padding: var(--s-8) 0;
+    opacity: 0.38;
+    transition: opacity var(--t-slow) var(--ease-out);
+  }
+  .step[data-active] {
+    opacity: 1;
+  }
+  .step[data-active] .stepDot,
+  .step[data-done] .stepDot {
+    border-color: var(--brand);
+    background: var(--brand);
+  }
+  .inline {
+    display: none;
+  }
+  .pin {
+    display: block;
+    position: sticky;
+    top: calc(50vh - 17rem);
+    padding: var(--s-8) 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sealWrap,
+  .fact {
+    animation: none;
+  }
+  .step {
+    opacity: 1;
+    transition: none;
+  }
+}
