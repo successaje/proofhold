@@ -2,13 +2,20 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { z } from "zod";
 import { geminiStructured, toGeminiSchema } from "../../src/lib/ai/gemini";
-import { parseStructured } from "../../src/lib/ai/client";
+import { generateStructured, parseStructured } from "../../src/lib/ai/client";
 import { config, resetConfig } from "../../src/lib/config";
 import { compilerOutputSchema } from "../../src/lib/compiler/schema";
 import { examinerOutputSchema } from "../../src/lib/examiner/examine";
 
 function withEnv(env: Record<string, string | undefined>, fn: () => void) {
-  const keys = ["ANTHROPIC_API_KEY", "GEMINI_API_KEY", "AI_PROVIDER", "EXAMINER_MODE"];
+  const keys = [
+    "ANTHROPIC_API_KEY",
+    "GEMINI_API_KEY",
+    "GEMINI_MODEL",
+    "GEMINI_FALLBACK_MODEL",
+    "AI_PROVIDER",
+    "EXAMINER_MODE",
+  ];
   const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
   for (const k of keys) delete process.env[k];
   for (const [k, v] of Object.entries(env)) if (v !== undefined) process.env[k] = v;
@@ -220,4 +227,70 @@ test("parseStructured accepts only JSON that fits the schema", () => {
   assert.equal(parseStructured('{"verdict":"maybe"}', schema), null);
   assert.equal(parseStructured("not json", schema), null);
   assert.equal(parseStructured(null, schema), null);
+});
+
+test("an overloaded Gemini model falls back once and the result names the model that answered", async () => {
+  const saved = {
+    key: process.env.GEMINI_API_KEY,
+    anthropic: process.env.ANTHROPIC_API_KEY,
+    model: process.env.GEMINI_MODEL,
+    fallback: process.env.GEMINI_FALLBACK_MODEL,
+    provider: process.env.AI_PROVIDER,
+  };
+  const realFetch = globalThis.fetch;
+  const asked: string[] = [];
+  process.env.GEMINI_API_KEY = "g-key";
+  delete process.env.ANTHROPIC_API_KEY;
+  delete process.env.AI_PROVIDER;
+  process.env.GEMINI_MODEL = "primary-model";
+  process.env.GEMINI_FALLBACK_MODEL = "fallback-model";
+  resetConfig();
+  globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+    const name = JSON.parse(String(init?.body)).model as string;
+    asked.push(name);
+    return name === "primary-model"
+      ? new Response(JSON.stringify({ error: { message: "high demand" } }), {
+          status: 503,
+        })
+      : new Response(JSON.stringify(okBody('{"ok":true}')), { status: 200 });
+  }) as typeof fetch;
+  try {
+    const result = await generateStructured({
+      system: "s",
+      parts: [{ type: "text", text: "t" }],
+      schema: z.object({ ok: z.boolean() }),
+    });
+    assert.deepEqual(result.output, { ok: true });
+    assert.equal(result.model, "fallback-model");
+    assert.equal(result.provider, "gemini");
+    assert.deepEqual(asked, ["primary-model", "primary-model", "fallback-model"]);
+
+    // A rejected key is not an outage: no fallback, the error surfaces.
+    asked.length = 0;
+    globalThis.fetch = (async (_url: string | URL | Request, init?: RequestInit) => {
+      asked.push(JSON.parse(String(init?.body)).model as string);
+      return new Response(JSON.stringify({ error: { message: "API key not valid" } }), {
+        status: 400,
+      });
+    }) as typeof fetch;
+    await assert.rejects(
+      generateStructured({
+        system: "s",
+        parts: [{ type: "text", text: "t" }],
+        schema: z.object({ ok: z.boolean() }),
+      }),
+      /API key not valid/,
+    );
+    assert.deepEqual(asked, ["primary-model"]);
+  } finally {
+    globalThis.fetch = realFetch;
+    const restore = (k: string, v: string | undefined) =>
+      v === undefined ? delete process.env[k] : (process.env[k] = v);
+    restore("GEMINI_API_KEY", saved.key);
+    restore("ANTHROPIC_API_KEY", saved.anthropic);
+    restore("GEMINI_MODEL", saved.model);
+    restore("GEMINI_FALLBACK_MODEL", saved.fallback);
+    restore("AI_PROVIDER", saved.provider);
+    resetConfig();
+  }
 });

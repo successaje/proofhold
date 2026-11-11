@@ -9,9 +9,19 @@ import type { AiPart } from "./client";
 
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/interactions";
 const API_REVISION = "2026-05-20";
-const TIMEOUT_MS = 90_000;
+const TIMEOUT_MS = 60_000;
 const RETRY_STATUS = new Set([429, 500, 502, 503, 504]);
-const RETRY_DELAYS_MS = [1_000, 3_000];
+const RETRY_DELAYS_MS = [1_500];
+
+/** A failed Gemini call. `retryable` is true for overload, rate limits and timeouts. */
+export class GeminiError extends Error {
+  constructor(
+    detail: string,
+    readonly retryable: boolean,
+  ) {
+    super(`Gemini request failed (${detail})`);
+  }
+}
 
 export interface GeminiRequest {
   apiKey: string;
@@ -120,6 +130,10 @@ export async function geminiStructured(req: GeminiRequest): Promise<GeminiRespon
       });
     } catch (err) {
       lastError = err instanceof Error ? err.message : String(err);
+      // A full timeout already cost a minute: let the caller fall back
+      // instead of waiting on the same model again.
+      if (err instanceof Error && err.name === "TimeoutError")
+        throw new GeminiError(lastError, true);
       continue;
     }
     const raw = await res.text();
@@ -132,7 +146,7 @@ export async function geminiStructured(req: GeminiRequest): Promise<GeminiRespon
     if (!res.ok) {
       lastError = `${res.status}: ${body.error?.message ?? (raw.slice(0, 200) || res.statusText)}`;
       if (RETRY_STATUS.has(res.status)) continue;
-      throw new Error(`Gemini request failed (${lastError})`);
+      throw new GeminiError(lastError, false);
     }
     const text = (body.steps ?? [])
       .filter((s) => s.type === "model_output")
@@ -150,5 +164,5 @@ export async function geminiStructured(req: GeminiRequest): Promise<GeminiRespon
       },
     };
   }
-  throw new Error(`Gemini request failed (${lastError})`);
+  throw new GeminiError(lastError, true);
 }

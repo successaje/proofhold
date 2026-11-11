@@ -7,7 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod";
 import { config } from "../config";
-import { geminiStructured } from "./gemini";
+import { GeminiError, geminiStructured } from "./gemini";
 
 export type AiProvider = "anthropic" | "gemini";
 
@@ -109,19 +109,36 @@ async function viaAnthropic<S extends z.ZodType>(
 async function viaGemini<S extends z.ZodType>(
   req: StructuredRequest<S>,
 ): Promise<StructuredResult<z.infer<S>>> {
-  const reply = await geminiStructured({
-    apiKey: config().GEMINI_API_KEY as string,
-    model: model(),
-    system: req.system,
-    parts: req.parts,
-    jsonSchema: z.toJSONSchema(req.schema),
-    // Thinking tokens count against the output budget on Gemini.
-    maxTokens: (req.maxTokens ?? 4000) * 2,
-  });
+  const c = config();
+  const call = (name: string) =>
+    geminiStructured({
+      apiKey: c.GEMINI_API_KEY as string,
+      model: name,
+      system: req.system,
+      parts: req.parts,
+      jsonSchema: z.toJSONSchema(req.schema),
+      // Thinking tokens count against the output budget on Gemini.
+      maxTokens: (req.maxTokens ?? 4000) * 2,
+    });
+  const fallback = c.GEMINI_FALLBACK_MODEL?.trim();
+  let used = model();
+  let reply;
+  try {
+    reply = await call(used);
+  } catch (err) {
+    // An overloaded or rate-limited primary: try the fallback model once.
+    // The result names the model that actually answered.
+    const canFallback =
+      err instanceof GeminiError && err.retryable && fallback && fallback !== used;
+    if (!canFallback) throw err;
+    console.warn(`${used} is unavailable (${err.message}); using ${fallback}.`);
+    used = fallback;
+    reply = await call(used);
+  }
   return {
     output: parseStructured(reply.text, req.schema),
     usage: reply.usage,
-    model: model(),
+    model: used,
     provider: "gemini",
   };
 }

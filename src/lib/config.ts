@@ -20,6 +20,8 @@ const schema = z.object({
   ANTHROPIC_MODEL: z.string().default("claude-sonnet-5-5"),
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_MODEL: z.string().default("gemini-3.8-flash"),
+  // Used when the primary Gemini model is overloaded or rate-limited. Blank disables it.
+  GEMINI_FALLBACK_MODEL: z.string().default("gemini-3.5-flash-lite"),
   AI_PROVIDER: z.enum(["auto", "anthropic", "gemini"]).default("auto"),
   PROOFHOLD_SCHEDULER: z.enum(["inline", "external", "off"]).default("inline"),
   TICK_SECRET: z.string().optional(),
