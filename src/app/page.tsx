@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Github } from "lucide-react";
 import { Brand, Mark } from "@/components/shell/brand";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ProductFrame } from "@/components/landing/frame";
 import { Reveal } from "@/components/landing/reveal";
@@ -109,9 +110,12 @@ export default function Landing() {
               GitHub
             </a>
           </nav>
-          <Button href="/app" size="sm" variant="secondary">
-            Open the app
-          </Button>
+          <div className={styles.navActions}>
+            <ThemeToggle />
+            <Button href="/app" size="sm" variant="secondary">
+              Open the app
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -54,3 +54,9 @@
   min-height: 2rem;
   color: var(--ink-2);
 }
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-4);
+}

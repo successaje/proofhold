@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "./brand";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ModeBadges } from "./mode-badges";
 import type { SystemInfo } from "@/lib/view";
 import styles from "./shell.module.css";
@@ -20,8 +21,9 @@ export function BuyerShell({
       <header className={styles.buyerBar}>
         <div className={styles.buyerBarInner}>
           <Brand />
-          <div style={{ display: "flex", gap: "var(--s-2)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "var(--s-2)" }}>
             <ModeBadges system={system} />
+            <ThemeToggle />
           </div>
         </div>
       </header>

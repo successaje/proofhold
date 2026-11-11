@@ -78,9 +78,12 @@
   mix-blend-mode: multiply;
 }
 @media (prefers-color-scheme: dark) {
-  .stamp {
+  :root:not([data-theme="light"]) .stamp {
     mix-blend-mode: screen;
   }
+}
+:root[data-theme="dark"] .stamp {
+  mix-blend-mode: screen;
 }
 .stamp rect {
   fill: var(--surface);

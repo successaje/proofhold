@@ -305,8 +305,15 @@
 .sidebarTop {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
   min-height: 2.5rem;
   padding: 0 var(--s-2);
+}
+.sidebarTheme {
+  width: 2rem;
+  height: 2rem;
+  background: transparent;
 }
 .workspaceCard {
   display: flex;
