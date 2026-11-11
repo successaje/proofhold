@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { Brand } from "@/components/shell/brand";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import styles from "./legal.module.css";
 
 export function LegalPage({
@@ -17,7 +18,10 @@ export function LegalPage({
       <a href="#main" className="skipLink">
         Skip to content
       </a>
-      <Brand />
+      <div className={styles.top}>
+        <Brand />
+        <ThemeToggle />
+      </div>
       <h1 className={styles.title}>{title}</h1>
       <p className={styles.updated}>Last updated {updated}</p>
       <div className={styles.body}>{children}</div>

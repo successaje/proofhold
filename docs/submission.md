@@ -69,7 +69,7 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
    2b. `ledger-inspector-1440.png` — the inspector open beside the list: seal, status, next step and the PayPal ids without leaving the page.
 3. `buyer-approve.png` — what the buyer agrees to: the sheet, both signatures, the hash, and the questions.
 4. `seller-window-open.png` — checks passed, the buyer window open, the seal half-lit.
-5. `buyer-decide.png` — a blocked line routed to the buyer: no deadline, confirm or object.
+5. `buyer-decide.png` — a blocked line routed to the buyer: the delivery and the checks first, then confirm or object; nothing releases automatically, and the page says when the PayPal hold itself lapses.
 6. `seller-released.png` — the seal stamped CAPTURED beside the PayPal capture id.
 7. `buyer-receipt.png` — the printable record and receipt.
 8. `seller-in-review.png`, `seller-disputed.png` — the failure paths: an objection with an offer, and a PayPal dispute with the evidence bundle filed.

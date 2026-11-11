@@ -2,15 +2,18 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Github } from "lucide-react";
 import { Brand, Mark } from "@/components/shell/brand";
+import type { CSSProperties } from "react";
+import { Rotator } from "@/components/landing/rotator";
+import { Story } from "@/components/landing/story";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ProductFrame } from "@/components/landing/frame";
 import { Reveal } from "@/components/landing/reveal";
 import { SectionIndex } from "@/components/landing/section-index";
 import { StartHere } from "@/components/landing/start-here";
-import { sample, sampleTest } from "@/components/landing/sample";
+import { sample, sampleHash, sampleTest } from "@/components/landing/sample";
 import { systemInfo } from "@/lib/view";
 import { Rail } from "@/components/proofhold/rail";
-import { Seal } from "@/components/proofhold/seal";
 import { TestView } from "@/components/proofhold/test-view";
 import styles from "./landing.module.css";
 
@@ -102,16 +105,19 @@ export default function Landing() {
         <div className={styles.navInner}>
           <Brand />
           <nav className={styles.navLinks} aria-label="Site">
-            <a href="#brief">How it works</a>
+            <a href="#how">How it works</a>
             <a href="#real">What is real</a>
             <a href="#compare">Compare</a>
             <a href={REPO} target="_blank" rel="noreferrer">
               GitHub
             </a>
           </nav>
-          <Button href="/app" size="sm" variant="secondary">
-            Open the app
-          </Button>
+          <div className={styles.navActions}>
+            <ThemeToggle />
+            <Button href="/app" size="sm" variant="secondary">
+              Open the app
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -119,18 +125,30 @@ export default function Landing() {
         {/* ---------- hero: the claim, the start form, then the product itself ---------- */}
         <section className={styles.hero}>
           <div className={styles.heroInner}>
-            <p className={styles.kicker}>For freelancers, makers and private sellers</p>
-            <h1 className={styles.h1}>
+            <div className={styles.rise} style={{ "--d": 0 } as CSSProperties}>
+              <Rotator
+                lead="For"
+                words={[
+                  "freelancers",
+                  "makers",
+                  "private sellers",
+                  "the buyers who pay them",
+                ]}
+              />
+            </div>
+            <h1 className={styles.h1} style={{ "--d": 1 } as CSSProperties}>
               Write what “done” means.{" "}
               <em>PayPal holds the money until the proof arrives.</em>
             </h1>
-            <p className={styles.lead}>
+            <p className={styles.lead} style={{ "--d": 2 } as CSSProperties}>
               Proofhold turns a brief into an acceptance test both sides approve. The
               buyer authorizes a PayPal hold against exactly that test. Deliver, the
               checks run, and the money releases. Nobody holds it except PayPal.
             </p>
-            <StartHere />
-            <p className={styles.fine}>
+            <div className={styles.rise} style={{ "--d": 3 } as CSSProperties}>
+              <StartHere />
+            </div>
+            <p className={styles.fine} style={{ "--d": 4 } as CSSProperties}>
               Nothing is created until you write the brief. Open source, MIT.{" "}
               {simulated
                 ? "This deployment runs without PayPal credentials, so PayPal is simulated and every page says so."
@@ -139,9 +157,26 @@ export default function Landing() {
           </div>
         </section>
         <section className={styles.band} aria-label="The product">
-          <div className={styles.bandInner}>
+          <div className={styles.bandInner} style={{ "--d": 5 } as CSSProperties}>
             <ProductFrame system={system} />
           </div>
+        </section>
+
+        {/* ---------- the whole thing, as one job in four moments ---------- */}
+        <section id="how" className={styles.how} aria-labelledby="how-title">
+          <Reveal>
+            <header className={styles.howHead}>
+              <span className={styles.no}>How it works</span>
+              <h2 className={styles.h2} id="how-title">
+                One agreement, <em>four moments.</em>
+              </h2>
+              <p className={styles.blockLead}>
+                Follow one job from brief to payout. The seal is the same one both people
+                see on their own pages, and it only changes when something real happens.
+              </p>
+            </header>
+          </Reveal>
+          <Story hash={sampleHash} />
         </section>
 
         <div className={styles.columns}>
@@ -221,51 +256,34 @@ export default function Landing() {
               </Reveal>
               <Reveal>
                 <div className={`${styles.plate} ${styles.plateDark}`}>
-                  <ul className={styles.sealRow} aria-label="Seal states">
-                    <li>
-                      <Seal
-                        id="s-pending"
-                        amount="$420.00"
-                        currency="USD"
-                        segments={["pending", "pending", "pending", "pending"]}
-                        pending
-                        holder="Not held yet"
-                        size={132}
-                      />
-                      <span>Sent. Nothing is held yet.</span>
-                    </li>
-                    <li>
-                      <Seal
-                        id="s-held"
-                        amount="$420.00"
-                        currency="USD"
-                        segments={["pending", "pending", "pending", "pending"]}
-                        size={132}
-                      />
-                      <span>Approved. PayPal holds $420.00.</span>
-                    </li>
-                    <li>
-                      <Seal
-                        id="s-checked"
-                        amount="$420.00"
-                        currency="USD"
-                        segments={["pass", "pass", "pass", "pass"]}
-                        size={132}
-                      />
-                      <span>Delivered. Four lines passed.</span>
-                    </li>
-                    <li>
-                      <Seal
-                        id="s-captured"
-                        amount="$420.00"
-                        currency="USD"
-                        segments={["pass", "pass", "pass", "pass"]}
-                        stamp="captured"
-                        size={132}
-                      />
-                      <span>Captured. Backed by a PayPal capture id.</span>
-                    </li>
-                  </ul>
+                  <div className={styles.order}>
+                    <span className={styles.orderTitle}>
+                      What PayPal stores for the order · example
+                    </span>
+                    <dl className={styles.orderRows}>
+                      {(
+                        [
+                          ["intent", "AUTHORIZE", "a hold, not a payment"],
+                          ["amount", "420.00 USD", "reserved in the buyer's account"],
+                          [
+                            "custom_id",
+                            `${sampleHash.slice(0, 24)}…`,
+                            "the acceptance test's hash",
+                          ],
+                          ["authorization", "CREATED", "valid 29 days, guaranteed for 3"],
+                          ["capture", "none yet", "only by a recorded decision"],
+                        ] as const
+                      ).map(([k, v, note], i) => (
+                        <Reveal key={k} delay={i * 70} className={styles.orderRow}>
+                          <dt>{k}</dt>
+                          <dd>
+                            <span className={styles.orderValue}>{v}</span>
+                            <span className={styles.orderNote}>{note}</span>
+                          </dd>
+                        </Reveal>
+                      ))}
+                    </dl>
+                  </div>
                 </div>
               </Reveal>
               <Triad
@@ -608,7 +626,7 @@ export default function Landing() {
           </div>
           <nav className={styles.footerCol} aria-label="Product">
             <span className={styles.footerColTitle}>Product</span>
-            <a href="#brief">How it works</a>
+            <a href="#how">How it works</a>
             <a href="#release">Release and return</a>
             <a href="#real">What is real</a>
             <a href="#compare">Compare</a>

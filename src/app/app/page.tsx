@@ -55,7 +55,7 @@ function nextStep(ph: Proofhold): string {
       const blocked =
         (ph.decision as { outcome?: { kind?: string } } | null)?.outcome?.kind ===
         "blocked";
-      if (blocked) return "Waiting for the buyer's decision · no deadline";
+      if (blocked) return "Waiting for the buyer's decision · no automatic release";
       return ph.silenceWindowEndsAt
         ? `Releases in ${durationLeft(ph.silenceWindowEndsAt)} unless the buyer objects`
         : "Waiting for the buyer";

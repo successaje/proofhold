@@ -1,0 +1,35 @@
+.rotator {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.6em;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.slot {
+  display: inline-block;
+  overflow: hidden;
+  /* Room for the rise without clipping descenders. */
+  padding: 0.2em 0;
+  margin: -0.2em 0;
+  color: var(--brand);
+  white-space: nowrap;
+}
+.word {
+  display: inline-block;
+  animation: wordIn 320ms var(--ease-out) both;
+}
+@keyframes wordIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.9em);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .word {
+    animation: none;
+  }
+}

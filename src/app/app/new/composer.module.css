@@ -79,3 +79,9 @@
   color: var(--ink);
   font-weight: 600;
 }
+.staleActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+  margin-top: var(--s-3);
+}

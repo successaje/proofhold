@@ -1,4 +1,5 @@
 import { Note } from "@/components/ui/panel";
+import { holdLapse } from "@/lib/format";
 import type { ProofholdView } from "@/lib/view";
 
 type Outcome = {
@@ -27,8 +28,9 @@ export function DecisionNote({
         <Note tone="held">
           <strong>Blocked.</strong> {sentence(o.reason ?? "")}{" "}
           {audience === "buyer"
-            ? "There is no deadline: nothing moves until you confirm or object."
-            : "There is no deadline: nothing moves until the buyer confirms or objects, or you add evidence and resubmit."}
+            ? "Nothing releases automatically: no money moves until you confirm or object."
+            : "Nothing releases automatically: no money moves until the buyer confirms or objects, or you add evidence and resubmit."}{" "}
+          {holdLapse(ph.authorizationExpiresAt)}
         </Note>
       );
     if (o.kind === "wait" && o.releasesOnSilence)

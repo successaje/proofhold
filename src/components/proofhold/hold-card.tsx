@@ -1,6 +1,6 @@
 import { Panel } from "@/components/ui/panel";
 import { Badge, Mono } from "@/components/ui/status";
-import { formatDate, formatMoney } from "@/lib/format";
+import { formatDate, formatMoney, holdLapse } from "@/lib/format";
 import type { CheckResult } from "@/lib/domain/proofhold";
 import type { ProofholdView, SystemInfo } from "@/lib/view";
 import { Countdown } from "./countdown";
@@ -96,7 +96,8 @@ export function HoldCard({
       ) : null}
       {ph.status === "awaiting_buyer" && blocked ? (
         <p className={styles.holdSub}>
-          No deadline: nothing moves until the buyer confirms or objects.
+          No automatic release: nothing moves until the buyer confirms or objects.{" "}
+          {holdLapse(ph.authorizationExpiresAt)}
         </p>
       ) : null}
       {lines.length > 0 ? (

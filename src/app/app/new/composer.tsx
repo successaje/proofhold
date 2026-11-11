@@ -38,6 +38,16 @@ export interface ComposerInitial {
   test: AcceptanceTest;
 }
 
+/** The parts of a draft that a compiled test depends on. */
+type Fingerprint = Pick<Draft, "brief" | "kind" | "deadline">;
+const fingerprint = (d: Draft): Fingerprint => ({
+  brief: d.brief.trim(),
+  kind: d.kind,
+  deadline: d.deadline,
+});
+const sameFingerprint = (a: Fingerprint, d: Draft) =>
+  a.brief === d.brief.trim() && a.kind === d.kind && a.deadline === d.deadline;
+
 const empty: Draft = {
   title: "",
   kind: "service",
@@ -88,6 +98,11 @@ export function Composer({
   const [source, setSource] = useState<"ai" | "starter" | "reused" | null>(
     initial ? "reused" : null,
   );
+  // What the test was compiled from. A test is stale when the brief, the kind
+  // or the deadline has changed since; the seller recompiles or keeps it on purpose.
+  const [compiledFrom, setCompiledFrom] = useState<Fingerprint | null>(
+    initial ? fingerprint(initial.draft) : null,
+  );
   const [compiling, setCompiling] = useState(false);
   const [saving, setSaving] = useState<"draft" | "send" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -119,6 +134,7 @@ export function Composer({
       if (!res.ok) throw new Error(body.error ?? "Could not compile the brief.");
       setTest(body.test);
       setSource(body.source);
+      setCompiledFrom(fingerprint(draft));
       if (body.dropped?.length)
         toast(
           `${body.dropped.length} line(s) could not be expressed as a check and were left out.`,
@@ -171,6 +187,9 @@ export function Composer({
       setSaving(null);
     }
   }
+
+  const stale =
+    test !== null && compiledFrom !== null && !sameFingerprint(compiledFrom, draft);
 
   const testInvalid = test
     ? test.summary.trim().length < 3 ||
@@ -283,7 +302,11 @@ export function Composer({
                 label="Buyer email"
                 htmlFor="buyer"
                 optional
-                hint="Only used to label the proofhold."
+                hint={
+                  system.mailMode === "resend"
+                    ? "Labels the proofhold, and the buyer is emailed at each step."
+                    : "Labels the proofhold. Mail is simulated here, so nothing is sent."
+                }
               >
                 <Input
                   id="buyer"
@@ -360,6 +383,26 @@ export function Composer({
                   </ul>
                 </Note>
               ) : null}
+              {stale ? (
+                <Note tone="held">
+                  <strong>The job changed after this test was written.</strong> The brief,
+                  kind or deadline above no longer matches what the test was compiled
+                  from. Compile again to rebuild it, or keep this test if the change does
+                  not affect what is checked.
+                  <span className={styles.staleActions}>
+                    <Button size="sm" onClick={compile} loading={compiling}>
+                      Compile again
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => setCompiledFrom(fingerprint(draft))}
+                    >
+                      Keep this test
+                    </Button>
+                  </span>
+                </Note>
+              ) : null}
               <TestEditor
                 test={test}
                 onChange={setTest}
@@ -371,14 +414,14 @@ export function Composer({
                   variant="secondary"
                   onClick={() => save("draft")}
                   loading={saving === "draft"}
-                  disabled={testInvalid || saving !== null}
+                  disabled={testInvalid || stale || saving !== null}
                 >
                   Save as draft
                 </Button>
                 <Button
                   onClick={() => save("send")}
                   loading={saving === "send"}
-                  disabled={testInvalid || saving !== null}
+                  disabled={testInvalid || stale || saving !== null}
                 >
                   Create and get the buyer link
                 </Button>

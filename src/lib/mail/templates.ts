@@ -94,7 +94,11 @@ export function template(
         subject: `Your decision is needed: ${ph.title}`,
         lines: [
           `${sellerName} delivered, but at least one line of the test could not be passed by a check. Nothing releases until you decide.`,
-          "There is no deadline. Confirm to release, or object with a reason.",
+          `Nothing releases automatically. Confirm to release, or object with a reason.${
+            ph.authorizationExpiresAt
+              ? ` The PayPal hold itself lasts until ${new Date(ph.authorizationExpiresAt).toUTCString()}; after that it lapses and nothing is paid.`
+              : ""
+          }`,
         ],
         cta: { label: "Review and decide", url: buyerUrl },
       },

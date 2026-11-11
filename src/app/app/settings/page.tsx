@@ -6,6 +6,7 @@ import { currentWorkspace } from "@/lib/session/workspace";
 import { systemInfo } from "@/lib/view";
 import { config } from "@/lib/config";
 import { SettingsForm } from "./settings-form";
+import { ThemeChoiceControl } from "@/components/ui/theme-toggle";
 import { Outbox } from "./outbox";
 import { db } from "@/lib/store/sql";
 import { listMail } from "@/lib/store/repos";
@@ -27,6 +28,12 @@ export default async function SettingsPage() {
       <div style={{ display: "grid", gap: "var(--s-5)" }}>
         <Panel title="Workspace" subtitle="Shown on the links you send.">
           <SettingsForm workspace={ws} />
+        </Panel>
+        <Panel
+          title="Appearance"
+          subtitle="Follow your system, or pin light or dark. Remembered in this browser."
+        >
+          <ThemeChoiceControl />
         </Panel>
         <Panel
           title="Connections"

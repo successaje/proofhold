@@ -6,6 +6,7 @@ import { Inbox, LayoutList, Plus, Settings } from "lucide-react";
 import type { ReactNode } from "react";
 import type { SystemInfo } from "@/lib/view";
 import { formatMoney } from "@/lib/format";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { Brand } from "./brand";
 import { ModeBadges } from "./mode-badges";
 import styles from "./shell.module.css";
@@ -80,6 +81,7 @@ export function AppShell({
       <aside className={styles.sidebar} aria-label="Workspace">
         <div className={styles.sidebarTop}>
           <Brand href="/app" />
+          <ThemeToggle className={styles.sidebarTheme} />
         </div>
         <Link
           href="/app/settings"
@@ -162,6 +164,7 @@ export function AppShell({
             <div className={styles.badgeCompact}>
               <ModeBadges system={system} compact />
             </div>
+            <ThemeToggle />
             <Link
               href="/app/settings"
               className={styles.workspace}

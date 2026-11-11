@@ -89,8 +89,10 @@
   --t-slow: 280ms;
 }
 
+/* Dark: the system's choice unless the visitor picked light, or the
+   visitor's own choice. The two blocks below must stay identical. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: #121110;
     --surface: #1a1816;
     --surface-2: #211f1c;
@@ -120,6 +122,42 @@
     --shadow-2: 0 4px 16px rgb(0 0 0 / 0.45);
     --shadow-3: 0 12px 40px rgb(0 0 0 / 0.6);
   }
+}
+:root[data-theme="dark"] {
+  --paper: #121110;
+  --surface: #1a1816;
+  --surface-2: #211f1c;
+  --ink: #f1ede5;
+  --ink-2: #c9c3b8;
+  --muted: #918a7f;
+  --line: #2d2a26;
+  --line-strong: #403c36;
+  --brand: #3ea58f;
+  --brand-ink: #0b1511;
+  --brand-ink-muted: color-mix(in srgb, #0b1511 90%, transparent);
+  --brand-plate-ink: #f3f7f5;
+  --brand-soft: #16302a;
+  --held: #d9a441;
+  --held-soft: #3a2d12;
+  --pass: #4fb57f;
+  --pass-soft: #163324;
+  --fail: #e4654e;
+  --fail-soft: #3d1a14;
+  --info: #7aa5e6;
+  --info-soft: #182840;
+  --focus: #3ea58f;
+  --wax: #3ea58f;
+  --rule: #403c36;
+  --paper-grain: rgb(241 237 229 / 0.04);
+  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-2: 0 4px 16px rgb(0 0 0 / 0.45);
+  --shadow-3: 0 12px 40px rgb(0 0 0 / 0.6);
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @media (min-width: 48rem) {
@@ -285,5 +323,18 @@ pre {
   }
   a {
     color: inherit;
+  }
+}
+
+/* Theme switch: a short crossfade where the browser supports view transitions. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 220ms;
+  animation-timing-function: var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
