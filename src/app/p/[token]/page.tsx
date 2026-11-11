@@ -1,3 +1,4 @@
+import { ArrowDown } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AutoRefresh } from "@/components/proofhold/auto-refresh";
@@ -12,7 +13,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { Note, Panel } from "@/components/ui/panel";
 import { StatusPill } from "@/components/ui/status";
 import { config } from "@/lib/config";
-import { formatDate, formatMoney } from "@/lib/format";
+import { formatDate, formatMoney, holdLapse } from "@/lib/format";
 import { db } from "@/lib/store/sql";
 import {
   getProofholdByToken,
@@ -203,19 +204,44 @@ export default async function BuyerPage({
                 </Panel>
               ) : null}
 
-              {s === "awaiting_buyer" || s === "held" ? (
+              {s === "held" ? (
                 <Panel
-                  title={s === "held" ? "Waiting for delivery" : "Your decision"}
-                  subtitle={
-                    s === "held"
-                      ? `${sellerName} has not submitted evidence yet. The hold stays reserved until they do.`
-                      : blocked
-                        ? "Confirm to release, or object with a reason. There is no deadline: nothing moves until you do one or the other."
-                        : "Confirm to release now, or object with a reason. If you do nothing, the hold releases when the window closes."
-                  }
+                  title="Waiting for delivery"
+                  subtitle={`${sellerName} has not submitted evidence yet. The hold stays reserved until they do.`}
                 >
                   <BuyerResponse token={token} ph={ph} system={system} />
                   <BuyerFaq ph={ph} sellerName={sellerName} stage="during" />
+                </Panel>
+              ) : null}
+
+              {s === "awaiting_buyer" ? (
+                <a href="#decide" className={styles.jump}>
+                  Look at what was delivered and what each check found, then decide
+                  <ArrowDown aria-hidden="true" />
+                </a>
+              ) : null}
+
+              {evidence.length > 0 ? (
+                <Panel
+                  title="What the seller submitted"
+                  subtitle={
+                    ph.evidenceSubmittedAt
+                      ? formatDate(ph.evidenceSubmittedAt)
+                      : undefined
+                  }
+                >
+                  {sellerNote ? (
+                    <blockquote
+                      className={[shared.message, shared["message-seller"]].join(" ")}
+                      style={{ marginBottom: "var(--s-3)" }}
+                    >
+                      “{sellerNote.body}”
+                      <span className={shared.messageMeta}>
+                        {sellerName} · {formatDate(sellerNote.createdAt)}
+                      </span>
+                    </blockquote>
+                  ) : null}
+                  <EvidenceList items={evidence} token={token} />
                 </Panel>
               ) : null}
 
@@ -243,27 +269,18 @@ export default async function BuyerPage({
                 />
               </Panel>
 
-              {evidence.length > 0 ? (
+              {s === "awaiting_buyer" ? (
                 <Panel
-                  title="What the seller submitted"
+                  id="decide"
+                  title="Your decision"
                   subtitle={
-                    ph.evidenceSubmittedAt
-                      ? formatDate(ph.evidenceSubmittedAt)
-                      : undefined
+                    blocked
+                      ? `Confirm to release, or object with a reason. Nothing releases automatically: no money moves until you do one or the other. ${holdLapse(ph.authorizationExpiresAt)}`
+                      : "Confirm to release now, or object with a reason. If you do nothing, the hold releases when the window closes."
                   }
                 >
-                  {sellerNote ? (
-                    <blockquote
-                      className={[shared.message, shared["message-seller"]].join(" ")}
-                      style={{ marginBottom: "var(--s-3)" }}
-                    >
-                      “{sellerNote.body}”
-                      <span className={shared.messageMeta}>
-                        {sellerName} · {formatDate(sellerNote.createdAt)}
-                      </span>
-                    </blockquote>
-                  ) : null}
-                  <EvidenceList items={evidence} token={token} />
+                  <BuyerResponse token={token} ph={ph} system={system} />
+                  <BuyerFaq ph={ph} sellerName={sellerName} stage="during" />
                 </Panel>
               ) : null}
 

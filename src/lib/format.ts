@@ -20,6 +20,16 @@ export function formatDate(
   }).format(d);
 }
 
+/**
+ * "No automatic release" is not "no time limit": the PayPal authorization
+ * still expires. Say both wherever a blocked release is described.
+ */
+export function holdLapse(expiresAt: string | null | undefined): string {
+  return expiresAt
+    ? `The PayPal hold itself lasts until ${formatDate(expiresAt, { time: false })}; if nobody decides by then it lapses and nothing is paid.`
+    : "The PayPal hold itself still expires; if nobody decides before then it lapses and nothing is paid.";
+}
+
 export function relativeTime(iso: string | null | undefined, now = Date.now()): string {
   if (!iso) return "";
   const diff = Date.parse(iso) - now;
