@@ -1,15 +1,21 @@
 /**
- * Cuts the recording into scenes by its marks, lays narration and captions
- * over each, and renders the final MP4 and SRT.
- *   node scripts/demo/build.mjs <recDir> <ttsDir> <ovDir> <out.mp4>
+ * The edit. Turns captured clips into the film:
+ *   1. each clip's frames become 60 fps video at their real timings;
+ *   2. each scene is stretched or squeezed a little so it lasts as long as
+ *      its narration, instead of freezing on a frame;
+ *   3. push-ins recorded as focus marks are applied with an eased zoom;
+ *   4. every clip crossfades into the next;
+ *   5. the narration is laid under its scene. No captions.
+ *
+ *   node scripts/demo/build.mjs <ttsDir> <out.mp4> <clipsDir> [<clipsDir>…]
  */
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
 
-// Absolute paths throughout: ffmpeg resolves concat lists relative to the list file.
-const [REC, TTS, OV, OUTFILE] = process.argv.slice(2).map((a) => path.resolve(a));
-const W = path.join(path.dirname(OUTFILE), "work");
+const [TTS, OUTFILE, ...DIRS] = process.argv.slice(2).map((a) => path.resolve(a));
+const W = path.join(path.dirname(OUTFILE), "work", "edit");
+fs.rmSync(W, { recursive: true, force: true });
 fs.mkdirSync(W, { recursive: true });
 const ff = (args) =>
   execFileSync("ffmpeg", ["-v", "error", "-y", ...args], {
@@ -27,223 +33,245 @@ const probe = (f) =>
       f,
     ]).toString(),
   );
-const rec = JSON.parse(fs.readFileSync(path.join(REC, "marks.json"), "utf8"));
-const VIDEO = path.join(REC, rec.video);
-const M = Object.fromEntries(rec.marks.map((m) => [m.n, m.t / 1000]));
-const m = (n, d = 0) => {
-  if (!(n in M)) throw new Error(`missing mark ${n}`);
-  return M[n] + d;
+
+const FPS = 60;
+const X = 0.45; // crossfade between clips, seconds
+const LEAD = 0.45; // silence before a scene's narration
+const TAIL = 0.5; // and after it
+const ZOOM_T = 0.8; // how long a push-in or pull-out takes
+const FIT = [0.86, 1.32]; // how far a scene may be squeezed or stretched
+
+/**
+ * Edit decisions: seconds to drop from the start and end of a clip, where the
+ * take idles longer than the film needs. Only still moments are trimmed.
+ */
+const TRIM = {
+  test: [0, 1.0],
+  send: [0, 0.7],
+  paypal: [0.4, 0],
+  approved: [0, 0.6],
+  upload: [0, 0.5],
 };
-const tts = JSON.parse(fs.readFileSync(path.join(TTS, "index.json"), "utf8"));
-const scene = (id) => tts.find((s) => s.id === id);
-const ENC = [
+
+const scenes = JSON.parse(fs.readFileSync(path.join(TTS, "index.json"), "utf8"));
+const recorded = DIRS.flatMap(
+  (d) => JSON.parse(fs.readFileSync(path.join(d, "clips.json"), "utf8")).clips,
+);
+// A clip recorded again in a later directory replaces the earlier take, in place.
+const latest = new Map(recorded.map((c) => [c.name, c]));
+const all = recorded
+  .filter((c, i) => recorded.findIndex((x) => x.name === c.name) === i)
+  .map((c) => latest.get(c.name))
+  .map((c) => {
+    const [head, tail] = TRIM[c.name] ?? [0, 0];
+    if (c.focus && head > 0)
+      throw new Error(`cannot trim the start of ${c.name}: it has a push-in`);
+    return { ...c, head, full: c.duration, duration: c.duration - head - tail };
+  });
+
+// ---- 1. frames to video, at their real timings ----
+function raw(clip) {
+  const list = path.join(W, `${clip.name}.txt`);
+  const lines = [];
+  clip.frames.forEach((f, i) => {
+    const next = clip.frames[i + 1]?.t ?? clip.full;
+    lines.push(
+      `file '${path.resolve(f.file)}'`,
+      `duration ${Math.max(1 / 240, next - f.t).toFixed(5)}`,
+    );
+  });
+  lines.push(`file '${path.resolve(clip.frames.at(-1).file)}'`);
+  fs.writeFileSync(list, lines.join("\n"));
+  const out = path.join(W, `${clip.name}.raw.mp4`);
+  ff([
+    "-f",
+    "concat",
+    "-safe",
+    "0",
+    "-i",
+    list,
+    "-vf",
+    `fps=${FPS},scale=1920:1080:flags=lanczos,format=yuv420p`,
+    // The concat demuxer holds the final frame longer than asked: cut to length,
+    // and apply the clip's trim.
+    "-ss",
+    clip.head.toFixed(3),
+    "-t",
+    clip.duration.toFixed(3),
+    "-c:v",
+    "libx264",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "8",
+    out,
+  ]);
+  return out;
+}
+
+// ---- 3. an eased push-in on a point, held, then eased out ----
+function zoomFilter(focus, f, dur) {
+  if (!focus) return null;
+  const a = focus.tIn * f;
+  const b = (focus.tOut ?? Infinity) * f;
+  const Z = focus.zoom;
+  const smooth = (u) => `(${u})*(${u})*(3-2*(${u}))`;
+  const clamp = (e) => `clip(${e},0,1)`;
+  const kin = smooth(clamp(`(t-${a.toFixed(3)})/${ZOOM_T}`));
+  const kout = Number.isFinite(b) ? smooth(clamp(`(t-${b.toFixed(3)})/${ZOOM_T}`)) : "0";
+  const k = `(${kin}-${kout})`;
+  const z = `(1+${(Z - 1).toFixed(4)}*${k})`;
+  // The point that stays under the camera: the focus, eased from the centre.
+  const cx = `(960+(${focus.cx.toFixed(1)}-960)*${k})`;
+  const cy = `(540+(${focus.cy.toFixed(1)}-540)*${k})`;
+  const x = `clip(${cx}*${z}-960,0,1920*${z}-1920)`;
+  const y = `clip(${cy}*${z}-540,0,1080*${z}-1080)`;
+  // Supersample, then crop: sub-pixel steps instead of whole-pixel jitter.
+  return `scale=w='2*trunc(1920*${z})':h='2*trunc(1080*${z})':eval=frame:flags=lanczos,crop=3840:2160:x='2*(${x})':y='2*(${y})',scale=1920:1080:flags=lanczos`;
+}
+
+// ---- 2. fit each scene to its narration ----
+const order = [];
+for (const sc of scenes) {
+  const clips = all.filter((c) => c.scene === sc.id);
+  if (clips.length === 0) throw new Error(`no clips for scene ${sc.id}`);
+  const lead = sc.lead ?? LEAD;
+  const need = lead + sc.dur + TAIL;
+  const have = clips.reduce((a, c) => a + c.duration, 0) - X * clips.length;
+  const f = Math.min(FIT[1], Math.max(FIT[0], need / have));
+  const hold = Math.max(0, need - have * f);
+  clips.forEach((c, i) =>
+    order.push({
+      clip: c,
+      f,
+      hold: i === clips.length - 1 ? hold : 0,
+      scene: sc,
+      first: i === 0,
+      lead,
+    }),
+  );
+  console.log(
+    `${sc.id.padEnd(8)} footage ${have.toFixed(1)}s · narration ${need.toFixed(1)}s · speed ×${(1 / f).toFixed(2)}${hold > 0.05 ? ` · hold ${hold.toFixed(1)}s` : ""}`,
+  );
+}
+
+const parts = order.map((o) => {
+  const src = raw(o.clip);
+  const filters = [`setpts=${o.f.toFixed(5)}*PTS`, `fps=${FPS}`];
+  const z = zoomFilter(o.clip.focus, o.f, o.clip.duration * o.f);
+  if (z) filters.push(z);
+  if (o.hold > 0.02)
+    filters.push(`tpad=stop_mode=clone:stop_duration=${o.hold.toFixed(3)}`);
+  filters.push("format=yuv420p");
+  const out = path.join(W, `${o.clip.name}.mp4`);
+  ff([
+    "-i",
+    src,
+    "-vf",
+    filters.join(","),
+    "-an",
+    "-c:v",
+    "libx264",
+    "-preset",
+    "veryfast",
+    "-crf",
+    "10",
+    "-r",
+    String(FPS),
+    out,
+  ]);
+  return { ...o, file: out, dur: probe(out) };
+});
+
+// ---- 4. crossfade every clip into the next; work out where each scene starts ----
+let t = 0;
+const starts = [];
+const chain = [];
+parts.forEach((p, i) => {
+  starts.push(t);
+  if (i > 0)
+    chain.push(
+      `[${i === 1 ? "0:v" : `v${i - 1}`}][${i}:v]xfade=transition=fade:duration=${X}:offset=${t.toFixed(3)}[v${i}]`,
+    );
+  t += p.dur - X;
+});
+const total = t + X;
+const last = `v${parts.length - 1}`;
+const silent = path.join(W, "picture.mp4");
+ff([
+  ...parts.flatMap((p) => ["-i", p.file]),
+  "-filter_complex",
+  `${chain.join(";")};[${last}]fade=t=in:st=0:d=0.5,fade=t=out:st=${(total - 0.7).toFixed(3)}:d=0.7,format=yuv420p[out]`,
+  "-map",
+  "[out]",
   "-c:v",
   "libx264",
   "-preset",
-  "medium",
+  "slow",
   "-crf",
-  "18",
-  "-pix_fmt",
-  "yuv420p",
+  "17",
   "-r",
-  "30",
-];
+  String(FPS),
+  "-movflags",
+  "+faststart",
+  silent,
+]);
 
-// Each scene: video range(s) from the recording; narration is laid from 0.4 s; the scene
-// lasts max(video, narration + 0.6 s), holding the last frame when the words run longer.
-const scenes = [
-  {
-    id: "s1",
-    clips: [[m("landing", 0.2), m("landing_example", 2.3)]],
-    chip: false,
-    still: "title",
-    stillDur: 3.2,
-  },
-  {
-    id: "s2",
-    clips: [
-      [m("compose", 0), m("test_shown", 3.1)],
-      [m("test_shown", 3.1), m("created", 1.6)],
-    ],
-  },
-  { id: "s3", clips: [[m("buyer_sheet", 0), m("approved", 2.0)]] },
-  { id: "s4", clips: [[m("seller_held", 0), m("verdicts", 0)]] },
-  { id: "s5", clips: [[m("buyer_decide", 0), m("seal_captured", 0)]] },
-  { id: "s6", clips: [[m("ledger", 0), m("record", 3.3)]] },
-  { id: "s7", clips: [[m("settings", 0), m("end", 0)]], outro: "outro", outroDur: 4.0 },
-];
-
-const parts = [];
-const srt = [];
-let clock = 0;
-let n = 1;
-for (const sc of scenes) {
-  const nar = scene(sc.id);
-  // 1. the raw cut, concatenated
-  const cuts = sc.clips.map(([a, b], i) => {
-    const f = path.join(W, `${sc.id}_cut${i}.mp4`);
-    ff(["-ss", String(a), "-to", String(b), "-i", VIDEO, "-an", ...ENC, f]);
-    return f;
-  });
-  const list = path.join(W, `${sc.id}_list.txt`);
-  fs.writeFileSync(list, cuts.map((f) => `file '${f}'`).join("\n"));
-  const joined = path.join(W, `${sc.id}_joined.mp4`);
-  ff(["-f", "concat", "-safe", "0", "-i", list, "-c", "copy", joined]);
-  let vdur = probe(joined);
-  // 2. narration track for the scene: 0.4 s lead, chunks separated by 0.25 s, 0.6 s tail
-  const narStart = sc.still ? sc.stillDur + 0.2 : 0.4;
-  let t = narStart;
-  const timeline = [];
-  for (const c of nar.chunks) {
-    timeline.push({ file: c.file, at: t, dur: c.dur, cap: c.cap });
-    t += c.dur + 0.25;
-  }
-  const audioEnd = t + 0.35;
-  const stillDur = sc.still ? sc.stillDur : 0;
-  const outroDur = sc.outro ? sc.outroDur : 0;
-  const total = Math.max(vdur + stillDur + outroDur, audioEnd + outroDur);
-  const holdNeeded = total - (vdur + stillDur + outroDur);
-  // 3. video: optional title still, the cut (held at its last frame if needed), optional outro
-  const segs = [];
-  if (sc.still) {
-    const f = path.join(W, `${sc.id}_still.mp4`);
-    ff([
-      "-loop",
-      "1",
-      "-t",
-      String(stillDur),
-      "-i",
-      path.join(OV, `${sc.still}.png`),
-      ...ENC,
-      f,
-    ]);
-    segs.push(f);
-  }
-  if (holdNeeded > 0.05) {
-    const held = path.join(W, `${sc.id}_held.mp4`);
-    ff([
-      "-i",
-      joined,
-      "-vf",
-      `tpad=stop_mode=clone:stop_duration=${holdNeeded.toFixed(3)}`,
-      ...ENC,
-      held,
-    ]);
-    segs.push(held);
-  } else segs.push(joined);
-  if (sc.outro) {
-    const f = path.join(W, `${sc.id}_outro.mp4`);
-    ff([
-      "-loop",
-      "1",
-      "-t",
-      String(outroDur),
-      "-i",
-      path.join(OV, `${sc.outro}.png`),
-      ...ENC,
-      f,
-    ]);
-    segs.push(f);
-  }
-  const list2 = path.join(W, `${sc.id}_list2.txt`);
-  fs.writeFileSync(list2, segs.map((f) => `file '${f}'`).join("\n"));
-  const base = path.join(W, `${sc.id}_base.mp4`);
-  ff(["-f", "concat", "-safe", "0", "-i", list2, "-c", "copy", base]);
-  const baseDur = probe(base);
-  // 4. overlays: chip for the scene over the product footage, a caption per chunk
-  const inputs = ["-i", base];
-  const filters = [];
-  let last = "[0:v]";
-  let idx = 1;
-  const videoFrom = stillDur;
-  const videoTo = baseDur - outroDur;
-  if (sc.chip !== false) {
-    inputs.push("-i", path.join(OV, `chip_${sc.id}.png`));
-    filters.push(
-      `${last}[${idx}:v]overlay=0:0:enable='between(t,${videoFrom.toFixed(2)},${videoTo.toFixed(2)})'[v${idx}]`,
-    );
-    last = `[v${idx}]`;
-    idx++;
-  }
-  timeline.forEach((c, i) => {
-    inputs.push("-i", path.join(OV, `cap_${sc.id}_${i}.png`));
-    const end = Math.min(c.at + c.dur + 0.35, baseDur - 0.05);
-    filters.push(
-      `${last}[${idx}:v]overlay=0:0:enable='between(t,${c.at.toFixed(2)},${end.toFixed(2)})'[v${idx}]`,
-    );
-    last = `[v${idx}]`;
-    idx++;
-    srt.push({ n: n++, from: clock + c.at, to: clock + end, text: c.cap });
-  });
-  // 5. audio: silence bed with chunks placed at their times
-  const aInputs = [];
-  const aFilters = [];
-  timeline.forEach((c, i) => {
-    aInputs.push("-i", c.file);
-    aFilters.push(
-      `[${idx + i}:a]adelay=${Math.round(c.at * 1000)}|${Math.round(c.at * 1000)}[a${i}]`,
-    );
-  });
-  const mix = timeline.map((_, i) => `[a${i}]`).join("");
-  aFilters.push(
-    `${mix}amix=inputs=${timeline.length}:normalize=0,apad=whole_dur=${baseDur.toFixed(3)}[aout]`,
-  );
-  const out = path.join(W, `${sc.id}.mp4`);
-  ff([
-    ...inputs,
-    ...aInputs,
-    "-filter_complex",
-    [...filters, ...aFilters].join(";"),
-    "-map",
-    last,
-    "-map",
-    "[aout]",
-    "-t",
-    String(baseDur),
-    ...ENC,
-    "-c:a",
-    "aac",
-    "-b:a",
-    "160k",
-    out,
-  ]);
-  parts.push(out);
-  clock += baseDur;
-  console.log(
-    sc.id,
-    "video",
-    vdur.toFixed(1),
-    "s · narration",
-    (audioEnd - narStart).toFixed(1),
-    "s · scene",
-    baseDur.toFixed(1),
-    "s",
-  );
-}
-const listAll = path.join(W, "all.txt");
-fs.writeFileSync(listAll, parts.map((f) => `file '${f}'`).join("\n"));
+// ---- 5. narration under each scene ----
+const cues = parts
+  .map((p, i) =>
+    p.first ? { file: p.scene.file, at: starts[i] + p.lead, id: p.scene.id } : null,
+  )
+  .filter(Boolean);
+const audio = path.join(W, "narration.wav");
 ff([
-  "-f",
-  "concat",
-  "-safe",
-  "0",
+  ...cues.flatMap((c) => ["-i", c.file]),
+  "-filter_complex",
+  cues.map((c, i) => `[${i}:a]adelay=${Math.round(c.at * 1000)}:all=1[a${i}]`).join(";") +
+    `;${cues.map((_, i) => `[a${i}]`).join("")}amix=inputs=${cues.length}:normalize=0,apad=whole_dur=${total.toFixed(3)},afade=t=out:st=${(total - 0.6).toFixed(3)}:d=0.6[a]`,
+  "-map",
+  "[a]",
+  "-t",
+  total.toFixed(3),
+  "-ar",
+  "48000",
+  "-ac",
+  "2",
+  audio,
+]);
+ff([
   "-i",
-  listAll,
-  "-c",
+  silent,
+  "-i",
+  audio,
+  "-c:v",
   "copy",
+  "-c:a",
+  "aac",
+  "-b:a",
+  "192k",
+  "-shortest",
   "-movflags",
   "+faststart",
   OUTFILE,
 ]);
-const ts = (s) => {
-  const h = Math.floor(s / 3600),
-    mm = Math.floor((s % 3600) / 60),
-    ss = Math.floor(s % 60),
-    ms = Math.round((s - Math.floor(s)) * 1000);
-  return `${String(h).padStart(2, "0")}:${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
-};
 fs.writeFileSync(
-  OUTFILE.replace(/\.mp4$/, ".srt"),
-  srt.map((c) => `${c.n}\n${ts(c.from)} --> ${ts(c.to)}\n${c.text}\n`).join("\n"),
+  path.join(W, "timeline.json"),
+  JSON.stringify(
+    {
+      total,
+      cues,
+      clips: parts.map((p, i) => ({
+        name: p.clip.name,
+        scene: p.scene.id,
+        at: starts[i],
+        dur: p.dur,
+      })),
+    },
+    null,
+    2,
+  ),
 );
-console.log("total", probe(OUTFILE).toFixed(1), "s →", OUTFILE);
+console.log(
+  `\n${probe(OUTFILE).toFixed(1)}s · ${(fs.statSync(OUTFILE).size / 1e6).toFixed(1)} MB → ${OUTFILE}`,
+);
