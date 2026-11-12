@@ -58,7 +58,7 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 
 - Repository: https://github.com/successaje/proofhold (MIT)
 - Hosted demo: _add Render URL_
-- Video: _add YouTube URL_ (upload `demo-video/proofhold-demo.mp4`, 1:53, with `proofhold-demo.srt` as captions; regenerate with `npm run demo:video`)
+- Video: _add YouTube URL_ (upload `demo-video/proofhold-demo.mp4`, 1:49, 1080p60, narrated, no captions; how it is made is in `docs/demo-script.md`)
 - Judge sandbox credentials: _add a sandbox Personal account email and password in the Devpost private notes_
 - Demo workspace: run `npm run seed` on the hosted instance and paste the printed cookie, or use the judge workspace link in the private notes
 
@@ -81,4 +81,4 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 
 ## What is real, simulated and unproven
 
-Copy the section from the README verbatim at submission time. As of 2026-11-11: order, approval, authorization and full capture have run against the PayPal sandbox through the app, with Gemini compiling the brief and judging the uploads (`docs/screens/sandbox-*.png`), and partial capture and void have run through the smoke script; the other PayPal calls (reauthorize, refund, tracking, disputes) are real in the client and exercised only against the simulator; the demo video was recorded in simulated mode and says so; mail is simulated into the outbox until a Resend key is set; whether PayPal policy permits third-party conditional release at scale in production is unproven.
+Copy the section from the README verbatim at submission time. As of 2026-11-11: order, approval, authorization and full capture have run against the PayPal sandbox through the app, with Gemini compiling the brief and judging the uploads (`docs/screens/sandbox-*.png`), and partial capture and void have run through the smoke script; the other PayPal calls (reauthorize, refund, tracking, disputes) are real in the client and exercised only against the simulator; the demo video's main take runs on the PayPal simulator with the real Gemini model, says so, and ends on the record of the sandbox run; mail is simulated into the outbox until a Resend key is set; whether PayPal policy permits third-party conditional release at scale in production is unproven.
