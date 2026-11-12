@@ -230,8 +230,27 @@ export async function submit(
   return { proofhold: current, round, needsExaminer: needsExaminer && examinerOn() };
 }
 
+/**
+ * Examinations in flight, by proofhold. The delivery request starts one and
+ * the scheduler picks up anything left in `checking`; a model call can outlast
+ * a scheduler pass, so without this both would examine the same round and
+ * record two verdicts, which can disagree. Kept on globalThis because the
+ * scheduler and the routes may load this module separately.
+ */
+const inFlight: Map<string, Promise<Proofhold>> = ((
+  globalThis as { __proofholdExamining?: Map<string, Promise<Proofhold>> }
+).__proofholdExamining ??= new Map());
+
 /** Runs the examiner for the latest round, records verdicts, then evaluates. */
-export async function runExaminer(sql: Sql, ph: Proofhold): Promise<Proofhold> {
+export function runExaminer(sql: Sql, ph: Proofhold): Promise<Proofhold> {
+  const running = inFlight.get(ph.id);
+  if (running) return running;
+  const run = examineOnce(sql, ph).finally(() => inFlight.delete(ph.id));
+  inFlight.set(ph.id, run);
+  return run;
+}
+
+async function examineOnce(sql: Sql, ph: Proofhold): Promise<Proofhold> {
   if (ph.status !== "checking") return ph;
   const round = await latestRound(sql, ph.id);
   const existing = await listChecks(sql, ph.id, round);
