@@ -86,6 +86,11 @@ function Triad({
   );
 }
 
+// Rendered per request: the example's dates are relative to now, and the
+// modes line reports what this deployment is connected to. Prerendered at
+// build time, both would be frozen.
+export const dynamic = "force-dynamic";
+
 /** "on (Gemini)", "simulated" or "off", for the footer's modes line. */
 function examinerLabel(system: ReturnType<typeof systemInfo>): string {
   if (system.examinerMode !== "model") return system.examinerMode;
