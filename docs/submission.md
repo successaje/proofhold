@@ -24,11 +24,12 @@ Around that core: notifications and reminders to both sides at every state chang
 
 ### How we built it
 
-- Next.js 16 and TypeScript; one app for the seller workspace, the buyer page and the API. SQLite locally, Postgres hosted. 128 unit tests, four Playwright journeys, an axe accessibility scan over eleven routes in both colour schemes, all in CI.
+- Next.js 16 and TypeScript; one app for the seller workspace, the buyer page and the API. SQLite locally, Postgres hosted. 155 unit tests, four Playwright journeys, an axe accessibility scan over eleven routes in both colour schemes, all in CI.
 - PayPal Orders v2 (`intent: AUTHORIZE`), Payments v2 (capture, partial capture, reauthorize once after the honor period, void, refund), order tracking attached after capture, webhooks with signature verification plus reconciliation polling, and Disputes v1 (`provide-evidence`, and the sandbox-only `create`, `require-evidence` and `adjudicate`). A simulated PayPal client sits behind the same interface with the same state rules, so the app runs without credentials and says so on every page.
 - One structured-output interface with two providers behind it, Claude through the Anthropic SDK or Gemini through the Interactions API, for two prompts: the compiler (brief → test) and the examiner (evidence → verdict with abstention). Evidence is passed as data, never as instructions. Without a key, a starter test is read from the brief's plain facts, and a labelled simulated examiner observes and abstains so the judgement path can be seen without ever releasing money.
 - Production layer: security headers, same-origin checks on every mutation, rate limits, structured redacted logs with request ids, a health check, terms and privacy pages, backup and restore scripts, a mail adapter (Resend, or a simulated outbox), and a printable record.
-- Two independent critique passes, thirty-six findings, all fixed and listed with evidence in `docs/acceptance-matrix.md`.
+- Run for real: the PayPal sandbox authorized, captured, part-captured and voided through Proofhold, and Gemini compiled a brief and judged real uploads. Ids and screenshots are in the repository.
+- Four review passes and a production-build recording found and fixed more than sixty defects, each listed with evidence in `docs/acceptance-matrix.md`.
 
 ### Challenges we ran into
 
@@ -60,24 +61,30 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 - Hosted demo: _add Render URL_
 - Video: https://youtu.be/z0C_gWOIWqU (1:49, 1080p60, narrated, no captions; how it is made is in `docs/demo-script.md`)
 - Judge sandbox credentials: _add a sandbox Personal account email and password in the Devpost private notes_
-- Demo workspace: run `npm run seed` on the hosted instance and paste the printed cookie, or use the judge workspace link in the private notes
+- Testing: open the hosted demo, name a workspace, use the example brief, and approve with the sandbox buyer in the private notes. The free host sleeps when idle, so the first load can take about a minute.
 
-## Gallery (docs/screens)
+## AI tools and how they are used
 
-1. `landing.png` — the hero: the two-tone headline, the start form, and the product itself on a teal band.
-2. `ledger.png` — the seller's ledger with every state: sidebar with live counts, numbered rows, verdict rings, search, buckets, sort and CSV.
-   2b. `ledger-inspector-1440.png` — the inspector open beside the list: seal, status, next step and the PayPal ids without leaving the page.
-3. `buyer-approve.png` — what the buyer agrees to: the sheet, both signatures, the hash, and the questions.
-4. `seller-window-open.png` — checks passed, the buyer window open, the seal half-lit.
-5. `buyer-decide.png` — a blocked line routed to the buyer: the delivery and the checks first, then confirm or object; nothing releases automatically, and the page says when the PayPal hold itself lapses.
-6. `seller-released.png` — the seal stamped CAPTURED beside the PayPal capture id.
-7. `buyer-receipt.png` — the printable record and receipt.
-8. `seller-in-review.png`, `seller-disputed.png` — the failure paths: an objection with an offer, and a PayPal dispute with the evidence bundle filed.
-9. `settings-outbox.png` — every notification, in the simulated outbox.
-10. `landing-375.png`, `buyer-approve-375.png`, `buyer-decide-375.png`, `seller-released-375.png`, `ledger-375.png` — phone width.
-11. `landing-dark.png`, `seller-released-dark.png` — dark scheme.
+- **Google Gemini** (Interactions API, structured output) runs inside the product in two places. The compiler turns a plain-language brief into an acceptance test: checks a machine can measure, the few judgement lines it cannot, and questions about anything the brief left unclear. The examiner looks at the delivered files and judges only those judgement lines, with a confidence and reasons that cite the files, and it may abstain. A decision engine, not the model, moves money, and an abstention never releases it.
+- **Anthropic Claude** is supported behind the same interface as an alternative provider.
+- **Gemini text-to-speech** narrates the demo video.
+- **Claude Code** was used as a coding assistant throughout the build.
 
-12. `sandbox-seller-held.png`, `sandbox-seller-blocked.png`, `sandbox-buyer-decide.png`, `sandbox-seller-released.png`, `sandbox-buyer-receipt.png` — the same journey against the real PayPal sandbox with the Gemini examiner: a $420.00 authorization, two judgement lines failed with reasons, the buyer's decision, and PayPal's capture id in the history.
+## Gallery (docs/devpost, 3:2)
+
+Upload in this order. `thumbnail.jpg` is the project thumbnail.
+
+1. `01-landing.jpg` — the landing: the claim, the start form, and the product itself.
+2. `02-story.jpg` — "How it works" as one job in four moments, with the seal that both sides see.
+3. `03-compose.jpg` — the brief, and the acceptance test Gemini compiled from it.
+4. `04-buyer-approve.jpg` — what the buyer agrees to before approving a PayPal hold.
+5. `05-verdicts.jpg` — every line says who decided it and why: validators, then the examiner's reasons.
+6. `06-released.jpg` — the seal stamped CAPTURED beside the PayPal ids.
+7. `07-ledger.jpg` — every hold in one ledger, with the inspector open.
+8. `08-dispute.jpg` — after capture, a PayPal dispute with the evidence bundle filed.
+9. `09-paypal-sandbox.jpg` — a run against the real PayPal sandbox: order, authorization and capture ids.
+10. `10-landing-dark.jpg` — the dark theme.
+11. `11-phones.jpg` — the landing, the buyer's page and the ledger on a phone.
 
 ## What is real, simulated and unproven
 
