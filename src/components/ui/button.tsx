@@ -73,6 +73,11 @@ export function Button(props: ButtonProps | LinkProps) {
     return (
       <Link
         href={href}
+        // A link to an API route is an action, not a page. Prefetching it in a
+        // production build would run the action as soon as the link is on
+        // screen: the simulated checkout's "Cancel and return" cancelled every
+        // approval that way.
+        prefetch={href.startsWith("/api/") ? false : undefined}
         className={classes({ variant, size, loading, block, className })}
         {...(linkRest as object)}
       >
