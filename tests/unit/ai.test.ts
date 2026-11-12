@@ -294,3 +294,27 @@ test("an overloaded Gemini model falls back once and the result names the model 
     resetConfig();
   }
 });
+
+test("the public address comes from APP_URL, then from Render, then the local default", () => {
+  const saved = { app: process.env.APP_URL, render: process.env.RENDER_EXTERNAL_URL };
+  const restore = (k: string, v: string | undefined) =>
+    v === undefined ? delete process.env[k] : (process.env[k] = v);
+  try {
+    delete process.env.APP_URL;
+    delete process.env.RENDER_EXTERNAL_URL;
+    resetConfig();
+    assert.equal(config().APP_URL, "http://127.0.0.1:3200");
+
+    process.env.RENDER_EXTERNAL_URL = "https://proofhold-ab12.onrender.com";
+    resetConfig();
+    assert.equal(config().APP_URL, "https://proofhold-ab12.onrender.com");
+
+    process.env.APP_URL = "https://proofhold.example.com";
+    resetConfig();
+    assert.equal(config().APP_URL, "https://proofhold.example.com");
+  } finally {
+    restore("APP_URL", saved.app);
+    restore("RENDER_EXTERNAL_URL", saved.render);
+    resetConfig();
+  }
+});

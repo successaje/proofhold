@@ -12,7 +12,7 @@ Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/). MIT
 - Architecture: [docs/architecture.md](docs/architecture.md)
 - Comparison with the products people use today, and the gap list: [docs/comparison.md](docs/comparison.md)
 - Acceptance matrix, measurements and known gaps: [docs/acceptance-matrix.md](docs/acceptance-matrix.md)
-- Demo video pipeline and script: [docs/demo-script.md](docs/demo-script.md); gallery in [docs/screens](docs/screens)
+- Demo video (1:49): https://youtu.be/z0C_gWOIWqU. How it is made: [docs/demo-script.md](docs/demo-script.md); gallery in [docs/screens](docs/screens)
 - Devpost draft: [docs/submission.md](docs/submission.md)
 - Build log: [docs/build-log.md](docs/build-log.md)
 
@@ -128,7 +128,7 @@ _Not yet run against a model in this repository; the numbers will be added when 
 
 ## Deploy
 
-[`render.yaml`](render.yaml) describes a Render web service (Node runtime, inline scheduler) with a free Postgres database. Set `PAYPAL_*` and one model key (`ANTHROPIC_API_KEY` or `GEMINI_API_KEY`) in the dashboard, then register the webhook against the public URL. Any Node host works: `npm run build && npm start` with `PROOFHOLD_STORE=postgres` and `DATABASE_URL`.
+[`render.yaml`](render.yaml) describes a Render web service (Node runtime, inline scheduler) with a free Postgres database. Set `PAYPAL_*` and one model key (`ANTHROPIC_API_KEY` or `GEMINI_API_KEY`) in the dashboard, then register the webhook against the public URL. The app takes its public address from Render, so `APP_URL` only needs setting for a custom domain. Any Node host works: `npm run build && npm start` with `PROOFHOLD_STORE=postgres` and `DATABASE_URL`.
 
 ## Repository
 

@@ -58,7 +58,7 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 
 - Repository: https://github.com/successaje/proofhold (MIT)
 - Hosted demo: _add Render URL_
-- Video: _add YouTube URL_ (upload `demo-video/proofhold-demo.mp4`, 1:49, 1080p60, narrated, no captions; how it is made is in `docs/demo-script.md`)
+- Video: https://youtu.be/z0C_gWOIWqU (1:49, 1080p60, narrated, no captions; how it is made is in `docs/demo-script.md`)
 - Judge sandbox credentials: _add a sandbox Personal account email and password in the Devpost private notes_
 - Demo workspace: run `npm run seed` on the hosted instance and paste the printed cookie, or use the judge workspace link in the private notes
 

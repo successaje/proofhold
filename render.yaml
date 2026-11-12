@@ -1,13 +1,17 @@
 # Render blueprint: one web service with the inline scheduler, plus Postgres.
 # Set PAYPAL_* and one model key (ANTHROPIC_API_KEY or GEMINI_API_KEY) in the Render
 # dashboard (sync: false). Leave the other key blank.
+# APP_URL is not set here: the app reads the address Render gives the service
+# (RENDER_EXTERNAL_URL), so a different service name cannot break buyer links.
+# Set APP_URL yourself only when you attach a custom domain.
 services:
   - type: web
     name: proofhold
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci && npm run build
+    # TypeScript and the type packages are devDependencies and the build needs them.
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
@@ -21,8 +25,6 @@ services:
         fromDatabase:
           name: proofhold-db
           property: connectionString
-      - key: APP_URL
-        value: https://proofhold.onrender.com
       - key: APP_SECRET
         generateValue: true
       - key: PAYPAL_MODE
@@ -40,7 +42,9 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: GEMINI_MODEL
-        value: gemini-3.8-flash
+        value: gemini-3-flash-preview
+      - key: GEMINI_FALLBACK_MODEL
+        value: gemini-3.5-flash-lite
       - key: PROOFHOLD_SCHEDULER
         value: inline
       - key: DEMO_SILENCE_MINUTES
