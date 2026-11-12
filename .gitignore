@@ -12,5 +12,6 @@ next-env.d.ts
 .claude/
 # Rendered demo video and its working files (the scripts live in scripts/demo/)
 demo-video/work/
+demo-video/tts-cache/
 demo-video/*.mp4
 demo-video/*.webm

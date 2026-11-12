@@ -178,6 +178,16 @@ Raised and not changed, with the reason:
 - **Call it an "agreement" rather than an "acceptance test" throughout.** A vocabulary change across the product, the recorded video and the docs the day before the deadline would leave them disagreeing. The buyer page already leads with "What you are agreeing to". Left as a decision for the owner.
 - **"Ask for changes" on the buyer page.** Not built. The buyer can decline to approve, and after delivery can object with a reason.
 
+## Found while recording the demo against a production build (2026-11-12)
+
+The journeys run against the dev server with a simulated examiner. Recording against `next build` with the real model exposed three defects they could not:
+
+| #   | Defect                                                                                                                                                                   | Fix                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | The simulated checkout's "Cancel and return" is a link to an API route. A production build prefetches links, so the approval was cancelled as soon as the page appeared  | Links to `/api/` are never prefetched (`src/components/ui/button.tsx`)                                                                     |
+| 2   | The delivery request and the scheduler both examined a round when the model call outlasted a scheduler pass; one recorded run stored a fail and a pass for the same line | Examinations in flight are tracked per proofhold; a second caller waits for the first. `tests/unit/examiner-race.test.ts` fails without it |
+| 3   | The landing was prerendered at build time, freezing its example's dates and its modes line                                                                               | `export const dynamic = "force-dynamic"` on the landing                                                                                    |
+
 ## Known gaps
 
 - The PayPal sandbox is verified for order, approval, authorization, full capture, partial capture and void (row 17). Reauthorization, refund, tracking and the dispute calls run against the simulator and have not been exercised in the sandbox. Row 19 still needs a public URL.

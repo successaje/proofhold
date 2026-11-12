@@ -67,7 +67,7 @@ Useful scripts:
 ```bash
 npm run seed                          # a workspace with a proofhold in every state, prints the cookie and links
 npm run screens                       # the gallery in docs/screens/, from a fresh seeded workspace
-npm run demo:video                    # the demo video and subtitles in demo-video/ (needs macOS `say` and ffmpeg)
+npm run demo:video -- build           # cut the demo film; docs/demo-script.md has the recording steps (needs ffmpeg)
 npm run backup                        # snapshot the database into .data/backups/
 npm run reset -- --yes                # back up, then remove the local SQLite database
 npx tsx scripts/paypal-smoke.ts       # prove the sandbox: authorize → partial capture → void
