@@ -51,7 +51,13 @@ let cached: Config | undefined;
 
 export function config(): Config {
   if (cached) return cached;
-  const parsed = schema.parse(process.env);
+  // On Render the service's public address is known to the platform. Use it
+  // when APP_URL is not set, so buyer links and PayPal's return address are
+  // right whatever name the service was given.
+  const parsed = schema.parse({
+    ...process.env,
+    APP_URL: process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || undefined,
+  });
   const paypalConfigured = Boolean(
     parsed.PAYPAL_CLIENT_ID && parsed.PAYPAL_CLIENT_SECRET,
   );
