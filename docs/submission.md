@@ -58,7 +58,7 @@ Next.js, React, TypeScript, Node.js, SQLite, PostgreSQL, PayPal REST APIs (Order
 ## Links
 
 - Repository: https://github.com/successaje/proofhold (MIT)
-- Hosted demo: _add Render URL_
+- Hosted demo: https://proofhold.onrender.com (PayPal sandbox, Gemini examiner; the free host sleeps when idle, so the first load can take about a minute)
 - Video: https://youtu.be/z0C_gWOIWqU (1:49, 1080p60, narrated, no captions; how it is made is in `docs/demo-script.md`)
 - Judge sandbox credentials: _add a sandbox Personal account email and password in the Devpost private notes_
 - Testing: open the hosted demo, name a workspace, use the example brief, and approve with the sandbox buyer in the private notes. The free host sleeps when idle, so the first load can take about a minute.

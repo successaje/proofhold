@@ -12,6 +12,7 @@ Built for the [PayPal AI Hackathon](https://paypalaihackathon.devpost.com/). MIT
 - Architecture: [docs/architecture.md](docs/architecture.md)
 - Comparison with the products people use today, and the gap list: [docs/comparison.md](docs/comparison.md)
 - Acceptance matrix, measurements and known gaps: [docs/acceptance-matrix.md](docs/acceptance-matrix.md)
+- Live demo on the PayPal sandbox: https://proofhold.onrender.com (sleeps when idle; the first load can take a minute)
 - Demo video (1:49): https://youtu.be/z0C_gWOIWqU. How it is made: [docs/demo-script.md](docs/demo-script.md); gallery in [docs/screens](docs/screens)
 - Devpost draft: [docs/submission.md](docs/submission.md)
 - Build log: [docs/build-log.md](docs/build-log.md)
